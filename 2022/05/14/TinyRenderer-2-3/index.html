@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="pcpa997">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="TinyRendererWIki 2&amp;3">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TinyRenderer 2&amp;3">
+<meta property="og:url" content="https://pcpas.github.io/2022/05/14/TinyRenderer-2-3/index.html">
+<meta property="og:site_name" content="PCPA&#39;s world">
+<meta property="og:description" content="TinyRendererWIki 2&amp;3">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2022/05/14/d4f5acfb711300b2.png">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2022/05/14/6a05ca12f47aff17.png">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2022/05/14/400638c6ba10245b.png">
+<meta property="article:published_time" content="2022-05-14T07:59:04.000Z">
+<meta property="article:modified_time" content="2022-05-14T08:12:11.102Z">
+<meta property="article:author" content="pcpa997">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="图形学">
+<meta property="article:tag" content="TinyRenderer">
+<meta property="article:tag" content="软件光栅化渲染器">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s3.bmp.ovh/imgs/2022/05/14/d4f5acfb711300b2.png">
+  
+  
+  <title>TinyRenderer 2&amp;3 - PCPA&#39;s world</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"pcpas.github.io","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>PCPA&#39;s world</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">TinyRenderer 2&3</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-14 15:59" pubdate>
+          2022年5月14日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          112 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">TinyRenderer 2&amp;3</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="Lesson-2-Triangle-rasterization-and-back-face-culling"><a href="#Lesson-2-Triangle-rasterization-and-back-face-culling" class="headerlink" title="Lesson 2: Triangle rasterization and back face culling"></a>Lesson 2: Triangle rasterization and back face culling</h1><h2 id="1-尝试画一个三角形-old-school"><a href="#1-尝试画一个三角形-old-school" class="headerlink" title="1.尝试画一个三角形(old-school)"></a>1.尝试画一个三角形(old-school)</h2><p>画一个三角形看似简单,但是又很难!</p>
+<p>先想想如何画一个三角形(不要忘了光栅化的前提:像素的概念)</p>
+<p>首先, 画一个三角形框吧!</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">triangle</span><span class="hljs-params">(Vec2i v0, Vec2i v1, Vec2i v2, TGAImage &amp;image, TGAColor color)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">line</span>(v0.x, v0.y, v1.x, v1.y, image, color);<br>	<span class="hljs-built_in">line</span>(v1.x, v1.y, v2.x, v2.y, image, color);<br>	<span class="hljs-built_in">line</span>(v0.x, v0.y, v2.x, v2.y, image, color);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>很简单!</p>
+<p>在主函数里调用此方法:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> </span>&#123;<br>	TGAImage image = <span class="hljs-built_in">TGAImage</span>(width, height, TGAImage::RGB);<br>	Vec2i t0[<span class="hljs-number">3</span>] = &#123;<span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">10</span>, <span class="hljs-number">70</span>),   <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">50</span>, <span class="hljs-number">160</span>),  <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">70</span>, <span class="hljs-number">80</span>)&#125;; <br>	Vec2i t1[<span class="hljs-number">3</span>] = &#123;<span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">180</span>, <span class="hljs-number">50</span>),  <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">150</span>, <span class="hljs-number">1</span>),   <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">70</span>, <span class="hljs-number">180</span>)&#125;; <br>	Vec2i t2[<span class="hljs-number">3</span>] = &#123;<span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">180</span>, <span class="hljs-number">150</span>), <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">120</span>, <span class="hljs-number">160</span>), <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">130</span>, <span class="hljs-number">180</span>)&#125;; <br>	<span class="hljs-built_in">triangle</span>(t0[<span class="hljs-number">0</span>], t0[<span class="hljs-number">1</span>], t0[<span class="hljs-number">2</span>], image, red); <br>	<span class="hljs-built_in">triangle</span>(t1[<span class="hljs-number">0</span>], t1[<span class="hljs-number">1</span>], t1[<span class="hljs-number">2</span>], image, white); <br>	<span class="hljs-built_in">triangle</span>(t2[<span class="hljs-number">0</span>], t2[<span class="hljs-number">1</span>], t2[<span class="hljs-number">2</span>], image, green);<br>	image.<span class="hljs-built_in">flip_vertically</span>(); <br>    image.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;output.tga&quot;</span>);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们得到想要的图形:</p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/d4f5acfb711300b2.png" srcset="/img/loading.gif" lazyload></p>
+<p>接着,想办法填充吧!</p>
+<p>提醒:将三角形水平分割.</p>
+<div class="note note-primary">
+            <p>无论是原作者还是笔者, 都强烈建议您在接着往下看之前先自己尝试实现此功能! 自己实在写不出来或者写出来了再往下看!</p>
+          </div>
+
+<p>贴一份我自己的代码吧(比较稚嫩)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs cpp">/<br>/<span class="hljs-function">draw a triangle use line the function</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">triangle</span><span class="hljs-params">(Vec2i v0, Vec2i v1, Vec2i v2, TGAImage &amp;image, TGAColor color)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-comment">//排序</span><br>    <span class="hljs-keyword">if</span>(v0.y&gt;v1.y) <br>    &#123;<br>        Vec2i temp = v0;<br>        v0 = v1;<br>        v1 = temp;<br>    &#125;<br>    <span class="hljs-keyword">if</span>(v1.y&gt;v2.y)<br>    &#123;<br>        Vec2i temp = v1;<br>        v1 = v2;<br>        v2= temp;<br>    &#125;<br>    <span class="hljs-keyword">if</span>(v0.y&gt;v1.y)<br>    &#123;<br>        Vec2i temp = v0;<br>        v0 = v1;<br>        v1 = temp;<br>    &#125;<br>    <span class="hljs-type">float</span> x3 = (<span class="hljs-type">float</span>)v0.y + (<span class="hljs-type">float</span>)(v1.y - v0.y) * (v2.x - v0.x) / (v2.y - v0.y);<br>    <span class="hljs-type">float</span> dx1 = (<span class="hljs-type">float</span>)(v2.x - v0.x) / (v2.y - v0.y);<br>    <span class="hljs-type">float</span> dx2 = (<span class="hljs-type">float</span>)(v1.x - v0.x) / (v1.y - v0.y);<br>    <span class="hljs-comment">//printf(&quot;dx1:%f dx2:%f\n&quot;, dx1, dx2);</span><br>    <span class="hljs-keyword">if</span> (dx1 &gt; dx2)<br>        std::<span class="hljs-built_in">swap</span>(dx1, dx2);<br>    <span class="hljs-type">float</span> xleft = (<span class="hljs-type">float</span>)v0.x, xright = (<span class="hljs-type">float</span>)v0.x;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> y = v0.y; y &lt; v1.y; y++)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = std::<span class="hljs-built_in">ceil</span>(xleft); x &lt;= std::<span class="hljs-built_in">floor</span>(xright); x++)<br>        &#123;<br>            image.<span class="hljs-built_in">set</span>(x, y, color);<br>        &#125;<br>        xleft += dx1;<br>        xright += dx2;<br>    &#125;<br>    dx1 = (<span class="hljs-type">float</span>)(v2.x - v0.x) / (v2.y - v0.y);<br>    dx2 = (<span class="hljs-type">float</span>)(v2.x - v1.x) / (v2.y - v1.y);<br>    <span class="hljs-keyword">if</span> (dx1 &gt; dx2)<br>        std::<span class="hljs-built_in">swap</span>(dx1, dx2);<br>    xleft = (<span class="hljs-type">float</span>)v2.x, xright = (<span class="hljs-type">float</span>)v2.x;<br>    <span class="hljs-comment">//printf(&quot;dx1:%f dx2:%f\n&quot;, dx1, dx2);</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> y = v2.y; y &gt;= v1.y; y--)<br>    &#123;<br>         <span class="hljs-comment">//printf(&quot;%f %f\n&quot;, xleft, xright);</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = std::<span class="hljs-built_in">ceil</span>(xleft); x &lt;= std::<span class="hljs-built_in">floor</span>(xright); x++)<br>        &#123;<br>            image.<span class="hljs-built_in">set</span>(x, y, color);<br>        &#125;<br>        xleft -= dx2;<br>        xright -= dx1;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>再贴一份大神的研读一下,我自己写了一些注释</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">triangle</span><span class="hljs-params">(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &amp;image, TGAColor color)</span> </span>&#123; <br>    <span class="hljs-keyword">if</span> (t0.y==t1.y &amp;&amp; t0.y==t2.y) <span class="hljs-keyword">return</span>; <span class="hljs-comment">// I dont care about degenerate triangles </span><br>    <span class="hljs-comment">// sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!) </span><br>    <span class="hljs-comment">// 排序! 写的比我简洁很多! 我都不知道原来vec2i也可以swap</span><br>    <span class="hljs-keyword">if</span> (t0.y&gt;t1.y) std::<span class="hljs-built_in">swap</span>(t0, t1); <br>    <span class="hljs-keyword">if</span> (t0.y&gt;t2.y) std::<span class="hljs-built_in">swap</span>(t0, t2); <br>    <span class="hljs-keyword">if</span> (t1.y&gt;t2.y) std::<span class="hljs-built_in">swap</span>(t1, t2); <br>    <span class="hljs-type">int</span> total_height = t2.y-t0.y; <br>    <span class="hljs-comment">//降低可读性换取代码的整洁和易修改, 可以的</span><br>    <span class="hljs-comment">//大神的填充三角形的方法和我想的差不多,对于每个y找到x的左右边界  </span><br>    <span class="hljs-comment">//大神没有考虑边界的问题是否取的问题, 效果也不错</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>; i&lt;total_height; i++) &#123; <br>        <span class="hljs-type">bool</span> second_half = i&gt;t1.y-t0.y || t1.y==t0.y; <br>        <span class="hljs-type">int</span> segment_height = second_half ? t2.y-t1.y : t1.y-t0.y; <br>        <span class="hljs-type">float</span> alpha = (<span class="hljs-type">float</span>)i/total_height; <br>        <span class="hljs-type">float</span> beta  = (<span class="hljs-type">float</span>)(i-(second_half ? t1.y-t0.y : <span class="hljs-number">0</span>))/segment_height; <span class="hljs-comment">// be careful: with above conditions no division by zero here </span><br>        Vec2i A =               t0 + (t2-t0)*alpha; <br>        Vec2i B = second_half ? t1 + (t2-t1)*beta : t0 + (t1-t0)*beta; <br>        <span class="hljs-keyword">if</span> (A.x&gt;B.x) std::<span class="hljs-built_in">swap</span>(A, B); <br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=A.x; j&lt;=B.x; j++) &#123; <br>            image.<span class="hljs-built_in">set</span>(j, t0.y+i, color); <span class="hljs-comment">// attention, due to int casts t0.y+i != A.y </span><br>        &#125; <br>    &#125; <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-新潮一些的方法"><a href="#2-新潮一些的方法" class="headerlink" title="2.新潮一些的方法"></a>2.新潮一些的方法</h2><p>上面介绍的方法是一种非常传统和老旧的方法(当时是在单线程电脑上运行),其实随着电脑硬件的发展,目前即使是民用PC也支持超多线程的运算了.这样写代码,效率是低下的.不如我们来想想怎么写效率才高?</p>
+<p>至少对于笔者而言,我也不知道怎么才能针对多线程进行优化, 代码运行的底层原理知识笔者严重缺失,因此直接贴出来:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">triangle</span>(vec2 points[<span class="hljs-number">3</span>]) &#123; <br>    vec2 bbox[<span class="hljs-number">2</span>] = <span class="hljs-built_in">find_bounding_box</span>(points); <br>    <span class="hljs-keyword">for</span> (each pixel in the bounding box) &#123; <br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">inside</span>(points, pixel)) &#123; <br>            <span class="hljs-built_in">put_pixel</span>(pixel); <br>        &#125; <br>    &#125; <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在笔者熟悉的算法竞赛和课程中,这样写的效率是非常低的.</p>
+<p>但是大神说这是一种针对多线程更优的写法,那笔者就先记住吧,等以后再来想为什么.</p>
+<p>其实这个伪代码对于上过games101的人来说应该在熟悉不过了.</p>
+<p>一起来看看这段伪代码:</p>
+<p>首先,我们找到三角形的包围盒(这是很简单的)</p>
+<p>然后,我们对于盒内每个点判断其是否在三角形内</p>
+<p>这是很复杂的.有很多方法,但是最主流的需要用到重心坐标的概念</p>
+<p>$P &#x3D; \alpha A + \beta B + \gamma C $</p>
+<p>若P在三角形外,则必有坐标为负</p>
+<p>贴一下我自己的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">Vec3f <span class="hljs-title">barycentric</span><span class="hljs-params">(Vec2i *pts, Vec2i P)</span> </span>&#123;<br>    Vec3f u1 = <span class="hljs-built_in">Vec3f</span>(pts[<span class="hljs-number">2</span>].x - pts[<span class="hljs-number">0</span>].x, pts[<span class="hljs-number">1</span>].x - pts[<span class="hljs-number">0</span>].x, pts[<span class="hljs-number">0</span>].x - P.x);<br>    Vec3f u2 = <span class="hljs-built_in">Vec3f</span>(pts[<span class="hljs-number">2</span>].y - pts[<span class="hljs-number">0</span>].y, pts[<span class="hljs-number">1</span>].y - pts[<span class="hljs-number">0</span>].y, pts[<span class="hljs-number">0</span>].y - P.y);<br>    Vec3f u = <span class="hljs-built_in">Vec3f</span>(u1.y * u2.z - u1.z * u2.y, u1.z * u2.x - u1.x * u2.z, u1.x * u2.y - u1.y * u2.x);<br>    <span class="hljs-keyword">if</span> (std::<span class="hljs-built_in">abs</span>(u.z) &lt; <span class="hljs-number">1</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Vec3f</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Vec3f</span>(<span class="hljs-number">1.f</span>-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z); <br>&#125; <br><br><span class="hljs-comment">//draw a triangle use a new way</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">new_triangle</span><span class="hljs-params">(Vec2i *pts, TGAImage &amp;image, TGAColor color)</span></span><br><span class="hljs-function"></span>&#123;<br>    Vec2i bboxmin = <span class="hljs-built_in">Vec2i</span>(image.<span class="hljs-built_in">get_width</span>() - <span class="hljs-number">1</span>, image.<span class="hljs-built_in">get_height</span>() - <span class="hljs-number">1</span>);<br>    Vec2i bboxmax = <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; i++)<br>    &#123;<br>        <span class="hljs-keyword">if</span>(pts[i].x&gt;bboxmax.x)<br>            bboxmax.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&gt;bboxmax.y)<br>            bboxmax.y = pts[i].y;<br>        <span class="hljs-keyword">if</span>(pts[i].x&lt;bboxmin.x)<br>            bboxmin.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&lt;bboxmin.y)<br>            bboxmin.y = pts[i].y;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = bboxmin.x; x &lt;= bboxmax.x; x++)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> y = bboxmin.y; y &lt;= bboxmax.y; y++)<br>        &#123;<br>            Vec3f coor = <span class="hljs-built_in">barycentric</span>(pts, <span class="hljs-built_in">Vec2i</span>(x, y));<br>            <span class="hljs-comment">//printf(&quot;%f %f %f\n&quot;, coor.x, coor.y, coor.z);</span><br>            <span class="hljs-keyword">if</span> (coor.x &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.y &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.z &gt;= <span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-comment">//puts(&quot;set&quot;);</span><br>                image.<span class="hljs-built_in">set</span>(x, y, color);<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-试着用这种方法填充之前的模型"><a href="#3-试着用这种方法填充之前的模型" class="headerlink" title="3.试着用这种方法填充之前的模型"></a>3.试着用这种方法填充之前的模型</h2><p>还记得在bresenham的画线的章节里我们使用的模型吗?</p>
+<p>现在我们有能力为他上色啦!</p>
+<p>先用随机颜色上色,这样我们可以观察渲染是如何进行的,然后,再根据光照上色,这样我们就完成了一个简单的渲染器!</p>
+<p>先使用随机的颜色吧!</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//main函数</span><br><span class="hljs-keyword">if</span> (<span class="hljs-number">2</span>==argc) &#123;<br>        model = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Model</span>(argv[<span class="hljs-number">1</span>]);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        model = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Model</span>(<span class="hljs-string">&quot;obj/african_head.obj&quot;</span>);<br>    &#125;<br>    <span class="hljs-function">TGAImage <span class="hljs-title">frame</span><span class="hljs-params">(width, height, TGAImage::RGB)</span></span>; <br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>; i&lt;model-&gt;<span class="hljs-built_in">nfaces</span>(); i++) <br>    &#123; <br>        std::vector&lt;<span class="hljs-type">int</span>&gt; face = model-&gt;<span class="hljs-built_in">face</span>(i); <br>        Vec2i screen_coords[<span class="hljs-number">3</span>]; <br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>; j&lt;<span class="hljs-number">3</span>; j++) &#123; <br>            Vec3f world_coords = model-&gt;<span class="hljs-built_in">vert</span>(face[j]); <br>            screen_coords[j] = <span class="hljs-built_in">Vec2i</span>((world_coords.x+<span class="hljs-number">1.</span>)*width/<span class="hljs-number">2.</span>, (world_coords.y+<span class="hljs-number">1.</span>)*height/<span class="hljs-number">2.</span>); <br>        &#125;<br>        Vec2i pts[<span class="hljs-number">3</span>] = &#123;screen_coords[<span class="hljs-number">0</span>], screen_coords[<span class="hljs-number">1</span>], screen_coords[<span class="hljs-number">2</span>]&#125;;<br>        <span class="hljs-built_in">new_triangle</span>(pts, frame, <span class="hljs-built_in">TGAColor</span>(<span class="hljs-built_in">rand</span>() % <span class="hljs-number">255</span>, <span class="hljs-built_in">rand</span>() % <span class="hljs-number">255</span>, <span class="hljs-built_in">rand</span>() % <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));<br>    &#125;<br>    frame.<span class="hljs-built_in">flip_vertically</span>(); <span class="hljs-comment">// to place the origin in the bottom left corner of the image </span><br>    frame.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;framebuffer.tga&quot;</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以看到, model里面储存的是世界坐标, 是一群被压缩在[-1,1]^2的点. 为了使其铺满屏幕,我们需要进行一定的转化.</p>
+<p>那么, 如何结合光照呢? 在讨论布林冯等模型之前,我们不如先进行简单的线性建模</p>
+<p>先确立光线的方向 <code>Vec3f light_dir(0,0,-1)</code>,此处明显是平行光.</p>
+<p>那不妨直接将每个面的亮暗设置为 <code>n*light_dir</code>, n为一个面的单位法向量.</p>
+<p>下面为我的代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">Vec3f <span class="hljs-title">light_dir</span><span class="hljs-params">(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>)</span></span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; model-&gt;<span class="hljs-built_in">nfaces</span>(); i++)<br>    &#123; <br>        std::vector&lt;<span class="hljs-type">int</span>&gt; face = model-&gt;<span class="hljs-built_in">face</span>(i); <br>        Vec2i screen_coords[<span class="hljs-number">3</span>];<br>        Vec3f world_coords[<span class="hljs-number">3</span>];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">3</span>; j++)<br>        &#123;<br>            world_coords[j] = model-&gt;<span class="hljs-built_in">vert</span>(face[j]); <br>            screen_coords[j] = <span class="hljs-built_in">Vec2i</span>((world_coords[j].x+<span class="hljs-number">1.</span>)*width/<span class="hljs-number">2.</span>, (world_coords[j].y+<span class="hljs-number">1.</span>)*height/<span class="hljs-number">2.</span>);<br>        &#125;<br>        Vec3f n = (world_coords[<span class="hljs-number">2</span>]-world_coords[<span class="hljs-number">0</span>])^(world_coords[<span class="hljs-number">1</span>]-world_coords[<span class="hljs-number">0</span>]);<br>        n.<span class="hljs-built_in">normalize</span>();<br>        <span class="hljs-type">float</span> intensity = n * light_dir;<br>	Vec2i pts[<span class="hljs-number">3</span>] = &#123;screen_coords[<span class="hljs-number">0</span>], screen_coords[<span class="hljs-number">1</span>], screen_coords[<span class="hljs-number">2</span>]&#125;;<br>        <span class="hljs-built_in">new_triangle</span>(pts, frame, <span class="hljs-built_in">TGAColor</span>(intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));<br>    &#125;<br>    frame.<span class="hljs-built_in">flip_vertically</span>(); <span class="hljs-comment">// to place the origin in the bottom left corner of the image </span><br>    frame.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;framebuffer.tga&quot;</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Lesson-3-Hidden-faces-removal-z-buffer"><a href="#Lesson-3-Hidden-faces-removal-z-buffer" class="headerlink" title="Lesson 3: Hidden faces removal (z buffer)"></a>Lesson 3: Hidden faces removal (z buffer)</h1><h2 id="1-zBuffer储存深度"><a href="#1-zBuffer储存深度" class="headerlink" title="1.zBuffer储存深度"></a>1.zBuffer储存深度</h2><p>现在我们已经可以渲染一个面啦!很好!</p>
+<p>但是还有一个问题没解决—-不同面的遮挡关系该如何处理?</p>
+<p>在原来代码中, 越晚渲染的面在越前面, 这固然有一定的道理, 但是这不是现实生活</p>
+<p>我们要理解光栅化其实是把三维空间里的模型二维化, 然后以一定的比例投影到屏幕上的过程, 那么, 任何一个点一定有他的深度—-也就是z轴的大小.</p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/6a05ca12f47aff17.png" srcset="/img/loading.gif" lazyload></p>
+<p>看看这个图, 如果能成功渲染这个画面, 是不是有点三维的感觉了?</p>
+<p>使用Z-buffer数组来储存, 通过重心坐标来计算每点P的z值, 并更新z-buffer</p>
+<p>下面贴一下我的改良后的triangle代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">new_triangle</span><span class="hljs-params">(Vec3f *pts, <span class="hljs-type">float</span> *zBuffer, TGAImage &amp;image, TGAColor color)</span></span><br><span class="hljs-function"></span>&#123;<br>    Vec2i bboxmin = <span class="hljs-built_in">Vec2i</span>(image.<span class="hljs-built_in">get_width</span>() - <span class="hljs-number">1</span>, image.<span class="hljs-built_in">get_height</span>() - <span class="hljs-number">1</span>);<br>    Vec2i bboxmax = <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; i++)<br>    &#123;<br>        <span class="hljs-keyword">if</span>(pts[i].x&gt;bboxmax.x)<br>            bboxmax.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&gt;bboxmax.y)<br>            bboxmax.y = pts[i].y;<br>        <span class="hljs-keyword">if</span>(pts[i].x&lt;bboxmin.x)<br>            bboxmin.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&lt;bboxmin.y)<br>            bboxmin.y = pts[i].y;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = bboxmin.x; x &lt;= bboxmax.x; x++)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> y = bboxmin.y; y &lt;= bboxmax.y; y++)<br>        &#123;<br>            Vec3f coor = <span class="hljs-built_in">barycentric</span>(pts, <span class="hljs-built_in">Vec2i</span>(x, y));<br>            <span class="hljs-keyword">if</span> (coor.x &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.y &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.z &gt;= <span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-type">float</span> z = coor.x * pts[<span class="hljs-number">0</span>].z + coor.y * pts[<span class="hljs-number">1</span>].z + coor.z * pts[<span class="hljs-number">2</span>].z;<br>                <span class="hljs-keyword">if</span> (zBuffer[x + y * width] &lt; z)<br>                &#123;<br>                    zBuffer[x + y * width] = z;<br>                    image.<span class="hljs-built_in">set</span>(x, y, color);<br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>干脆把主函数也贴一下, 以免有人不知道该怎么获取深度</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">float</span> zBuffer[width * height];<span class="hljs-comment">//创建zbuffer数组</span><br><span class="hljs-built_in">memset</span>(zBuffer, <span class="hljs-number">-10</span>, <span class="hljs-built_in">sizeof</span>(zBuffer));<span class="hljs-comment">//初始化zbuffer数组</span><br>	  <span class="hljs-comment">//此处需要注意,在obj文件中,点的深度均处于[-1,0],如果不进行初始化或者把z转换为负数,会显示错误</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; model-&gt;<span class="hljs-built_in">nfaces</span>(); i++)<br>&#123; <br>    std::vector&lt;<span class="hljs-type">int</span>&gt; face = model-&gt;<span class="hljs-built_in">face</span>(i); <br>    Vec3f screen_coords[<span class="hljs-number">3</span>];<br>    Vec3f world_coords[<span class="hljs-number">3</span>];<br>    TGAColor color;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">3</span>; j++)<br>    &#123;<br>        world_coords[j] = model-&gt;<span class="hljs-built_in">vert</span>(face[j]);   <br>        screen_coords[j] = <span class="hljs-built_in">Vec3f</span>((world_coords[j].x+<span class="hljs-number">1.</span>)*width/<span class="hljs-number">2.</span>, (world_coords[j].y+<span class="hljs-number">1.</span>)*height/<span class="hljs-number">2.</span>, world_coords[j].z);<br>    &#125;<br>    Vec3f n = (world_coords[<span class="hljs-number">2</span>]-world_coords[<span class="hljs-number">0</span>])^(world_coords[<span class="hljs-number">1</span>]-world_coords[<span class="hljs-number">0</span>]);<br>    n.<span class="hljs-built_in">normalize</span>();<br>    <span class="hljs-type">float</span> intensity = n * light_dir;<br> Vec3f pts[<span class="hljs-number">3</span>] = &#123;screen_coords[<span class="hljs-number">0</span>], screen_coords[<span class="hljs-number">1</span>], screen_coords[<span class="hljs-number">2</span>]&#125;;<br>    <span class="hljs-keyword">if</span>(intensity&gt;<span class="hljs-number">0</span>)<span class="hljs-comment">//别忘了,很重要</span><br>        <span class="hljs-built_in">new_triangle</span>(pts, zBuffer, frame, <span class="hljs-built_in">TGAColor</span>(intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-填充纹理吧"><a href="#2-填充纹理吧" class="headerlink" title="2.填充纹理吧"></a>2.填充纹理吧</h2><p>此时, 一个模型大体的轮廓已经初步创建, 那么 ,我们还能做什么呢???</p>
+<p>没错! 填充纹理!!</p>
+<p>在obj文件中, 除了存放了模型本身的面和点, 也存放了每个点对应的纹理坐标. 通过这些映射关系, 我们对于每个特定的像素(x,y)都可以在纹理图上映射为(u,v)并获取该点的颜色为该像素上色.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">vt  <span class="hljs-number">0.532</span> <span class="hljs-number">0.923</span> <span class="hljs-number">0.000</span> <span class="hljs-comment">//存放了第i个纹理图上的点</span><br>f <span class="hljs-number">24</span>/<span class="hljs-number">1</span>/<span class="hljs-number">24</span> <span class="hljs-number">25</span>/<span class="hljs-number">2</span>/<span class="hljs-number">25</span> <span class="hljs-number">26</span>/<span class="hljs-number">3</span>/<span class="hljs-number">26</span> <span class="hljs-comment">//存放了某个面的对应信息</span><br><span class="hljs-comment">//格式：&quot;f 顶点索引/uv点索引/法线索引&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>想要完成这个作业有两个难点,一是读取纹理信息, 二是对纹理插值</p>
+<p>其实我觉得老师对于这个地方的处理不算是很好, 因为没有告诉你应该怎么去做, 而是想让你凭空去创造obj的读取方法.(不排除这就是老师的本意!</p>
+<p>既然如此,那就硬着头皮上呗!</p>
+<p>理解obj文件的解析原理是关键, 如果能理解, 这个代码其实并不难, 就是普通的模拟题.</p>
+<p>obj文件里面还每个点的法线信息, 干脆也一起敲了</p>
+<p>下面分享一下我的model.h和model.cpp</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//model.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> __MODEL_H__</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> __MODEL_H__</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;geometry.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tgaimage.h&quot;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Model</span> &#123;<br><span class="hljs-keyword">private</span>:<br>std::vector&lt;Vec3f&gt; verts_;<br>	<span class="hljs-comment">//添加储存纹理坐标和法线的方法</span><br>	std::vector&lt;Vec2f&gt; uvs_; <br>	std::vector&lt;Vec3f&gt; nrms_;<br>	std::vector&lt;<span class="hljs-type">int</span>&gt; faces_vet;<br>	std::vector&lt;<span class="hljs-type">int</span>&gt; faces_uvs;<br>	std::vector&lt;<span class="hljs-type">int</span>&gt; faces_nrm;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">load_texture</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string *filename, TGAImage &amp;texture)</span></span>;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-built_in">Model</span>(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *filename);<br>	~<span class="hljs-built_in">Model</span>();<br>	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">nverts</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">nfaces</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">nuvs</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">nnrms</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function">Vec3f <span class="hljs-title">vert</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span>;<br>	<span class="hljs-function">Vec2f <span class="hljs-title">uvs</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span>;<br>	<span class="hljs-function">Vec3f <span class="hljs-title">nrms</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span>;<br>	<span class="hljs-function">Vec2f <span class="hljs-title">face_uvs</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span>;<br>	<span class="hljs-function">Vec3f <span class="hljs-title">face_vet</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span>;<br>	<span class="hljs-function">Vec3f <span class="hljs-title">face_nrm</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span>;<br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">//__MODEL_H__</span></span><br><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;model.h&quot;</span></span><br><br>Model::<span class="hljs-built_in">Model</span>(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *filename)&#123;<br>    std::ifstream in;<br>    in.<span class="hljs-built_in">open</span> (filename, std::ifstream::in);<br>    <span class="hljs-keyword">if</span> (in.<span class="hljs-built_in">fail</span>()) <span class="hljs-keyword">return</span>;<br>    std::string line;<br>    <span class="hljs-keyword">while</span> (!in.<span class="hljs-built_in">eof</span>()) &#123;<br>        std::<span class="hljs-built_in">getline</span>(in, line);<br>        <span class="hljs-function">std::istringstream <span class="hljs-title">iss</span><span class="hljs-params">(line.c_str())</span></span>;<br>        <span class="hljs-type">char</span> trash;<br>        <span class="hljs-keyword">if</span> (!line.<span class="hljs-built_in">compare</span>(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-string">&quot;v &quot;</span>)) &#123;<br>            iss &gt;&gt; trash;<br>            Vec3f v;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">3</span>;i++) iss &gt;&gt; v.raw[i];<br>            verts_.<span class="hljs-built_in">push_back</span>(v);<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(!line.<span class="hljs-built_in">compare</span>(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>, <span class="hljs-string">&quot;vt &quot;</span>))<br>        &#123;<br>            iss &gt;&gt; trash &gt;&gt; trash;<br>            Vec2f uv;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">2</span>;i++) iss &gt;&gt; uv.raw[i];<br>            uvs_.<span class="hljs-built_in">push_back</span>(&#123;uv.x, <span class="hljs-number">1</span> - uv.y&#125;);<span class="hljs-comment">//非常需要注意! 纹理图是以左上为原点的,而模型文件里的储存是以左下为原点, 需要颠倒一下!</span><br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!line.<span class="hljs-built_in">compare</span>(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>, <span class="hljs-string">&quot;vn &quot;</span>))<br>        &#123;<br>            iss &gt;&gt; trash &gt;&gt; trash;<br>            Vec3f n;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">3</span>;i++) iss &gt;&gt; n.raw[i];<br>            nrms_.<span class="hljs-built_in">push_back</span>(n);<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!line.<span class="hljs-built_in">compare</span>(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-string">&quot;f &quot;</span>)) &#123;<br>            <span class="hljs-type">int</span> idx,tidx,nidx;<br>            iss &gt;&gt; trash;<br>            <span class="hljs-keyword">while</span> (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; tidx &gt;&gt; trash &gt;&gt; nidx) &#123;<br>                faces_nrm.<span class="hljs-built_in">push_back</span>(--nidx);<br>                faces_uvs.<span class="hljs-built_in">push_back</span>(--tidx);<br>                faces_vet.<span class="hljs-built_in">push_back</span>(--idx);<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">//std::cerr &lt;&lt; &quot;# v# &quot; &lt;&lt; verts_.size() &lt;&lt; &quot; f# &quot;  &lt;&lt; faces_.size() &lt;&lt; std::endl;//报错信息,我不会先不管</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">load_texture</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string filename, TGAImage &amp;texture)</span></span><br><span class="hljs-function"></span>&#123;<br>    texture.<span class="hljs-built_in">read_tga_file</span>(filename.<span class="hljs-built_in">c_str</span>());<br>&#125;<br><br>Model::~<span class="hljs-built_in">Model</span>() &#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">Model::nverts</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span>)verts_.<span class="hljs-built_in">size</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">Model::nfaces</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span>)(faces_vet.<span class="hljs-built_in">size</span>() / <span class="hljs-number">3</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">Model::nuvs</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span>)uvs_.<span class="hljs-built_in">size</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">Model::nnrms</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-keyword">return</span> (<span class="hljs-type">int</span>)nrms_.<span class="hljs-built_in">size</span>();<br>&#125;<br><br><span class="hljs-function">Vec3f <span class="hljs-title">Model::vert</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> verts_[i];<br>&#125;<br><br><span class="hljs-function">Vec2f <span class="hljs-title">Model::uvs</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> uvs_[i];<br>&#125;<br><br><span class="hljs-function">Vec3f <span class="hljs-title">Model::nrms</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> nrms_[i];<br>&#125;<br><br><span class="hljs-function">Vec3f <span class="hljs-title">Model::face_vet</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> verts_[faces_vet[facei * <span class="hljs-number">3</span> + idx]];<br>&#125;<br><br><span class="hljs-function">Vec2f <span class="hljs-title">Model::face_uvs</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> uvs_[faces_uvs[facei * <span class="hljs-number">3</span> + idx]];<br>&#125;<br><br><span class="hljs-function">Vec3f <span class="hljs-title">Model::face_nrm</span><span class="hljs-params">(<span class="hljs-type">int</span> facei, <span class="hljs-type">int</span> idx)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> nrms_[faces_nrm[facei * <span class="hljs-number">3</span> + idx]];<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>顺便也贴一下我结合texture之后的triangle函数吧! 主要是实现了对纹理坐标的插值.</p>
+<p>此处的插值方法是直接使用屏幕坐标中的重心坐标对颜色插值, 可能效果会比在纹理坐标中直接插值差一些, 但是因为没给映射函数, 我也不知道怎么在纹理中插值,.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">new_triangle</span><span class="hljs-params">(Vec3f *pts, Vec2f *texture_pts, <span class="hljs-type">float</span> *zBuffer, TGAImage &amp;image,TGAImage&amp; texture, <span class="hljs-type">float</span> intensity)</span></span><br><span class="hljs-function"></span>&#123;<br>    Vec2i bboxmin = <span class="hljs-built_in">Vec2i</span>(image.<span class="hljs-built_in">get_width</span>() - <span class="hljs-number">1</span>, image.<span class="hljs-built_in">get_height</span>() - <span class="hljs-number">1</span>);<br>    Vec2i bboxmax = <span class="hljs-built_in">Vec2i</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; i++)<br>    &#123;<br>        <span class="hljs-keyword">if</span>(pts[i].x&gt;bboxmax.x)<br>            bboxmax.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&gt;bboxmax.y)<br>            bboxmax.y = pts[i].y;<br>        <span class="hljs-keyword">if</span>(pts[i].x&lt;bboxmin.x)<br>            bboxmin.x = pts[i].x;<br>        <span class="hljs-keyword">if</span>(pts[i].y&lt;bboxmin.y)<br>            bboxmin.y = pts[i].y;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = bboxmin.x; x &lt;= bboxmax.x; x++)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> y = bboxmin.y; y &lt;= bboxmax.y; y++)<br>        &#123;<br>            Vec3f coor = <span class="hljs-built_in">barycentric</span>(pts, <span class="hljs-built_in">Vec2i</span>(x, y));<br>            <span class="hljs-keyword">if</span> (coor.x &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.y &gt;= <span class="hljs-number">0</span> &amp;&amp; coor.z &gt;= <span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-type">float</span> tx = coor.x * texture_pts[<span class="hljs-number">0</span>].x + coor.y * texture_pts[<span class="hljs-number">1</span>].x + coor.z * texture_pts[<span class="hljs-number">2</span>].x;<br>                <span class="hljs-type">float</span> ty = coor.x * texture_pts[<span class="hljs-number">0</span>].y + coor.y * texture_pts[<span class="hljs-number">1</span>].y + coor.z * texture_pts[<span class="hljs-number">2</span>].y;<br>                <span class="hljs-type">float</span> z = (coor.x * pts[<span class="hljs-number">0</span>].z + coor.y * pts[<span class="hljs-number">1</span>].z + coor.z * pts[<span class="hljs-number">2</span>].z);<br>                <span class="hljs-comment">//printf(&quot;tex_coor x %d y %d\n&quot;, (int)tx, (int)ty);</span><br>                <span class="hljs-comment">//printf(&quot;color r %d g %d b %d\n&quot;, texture.get(tx, ty).r, texture.get(tx, ty).g, texture.get(tx, ty).b);</span><br>                TGAColor color = texture.<span class="hljs-built_in">get</span>(tx, ty);<br>                <span class="hljs-keyword">if</span> (zBuffer[x + y * width] &lt; z)<br>                &#123;<br>                    zBuffer[x + y * width] = z;<br>                    image.<span class="hljs-built_in">set</span>(x, y, <span class="hljs-built_in">TGAColor</span>(intensity * color.r, intensity * color.g, intensity * color.b, color.a));<br>                    <span class="hljs-comment">// image.set(x, y, color);</span><br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>最后附上我的图! 和老师的图效果稍微差一点,但不是很明显哈哈</p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/400638c6ba10245b.png" srcset="/img/loading.gif" lazyload></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" class="category-chain-item">图形学</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E5%9B%BE%E5%BD%A2%E5%AD%A6/TinyRenderer/" class="category-chain-item">TinyRenderer</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">#图形学</a>
+      
+        <a href="/tags/TinyRenderer/">#TinyRenderer</a>
+      
+        <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%85%89%E6%A0%85%E5%8C%96%E6%B8%B2%E6%9F%93%E5%99%A8/">#软件光栅化渲染器</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>TinyRenderer 2&amp;3</div>
+      <div>https://pcpas.github.io/2022/05/14/TinyRenderer-2-3/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>pcpa997</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月14日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/14/%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90/" title="学习资源">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">学习资源</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/08/%E8%B0%93%E8%AF%8D%E9%80%BB%E8%BE%91%E5%91%BD%E9%A2%98/" title="谓词逻辑命题">
+                        <span class="hidden-mobile">谓词逻辑命题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

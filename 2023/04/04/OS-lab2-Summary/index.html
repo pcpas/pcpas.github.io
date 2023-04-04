@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="pcpa997">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="BUAA_OS_Lab2总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OS_lab2_内存管理">
+<meta property="og:url" content="https://pcpas.github.io/2023/04/04/OS-lab2-Summary/index.html">
+<meta property="og:site_name" content="PCPA&#39;s world">
+<meta property="og:description" content="BUAA_OS_Lab2总结">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172009689.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172053973.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172117022.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172156774.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172404825.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172425991.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172444819.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402181110.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402174714.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402170006.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402170735.png">
+<meta property="article:published_time" content="2023-04-04T08:16:20.000Z">
+<meta property="article:modified_time" content="2023-04-04T09:27:46.337Z">
+<meta property="article:author" content="pcpa997">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172009689.png">
+  
+  
+  <title>OS_lab2_内存管理 - PCPA&#39;s world</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"pcpas.github.io","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>PCPA&#39;s world</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">OS_lab2_内存管理</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-04-04 16:16" pubdate>
+          2023年4月4日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">OS_lab2_内存管理</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><h2 id="映射"><a href="#映射" class="headerlink" title="映射"></a>映射</h2><ul>
+<li>kseg0 -&gt; 最高位置0(内核代码与数据结构)</li>
+<li>kseg1 -&gt; 最高三位置0(外设)</li>
+<li>kuseg -&gt; TLB访存(用户空间)</li>
+</ul>
+<h2 id="建立过程"><a href="#建立过程" class="headerlink" title="建立过程"></a>建立过程</h2><blockquote>
+<p>现在还没有建立内存管理机制，那么是如何操作内存呢？<br><strong>这是因为在 Lab2 中通过 kseg0 段地址直接操作物理内存。虽然实验一直在操作如 0x80xxxxxx 的虚拟地址，由于 kseg0 段的性质，操作系统可以通过这一段地址来直接操作物理内存，从而逐步建立内存管理机制.</strong> 例如当写虚拟地址 0x80012340 时，由于 kseg0 段的性质，事实上在写物理地址 0x12340。<br>可以回顾前面的“虚拟地址映射到物理地址”小节，其中有提到，在 kuseg 段的虚拟地址才需要通过 MMU 的转换获得物理地址后访存。在 Lab2 中所做的内存管理工作，正是使将来在 kuseg 段的用户程序能够正常工作。</p>
+</blockquote>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172009689.png" srcset="/img/loading.gif" lazyload alt="image-20230404172009689"></p>
+<h3 id="初始化页控制块的控制系统-借用alloc和pages实现"><a href="#初始化页控制块的控制系统-借用alloc和pages实现" class="headerlink" title="初始化页控制块的控制系统(借用alloc和pages实现)"></a>初始化页控制块的控制系统(借用alloc和pages实现)</h3><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172053973.png" srcset="/img/loading.gif" lazyload alt="image-20230404172053973"><br> 补充: alloc函数用于在操作系统尚未建立分页系统时进行物理空间的分配<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172117022.png" srcset="/img/loading.gif" lazyload alt="image-20230404172117022"></p>
+<h3 id="在页控制块管理物理内存的基础上完善函数"><a href="#在页控制块管理物理内存的基础上完善函数" class="headerlink" title="在页控制块管理物理内存的基础上完善函数"></a>在页控制块管理物理内存的基础上完善函数</h3><ul>
+<li><code>page_alloc(struct Page** pp)</code>: 获取一页物理内存<br> <img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172156774.png" srcset="/img/loading.gif" lazyload alt="image-20230404172156774"></li>
+<li><code>page_decref(struct Page *pp)</code> : 令pp对应的页控制块引用次数减少1.</li>
+<li><code>page_free(struct Page *pp)</code>: 释放空闲(assert)页面<h3 id="在页控制块管理物理内存的基础上建立两级页表"><a href="#在页控制块管理物理内存的基础上建立两级页表" class="headerlink" title="在页控制块管理物理内存的基础上建立两级页表"></a>在页控制块管理物理内存的基础上建立两级页表</h3></li>
+<li>两级页表解读:<br>  <img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172404825.png" srcset="/img/loading.gif" lazyload alt="image-20230404172404825"></li>
+<li>两级页表下的检索机制:</li>
+<li><code>int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)</code><br>  给定一个页目录基址<code>pgdir</code>, 一个虚拟地址 <code>va</code>, 返回该虚拟地址对应的页表项.<br>  利用这个函数,我们可以获得任何虚拟地址对应的页表项,从而获得虚拟地址和物理地址的映射.<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172425991.png" srcset="/img/loading.gif" lazyload alt="image-20230404172425991"></li>
+<li><code>int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm)</code><br> <img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/image-20230404172444819.png" srcset="/img/loading.gif" lazyload alt="image-20230404172444819"></li>
+<li><code>struct Page * page_lookup(Pde *pgdir, u_long va, Pte **ppte)</code>  ：查找</li>
+<li><code>void page_remove(Pde *pgdir, u_int asid, u_long va)</code>  ： 移除<br>自此，二级页表的内存管理机制建立。<h3 id="两级页表例子"><a href="#两级页表例子" class="headerlink" title="两级页表例子"></a>两级页表例子</h3>为了加深对于二级页表机制的理解, 附上两道例题:</li>
+</ul>
+<blockquote>
+<ol>
+<li>如果当前进程的页目录物理基地址、页目录和相应页表内容如图下所示，请描述访问0x00803004时系统进行地址转换的过程，如可行给出最终访存获取到的数据。</li>
+</ol>
+</blockquote>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402181110.png" srcset="/img/loading.gif" lazyload alt="Pasted image 20230402181110"><br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402174714.png" srcset="/img/loading.gif" lazyload alt="Pasted image 20230402174714"></p>
+<p>答:<br>0x00803004转换为二进制为:0000000010 0000000011 000000000100<br>页目录号为2,查询得0x5001, 有效位为1, 页表物理地址为0x5000<br>二级页表号为3, 查询0x5000处页表的第三项, 得0x20001, 有效位为1, 页面物理地址为0x20000.<br>页内偏移为4,故访问到的数据为0x326001.</p>
+<blockquote>
+<ol start="2">
+<li>在现代的 64 位系统中，提供了 64 位的字长，但实际上不是 64 位页式存储系统。假设在 64 位系统中采用三级页表机制，页面大小 4KB。由于 64 位系统中字长为 8B，且页目录也占用一页，因此页目录中有 512 个页目录项，因此每级页表都需要 9 位。 因此在 64 位系统下，总共需要 3 × 9 + 12 &#x3D; 39 位就可以实现三级页表机制，并不需要 64 位。 现考虑上述 39 位的三级页式存储系统，虚拟地址空间为 512 GB，若三级页表的基地址为 PTbase，请计算：</li>
+</ol>
+<ul>
+<li>三级页表页目录的基地址。 </li>
+<li>映射到页目录自身的页目录项（自映射）。</li>
+</ul>
+</blockquote>
+<p>(1) 答:<br>三级页表的基地址为PTBase，因为128M个页表项和512GB空间是线性映射的，所以PTBase这一地址对应的应为第(PTBase&gt;&gt;12)个页表项(512个项x8B). 对应的是第一个二级页目录项. 因此,二级页目录基址为: PTBase + (PTBase&gt;&gt;12)*8 &#x3D;  PTBase + PTBase&gt;&gt;9<br>一二级的映射可以参照二三级的映射用一样的方法计算.<br>(PTBase&gt;&gt;9)这一地址对应的应为第(PTBase&gt;&gt;9)&gt;&gt;12个页表项,对应的是第一个一级页目录项. 偏移为:((PTBase&gt;&gt;9)&gt;&gt;12)&lt;&lt;3. 因此, 一级页目录基址为: PTBase + (PTBase&gt;&gt;9) + (PTBase&gt;&gt;18)<br>(2)答:<br>那么, 自映射到自身的就是再重复一次, 为: PTBase + (PTBase&gt;&gt;9) + (PTBase&gt;&gt;18) + (PTBase&gt;&gt;27) </p>
+<h2 id="虚拟地址-物理地址和内核虚拟地址"><a href="#虚拟地址-物理地址和内核虚拟地址" class="headerlink" title="虚拟地址, 物理地址和内核虚拟地址"></a>虚拟地址, 物理地址和内核虚拟地址</h2><p>程序运行时,在建立了虚拟地址空间后,并没有分配实际的物理内存,而是当进程需要实际访问内存资源的时候就会由内核的请求分页机制产生缺页中断,这时才会建立虚拟地址和物理地址的映射,调入物理内存页.通过这种方式,就能够保证我们的物理内存只有在实际使用时才进行分配,避免了内存浪费的问题.<br>虚拟地址空间的内部又被划分为<strong>用户空间</strong>与<strong>内核空间</strong>.<br>内核空间即进程陷入内核态后才能访问的空间.<strong>虽然每个进程都具有自己独立的虚拟地址空间,但是这些虚拟地址空间中的内核空间,其实关联的都是同一块物理内存</strong>.<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402170006.png" srcset="/img/loading.gif" lazyload alt="Pasted image 20230402170006"><br>体现在MOS中为:<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png" srcset="/img/loading.gif" lazyload alt="Pasted image 20230319211651"></p>
+<ul>
+<li>内核空间<ul>
+<li>若虚拟地址处于 0x80000000~0x9fffffff (kseg0)，则将虚拟地址的最高位置 0 得到物理地址，通过 cache 访存。这一部分用于存放内核代码与数据结构。</li>
+<li>若虚拟地址处于 0xa0000000~0xbfffffff (kseg1)，则将虚拟地址的最高 3 位置 0 得到物理地址，不通过 cache 访存。这一部分可以用于映射外设(使用 MMIO(Memory-Mapped I&#x2F;O)技术)。</li>
+</ul>
+</li>
+<li>用户空间	<ul>
+<li>若虚拟地址处于 0x00000000~0x7fffffff (kuseg)，则需要通过 TLB 来获取物理地址, 通过 cache 访存。<blockquote>
+<p>关于kseg2: 0xC0000000-0xFFFFFFFF(1 GB)：这段地址只能在内核态下使用并且需要 MMU 中 TLB 将虚拟地址转换为物理地址。对这段地址的存取都会通过 cache。目前的实验中还没有涉及到这部分, 应该对应的是LINUX中的高端内存映射区, 暂时先不关注.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230402170735.png" srcset="/img/loading.gif" lazyload alt="Pasted image 20230402170735"></p>
+<p>在LAB2包括后续LAB3的实验过程中, 经常会困惑的一点是: 这个地址到底是虚拟地址, 物理地址还是内核虚拟地址? 这些地址之间有什么区别和联系? 能不能做一个归纳和分类? 没错, 现在就是在解答这个疑惑.</p>
+<h3 id="虚拟地址-VA"><a href="#虚拟地址-VA" class="headerlink" title="虚拟地址(VA)"></a>虚拟地址(VA)</h3><blockquote>
+<p>CPU 运行程序时通过访存指令发出访存请求，进行内存读写操作。在计算机组成原理等硬件实验中, CPU 通常直接发送物理地址，这是为了简化内存操作，让大家关注 CPU 内部的计算与控制逻辑。<br>而在实际程序中，访存、跳转等指令以及用于取指的 PC 寄存器中的访存目标地址都是虚拟地址。我们编写的 C 程序中也经常通过对指针解引用来进行访存，其中指针的值也会被视为虚拟地址，经过编译后生成相应的访存指令。</p>
+</blockquote>
+<p>也就是说, 不管是向MIPS传入的访存地址, 还是在C程序中使用的指针(只要是需要使用的指针, 比如说要取指针指向的值, 或者要传入memset函数等)都是虚拟地址.</p>
+<h3 id="内核虚拟地址-KVA"><a href="#内核虚拟地址-KVA" class="headerlink" title="内核虚拟地址(KVA)"></a>内核虚拟地址(KVA)</h3><p>内核虚拟地址也是虚拟地址的一部分, 但是由于其特殊性, 可以单独拎出来.</p>
+<ul>
+<li>虽然每个进程都具有自己独立的虚拟地址空间,但是这些虚拟地址空间中的内核空间,其实关联的都是同一块物理内存</li>
+<li>MOS 中采用 PADDR 与 KADDR 这两个宏就可以对位于 kseg0 的虚拟地址和对应的物理地址进行转换.<br>  很多常用的宏都是在操作kva, 比如说<code>PADDR</code>, <code>page2kva</code>等, 其本质原因是因为这些控制块, 结构等都在内核态中操作.</li>
+<li>值得注意的是, 页表都存在实际的物理内存中, 但是, 对页表进行操作时处于内核态，因此使用宏 KADDR 获得其位于 kseg0中的虚拟地址.</li>
+</ul>
+<h3 id="物理地址"><a href="#物理地址" class="headerlink" title="物理地址"></a>物理地址</h3><p>MIPS R3000 发出的地址均为虚拟地址，因此如果程序想访问某个物理地址，需要通过映射到该物理地址的虚拟地址来访问。<br>通常来说, 在页表映射时会容易出现物理地址, 此时通常都要将物理地址转换为虚拟地址再进行操作.</p>
+<h2 id="常用的宏和函数"><a href="#常用的宏和函数" class="headerlink" title="常用的宏和函数"></a>常用的宏和函数</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> PGSHIFT 12 <span class="hljs-comment">//页面的大小: 4K</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PADDR(kva) <span class="hljs-comment">//返回虚拟地址kva(必须位于kseg0)所对应的物理地址</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KADDR(pa)  <span class="hljs-comment">//返回物理地址所对应的虚拟地址kva(必须位于kseg0)</span></span><br><br><span class="hljs-comment">//Page指针转为该Page对应的物理页面的虚拟地址</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> u_long <span class="hljs-title function_">page2kva</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Page *pp)</span><br><span class="hljs-comment">//Page指针获得该Page对应的物理页面的物理地址</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> u_long <span class="hljs-title function_">page2pa</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Page *pp)</span><br><span class="hljs-comment">//物理地址转为Page指针</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-keyword">struct</span> Page *<span class="hljs-title function_">pa2page</span><span class="hljs-params">(u_long pa)</span><br><span class="hljs-comment">//Page指针获得该Page是第几页</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> u_long <span class="hljs-title function_">page2ppn</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Page *pp)</span><br><br><span class="hljs-comment">//解析VA的宏</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PDX(va) ((((u_long)(va)) &gt;&gt; 22) &amp; 0x03FF) <span class="hljs-comment">//获取页目录偏移</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PTX(va) ((((u_long)(va)) &gt;&gt; 12) &amp; 0x03FF) <span class="hljs-comment">//获取二级页表偏移</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PTE_ADDR(pte) ((u_long)(pte) &amp; ~0xFFF)    <span class="hljs-comment">//获取该pte对应的物理页面地址</span></span><br></code></pre></td></tr></table></figure>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">#操作系统</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">#内存管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OS_lab2_内存管理</div>
+      <div>https://pcpas.github.io/2023/04/04/OS-lab2-Summary/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>pcpa997</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年4月4日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/03/20/OS-lab1-Summary/" title="OS_lab1_内核启动">
+                        <span class="hidden-mobile">OS_lab1_内核启动</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

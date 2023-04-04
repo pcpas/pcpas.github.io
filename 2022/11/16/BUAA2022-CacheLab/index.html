@@ -1,0 +1,1214 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="pcpa997">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="BUAA计组Lab5-cache的课下实验部分优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUAA2022-CacheLab">
+<meta property="og:url" content="https://pcpas.github.io/2022/11/16/BUAA2022-CacheLab/index.html">
+<meta property="og:site_name" content="PCPA&#39;s world">
+<meta property="og:description" content="BUAA计组Lab5-cache的课下实验部分优化">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-11-16T10:11:24.000Z">
+<meta property="article:modified_time" content="2023-03-29T10:17:49.133Z">
+<meta property="article:author" content="pcpa997">
+<meta property="article:tag" content="计算机组成原理">
+<meta property="article:tag" content="Cache">
+<meta property="article:tag" content="性能优化">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  <title>BUAA2022-CacheLab - PCPA&#39;s world</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"pcpas.github.io","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>PCPA&#39;s world</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">BUAA2022-CacheLab</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-11-16 18:11" pubdate>
+          2022年11月16日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          56 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">BUAA2022-CacheLab</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="CacheLab（附Excellent优化思路）"><a href="#CacheLab（附Excellent优化思路）" class="headerlink" title="CacheLab（附Excellent优化思路）"></a>CacheLab（附Excellent优化思路）</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>因为这部分我感觉我学起来确实困难想不清楚，遂决定做个笔记整理一下。写着写着想到“干脆就发个博客和同学们交流一下吧”，因此这篇博客就产生了！没有放出所有的源代码，仅仅是提供一些思路上的梳理和帮助😀！</p>
+<p>作者才疏学浅，若内容有误，还请多多批评指正！</p>
+<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><h3 id="主存"><a href="#主存" class="headerlink" title="主存"></a>主存</h3><p>考虑主存地址为n位的计算机系统，主存大小即2<sup>n</sup>字节。</p>
+<p>以B &#x3D; 2<sup>b</sup>作为一个块的大小来和cache进行数据传输。</p>
+<p>此时任一地址可以表示为：</p>
+<table>
+<thead>
+<tr>
+<th>Block Number（n-b位）</th>
+<th>Offset（b位）</th>
+</tr>
+</thead>
+</table>
+<p>举个例子，若主存（64位）中存放了两个int类型（4字节）的变量a,b，那么：</p>
+<p><code>a：0x0000000000000000 -&gt; 0x0000000000000003</code></p>
+<p><code>b：0x0000000000000004 -&gt; 0x0000000000000007</code></p>
+<p>这里为了方便，我们把a，b十六进制的最后一位展开为二进制，其余位均为0，暂时忽略。</p>
+<p><code>a：0000 -&gt; 0011</code></p>
+<p><code>b：0100 -&gt; 0111</code></p>
+<p>不难想到，为了正确的储存和传输a，b，这里的块的大小应该为4个字节（b&#x3D;2），下同。</p>
+<blockquote>
+<p>值得注意的是b的大小是可以自己定的，因为取数就是地址+偏移，怎么都能取到！也可以让b&#x3D;3把a，b放在一个块里传输，但是这样就避开了我想讲的东西了！</p>
+</blockquote>
+<p>此时，剩下的62位自然成为a，b的Block Number，a的Block Number为0，b的为1。</p>
+<h3 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h3><p>这时，我们引入一个Cache结构，包含S&#x3D;2<sup>s</sup>个高速缓存组（set），每个组包含E个高速缓存行（line）。</p>
+<p>特别地，这里我们考虑一个s&#x3D;1，e&#x3D;1的cache结构，包含2个组，每组一行。</p>
+<p>我们希望达到两个效果：</p>
+<p><strong>1.主存中同组的那些块仅能映射到Cache中对应组的那些行中</strong></p>
+<p><strong>2.相邻的块能被分到不同的组</strong></p>
+<p>因此，我们这样划分地址：</p>
+<table>
+<thead>
+<tr>
+<th>Tag（n-s-b位）</th>
+<th>Set（s位）</th>
+<th>Offset（b位）</th>
+</tr>
+</thead>
+</table>
+<p>引入int变量<code>c：0x0000000000000008 -&gt; 0x000000000000000b</code></p>
+<p>最后四位：<code>1000 -&gt; 1011</code></p>
+<p>我们利用a，b，c来观察这种划分有什么好处：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Tag（61位）</th>
+<th>Set（1位）</th>
+<th>Offset（2位）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a</td>
+<td>000…00</td>
+<td>0</td>
+<td>00 -&gt; 11</td>
+</tr>
+<tr>
+<td>b</td>
+<td>000…00</td>
+<td>1</td>
+<td>00 -&gt; 11</td>
+</tr>
+<tr>
+<td>c</td>
+<td>000…01</td>
+<td>0</td>
+<td>00 -&gt; 11</td>
+</tr>
+</tbody></table>
+<p>可以看到，相邻的a，b不在同一组，而a，c在同一组，利用Tag来区分同一组内的不同块。</p>
+<p>实际上，对于任意的一对（s，b）的地址划分都具备这样的性质。这样划分非常巧妙，我们不用引入任何新的变量来储存信息，只需要单纯地根据地址就可以完成信息的分组和编号。</p>
+<p>而E代表cache内每一组能存放多少个block。主存中每两个block就有一个block属于第0组，这显然很多！属于同一组的block最多在cache中同时存在e个，否则就需要替换。</p>
+<h3 id="替换策略"><a href="#替换策略" class="headerlink" title="替换策略"></a>替换策略</h3><p>策略有很多，这里实现一个简单但是有效的。</p>
+<p>LRU策略的实现：</p>
+<ul>
+<li>缓存的每一块都设置一个计数器，初始时均为0。</li>
+<li>访问命中时，所有块的计数值与命中块的计数值进行比较，如果某块计数值小于命中块的计数值， 则该块的计数值加 1；如果该块的计数值大于命中块的计数值，则数值不变；最后将命中块的计数器清为0。</li>
+<li>访问未命中，需要替换&#x2F;装入时，则选择计数值最大的块被替换&#x2F;装入，其计数器清为0，而其它的计数器则加1（除了初始装入之外，计数值是不会出现相等情况的，可以思考一下为什么）。</li>
+<li>（照抄的指导书）</li>
+</ul>
+<h2 id="Part1-Cache模拟器"><a href="#Part1-Cache模拟器" class="headerlink" title="Part1-Cache模拟器"></a>Part1-Cache模拟器</h2><p>实现一个Cache模拟器</p>
+<p>这应该是一个较简单的部分，只要理解Cache的原理和构成就不难模拟。</p>
+<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p>-S&#x3D;2<sup>s</sup>个组</p>
+<p>​	-每个组包含e列</p>
+<p>​		-每一列能够储存valid,Tag和Block信息</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>1.初始化</p>
+<p>2.根据传入地址解析出必要信息，存取block</p>
+<p>3.实现LRU替换策略</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>此外，解析指令也非常重要，推荐使用<code>getopt</code>来解析命令行参数，使用<code>fscanf(reader, &quot;%llx,%d&quot;, &amp;address, &amp;size)</code>来解析文件内指令！</p>
+<h2 id="Part2-Cache友好的矩阵转置"><a href="#Part2-Cache友好的矩阵转置" class="headerlink" title="Part2-Cache友好的矩阵转置"></a>Part2-Cache友好的矩阵转置</h2><h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><blockquote>
+<p>给定Cache结构<code>s=5,E=1,b=5</code>，编写一个实现32x32矩阵转置的C语言程序，使得miss数尽可能小。</p>
+</blockquote>
+<h4 id="1-首先理解矩阵在内存中怎么储存"><a href="#1-首先理解矩阵在内存中怎么储存" class="headerlink" title="1.首先理解矩阵在内存中怎么储存"></a>1.首先理解矩阵在内存中怎么储存</h4><p>在b等于5的情况下，矩阵A[32][32]：</p>
+<table>
+<thead>
+<tr>
+<th>Set1</th>
+<th>Set2</th>
+<th>Set3</th>
+<th>Set4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block0</td>
+<td>Block1</td>
+<td>Block2</td>
+<td>Block3</td>
+</tr>
+<tr>
+<td>A[0][0]-A[0][7]</td>
+<td>A[0][8]-A[0][15]</td>
+<td>A[0][16]-A[0][23]</td>
+<td>A[0][24]-A[0][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set4</th>
+<th>Set5</th>
+<th>Set6</th>
+<th>Set7</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block4</td>
+<td>Block5</td>
+<td>Block6</td>
+<td>Block7</td>
+</tr>
+<tr>
+<td>A[1][0]-A[1][7]</td>
+<td>A[1][8]-A[1][15]</td>
+<td>A[1][16]-A[1][23]</td>
+<td>A[1][24]-A[1][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set8</th>
+<th>Set9</th>
+<th>Set10</th>
+<th>Set11</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block8</td>
+<td>Block9</td>
+<td>Block10</td>
+<td>Block11</td>
+</tr>
+<tr>
+<td>A[2][0]-A[2][7]</td>
+<td>A[2][8]-A[2][15]</td>
+<td>A[2][16]-A[2][23]</td>
+<td>A[2][24]-A[2][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set12</th>
+<th>Set13</th>
+<th>Set14</th>
+<th>Set15</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block12</td>
+<td>Block13</td>
+<td>Block14</td>
+<td>Block15</td>
+</tr>
+<tr>
+<td>A[3][0]-A[3][7]</td>
+<td>A[3][8]-A[3][15]</td>
+<td>A[3][16]-A[3][23]</td>
+<td>A[3][24]-A[3][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set16</th>
+<th>Set17</th>
+<th>Set18</th>
+<th>Set19</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block16</td>
+<td>Block17</td>
+<td>Block18</td>
+<td>Block19</td>
+</tr>
+<tr>
+<td>A[4][0]-A[4][7]</td>
+<td>A[4][8]-A[4][15]</td>
+<td>A[4][16]-A[4][23]</td>
+<td>A[4][24]-A[4][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set20</th>
+<th>Set21</th>
+<th>Set22</th>
+<th>Set23</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block20</td>
+<td>Block21</td>
+<td>Block22</td>
+<td>Block23</td>
+</tr>
+<tr>
+<td>A[5][0]-A[5][7]</td>
+<td>A[5][8]-A[5][15]</td>
+<td>A[5][16]-A[5][23]</td>
+<td>A[5][24]-A[5][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set24</th>
+<th>Set25</th>
+<th>Set26</th>
+<th>Set27</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block24</td>
+<td>Block25</td>
+<td>Block26</td>
+<td>Block27</td>
+</tr>
+<tr>
+<td>A[6][0]-A[6][7]</td>
+<td>A[6][8]-A[6][15]</td>
+<td>A[6][16]-A[6][23]</td>
+<td>A[6][24]-A[6][31]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set28</th>
+<th>Set29</th>
+<th>Set30</th>
+<th>Set31</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block28</td>
+<td>Block29</td>
+<td>Block30</td>
+<td>Block31</td>
+</tr>
+<tr>
+<td>A[7][0]-A[7][7]</td>
+<td>A[7][8]-A[7][15]</td>
+<td>A[7][16]-A[7][23]</td>
+<td>A[7][24]-A[7][31]</td>
+</tr>
+</tbody></table>
+<p>这里我只列出来了A[0][0] - A[7][31]这8*32个矩阵元素，之后还有3组这样的元素没有列出。s&#x3D;5，cache中一共只有32个set，因此以后的3组元素的Set编号将会与以上相同，即Set0-31，因此，例如说，A[0][0]和A[8][0]两个数在Cache中将会因为相同的组编号而发生冲突（e&#x3D;1）. 此外，如果要访问B的元素B[i][j]，因为题目中强调A和B的起始地址间隔保证了是Cache容量的整倍数，B[i][j]和A[i][j]也会发生冲突，即属于同一个组（Set）。</p>
+<h4 id="2-优化原理"><a href="#2-优化原理" class="headerlink" title="2.优化原理"></a>2.优化原理</h4><p>下面给出一个简单分析：</p>
+<p>实现一个32x32的矩阵转置至少要两步：</p>
+<p>1.将所有数从矩阵A里读出来</p>
+<p>2.将所有取出来的数写进矩阵B</p>
+<p>读和写都记一次内存访问，一个块可以存8个数，要获取一个块至少要miss一次（miss或者miss+eviction）</p>
+<p>因此，最少的miss次数也要有 32x32x2&#x2F;8 &#x3D; 256次</p>
+<p>为了实现这个miss次数，我们必须保证对于每个块都只访问一次！换言之，我们优化的任务也就是尽量减少对同一个块的反复访问！</p>
+<h4 id="3-分块优化"><a href="#3-分块优化" class="headerlink" title="3.分块优化"></a>3.分块优化</h4><p>考虑一个普通的矩阵转置函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//M=32 N=32</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">trans</span><span class="hljs-params">(<span class="hljs-type">int</span> M, <span class="hljs-type">int</span> N, <span class="hljs-type">int</span> A[N][M], <span class="hljs-type">int</span> B[M][N])</span><br>&#123;<br>    <span class="hljs-type">int</span> i, j;<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; N; i++) &#123;<br>        <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; M; j++) &#123;<br>            B[j][i] = A[i][j];<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这样的访问不具有良好的空间局部性。</p>
+<p>为什么？就只看程序开始的一小部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">   i = <span class="hljs-number">0</span>: &#123;<br>      <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">8</span>; j++) <span class="hljs-comment">//loop1</span><br>          B[j][i] = A[i][j];<br>      <span class="hljs-keyword">for</span> (j = <span class="hljs-number">8</span>; j &lt; <span class="hljs-number">16</span>; j++) <span class="hljs-comment">//loop2</span><br>          B[j][i] = A[i][j];<br>&#125;  <br></code></pre></td></tr></table></figure>
+
+<p>loop1中B[0-7][0]分别存放在8个块里，因此取这8个块分别访问，产生8个miss，紧接着loop2中的B[8-15][0]和B[0-7][0]组号相同，会把B[0-7][0]全部替换掉！loop1将这八个块都访问了，但是却都只利用了1&#x2F;8！</p>
+<p>不难想到一种分块方法，将32x32的矩阵分成16个8x8的子矩阵，把loop1访问的8个块充分利用了再替换成下8个块，从而减少miss数。下面实战一下！</p>
+<h3 id="16X16矩阵"><a href="#16X16矩阵" class="headerlink" title="16X16矩阵"></a>16X16矩阵</h3><h4 id="1-题目分析"><a href="#1-题目分析" class="headerlink" title="1.题目分析"></a>1.题目分析</h4><p>题目中给的Cache结构是<code>s=4,E=1,b=5</code>，这和上面例子是不一样的！请注意。</p>
+<p>同理，分析一下矩阵在内存中的排布。</p>
+<table>
+<thead>
+<tr>
+<th>Set0</th>
+<th>Set1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block0</td>
+<td>Block1</td>
+</tr>
+<tr>
+<td>A[0][0]-A[0][7]</td>
+<td>A[0][8]-A[0][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set2</th>
+<th>Set3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block2</td>
+<td>Block3</td>
+</tr>
+<tr>
+<td>A[1][0]-A[1][7]</td>
+<td>A[1][8]-A[1][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set4</th>
+<th>Set5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block4</td>
+<td>Block5</td>
+</tr>
+<tr>
+<td>A[2][0]-A[2][7]</td>
+<td>A[2][8]-A[2][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set6</th>
+<th>Set7</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block6</td>
+<td>Block7</td>
+</tr>
+<tr>
+<td>A[3][0]-A[3][7]</td>
+<td>A[3][8]-A[3][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set8</th>
+<th>Set9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block8</td>
+<td>Block9</td>
+</tr>
+<tr>
+<td>A[4][0]-A[4][7]</td>
+<td>A[4][8]-A[4][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set10</th>
+<th>Set11</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block10</td>
+<td>Block11</td>
+</tr>
+<tr>
+<td>A[5][0]-A[5][7]</td>
+<td>A[5][8]-A[5][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set12</th>
+<th>Set13</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block12</td>
+<td>Block13</td>
+</tr>
+<tr>
+<td>A[6][0]-A[6][7]</td>
+<td>A[6][8]-A[6][15]</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Set14</th>
+<th>Set15</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Block14</td>
+<td>Block15</td>
+</tr>
+<tr>
+<td>A[7][0]-A[7][7]</td>
+<td>A[7][8]-A[7][15]</td>
+</tr>
+</tbody></table>
+<p>同样的，我只列出来了A[0-7][0-15]的这部分，剩下一半的组编号与这一半完全相同。</p>
+<p><strong>对于16x16矩阵我们该怎么分块？32x32是8x8，那么16x16是不是该分成4x4？什么是我们选择分块策略的决定性因素？</strong></p>
+<p>如果你不知道这个问题的答案，那么我也没办法，<del>因为我也不知道</del>，但是我们可以从下面的做法中得到启发。</p>
+<p>（如果有人研究出了公式请务必教教我，我感觉是可以推导的，但是我不会。。。）</p>
+<h4 id="2-解法"><a href="#2-解法" class="headerlink" title="2.解法"></a>2.解法</h4><p>首先确定目标： 16x16x2&#x2F;8 &#x3D; 64次，外加额外的3次miss（教程有说明），我们优化的极限是67次。</p>
+<p>我们选取8x8的分块策略。</p>
+<p>下面展示其中的一块：位置代表元素的位置，值代表元素所在组</p>
+<table>
+<thead>
+<tr>
+<th>Set</th>
+<th>A[i]</th>
+<th>[j]</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>6</td>
+<td>3</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>8</td>
+<td>4</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>10</td>
+<td>5</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>12</td>
+<td>6</td>
+<td>0-7</td>
+</tr>
+<tr>
+<td>14</td>
+<td>7</td>
+<td>0-7</td>
+</tr>
+</tbody></table>
+<p>对这一块进行充分利用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (k = <span class="hljs-number">0</span>; k &lt; <span class="hljs-number">8</span>; k++)<span class="hljs-comment">//8x8的分块,k代表一个块的开始位置</span><br>&#123;<br>    <span class="hljs-comment">//取A[k][0-7]会占用Cache的第 2k-2 组</span><br>    tmp0 = A[k][<span class="hljs-number">0</span>];<br>    tmp1 = A[k][<span class="hljs-number">1</span>];<br>    tmp2 = A[k][<span class="hljs-number">2</span>];<br>    tmp3 = A[k][<span class="hljs-number">3</span>];<br>    tmp4 = A[k][<span class="hljs-number">4</span>];<br>    tmp5 = A[k][<span class="hljs-number">5</span>];<br>    tmp6 = A[k][<span class="hljs-number">6</span>];<br>    tmp7 = A[k][<span class="hljs-number">7</span>];<br>    <span class="hljs-comment">//取B[0-7][k]占用Set全部偶数组</span><br>    B[<span class="hljs-number">0</span>][k] = tmp0;<br>    B[<span class="hljs-number">1</span>][k] = tmp1;<br>    B[<span class="hljs-number">2</span>][k] = tmp2;<br>    B[<span class="hljs-number">3</span>][k] = tmp3;<br>    B[<span class="hljs-number">4</span>][k] = tmp4;<br>    B[<span class="hljs-number">5</span>][k] = tmp5;<br>    B[<span class="hljs-number">6</span>][k] = tmp6;<br>    B[<span class="hljs-number">7</span>][k] = tmp7;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>分析：对于每一个k，读取A造成一次miss。k&#x3D;0时，读取B造成8次miss，k&gt;0时，由于读取A会挤占掉一个B的block，因此每个k会导致B重读一次，造成1次miss。</p>
+<p>如果不算A,B相互替换而造成的miss数，A,B的block利用率均为100%，而相互排挤导致了8次额外的miss。这个块一共产生了8+7+8&#x3D;23次miss。</p>
+<p>那我们这样优化的结果是不是 24*4+3 &#x3D; 99次呢？</p>
+<p>还真不是，考虑以下情景：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (k = <span class="hljs-number">8</span>; k &lt; <span class="hljs-number">15</span>; k++)<span class="hljs-comment">//8x8的分块,k代表一个块的开始位置</span><br>&#123;<br>    <span class="hljs-comment">//取A[k][0-7]会占用Cache的第 2k-2 组</span><br>    tmp0 = A[k][<span class="hljs-number">0</span>];<br>    tmp1 = A[k][<span class="hljs-number">1</span>];<br>    tmp2 = A[k][<span class="hljs-number">2</span>];<br>    tmp3 = A[k][<span class="hljs-number">3</span>];<br>    tmp4 = A[k][<span class="hljs-number">4</span>];<br>    tmp5 = A[k][<span class="hljs-number">5</span>];<br>    tmp6 = A[k][<span class="hljs-number">6</span>];<br>    tmp7 = A[k][<span class="hljs-number">7</span>];<br>    <span class="hljs-comment">//取B[0-7][k]占用Set全部奇数组</span><br>    B[<span class="hljs-number">0</span>][k] = tmp0;<br>    B[<span class="hljs-number">1</span>][k] = tmp1;<br>    B[<span class="hljs-number">2</span>][k] = tmp2;<br>    B[<span class="hljs-number">3</span>][k] = tmp3;<br>    B[<span class="hljs-number">4</span>][k] = tmp4;<br>    B[<span class="hljs-number">5</span>][k] = tmp5;<br>    B[<span class="hljs-number">6</span>][k] = tmp6;<br>    B[<span class="hljs-number">7</span>][k] = tmp7;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们发现，这一块居然没有冲突！这一块只产生16个miss。</p>
+<p>事实上，只有对角线上的块才会产生冲突，而别的块都没有这样的冲突！</p>
+<p>因此，最后的miss数是： 23*2 + 16*2 +3 &#x3D; 81！</p>
+<p>这不就过了吗！</p>
+<h4 id="3-Excellent优化思路"><a href="#3-Excellent优化思路" class="headerlink" title="3.Excellent优化思路"></a>3.Excellent优化思路</h4><p>聪明如你一定已经知道怎么优化了！</p>
+<p>不知道的话还是要自己多思考一下哦~</p>
+<p>没错，对角线上的块会产生14次额外的miss，这是我们不能忍受的。</p>
+<p>怎么才能避免A和B的冲突？一个解决方案是开64个临时变量，将A的数据全部读取暂存，再全部放入B中。</p>
+<p>很显然，上面只是我说着玩的，因为限制了只能有12个临时变量，那该怎么办呢？</p>
+<p>没错，用B来暂存一下。寄存器有限，但是B我们可以随意更改呀~</p>
+<p>核心思想是先暂存在B里，等A的下一行的元素访问完了再转置。</p>
+<p>愿意写的自己写写吧,可以达到理论最优67个。</p>
+<h3 id="32X32矩阵"><a href="#32X32矩阵" class="headerlink" title="32X32矩阵"></a>32X32矩阵</h3><h4 id="1-解法"><a href="#1-解法" class="headerlink" title="1.解法"></a>1.解法</h4><p>都写到这里了，我也懒得再画一遍内存图了，大家自己画一画就好了。基本的思想和之前还是一模一样的！</p>
+<p>唯一不同于16x16的是，我们发现如果8x8分块的话，不仅A,B之间有冲突，甚至就连A,B内部上四行和下四行都有冲突！</p>
+<p>难道要用4x4？不行，4x4引入新问题：一个block有8个数，你都只用4个，那miss率不得上天去了！</p>
+<p>因此我们想要结合两者的优点：使用8x8的分块，但是在内部以4x4为单位操作，先完全操作上半4x8，再操作下半。</p>
+<blockquote>
+<p>提示：在考虑能不能AC而不是Excellent时，应先不要考虑A1A2 和B1B2的冲突，而是着眼于A1A2 和A3A4的冲突</p>
+<p>因为只有对角线块会产生A,B之间的冲突，而每个块A1A2 和 A3A4都是冲突的！</p>
+</blockquote>
+<p>如果把一个8x8的块分为4份：</p>
+<table>
+<thead>
+<tr>
+<th><strong>A1</strong></th>
+<th><strong>A2</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A3</strong></td>
+<td><strong>A4</strong></td>
+</tr>
+</tbody></table>
+<p>块内的操作可以分成以下步骤:</p>
+<ul>
+<li>步骤一<ul>
+<li>将A1, A2数据复制给B1, B2</li>
+</ul>
+</li>
+<li>步骤二<ul>
+<li>将A3的数据传给B2，同时，B2的数据传给B3（这里注意如何利用8个临时变量来保证不会产生额外的miss，这个比较tricky）</li>
+</ul>
+</li>
+<li>步骤三<ul>
+<li>将A4复制给B4</li>
+</ul>
+</li>
+</ul>
+<p>代码就自己写啦~</p>
+<h4 id="2-miss分析"><a href="#2-miss分析" class="headerlink" title="2.miss分析"></a>2.miss分析</h4><p>非对角线块只有上下冲突，我们已经解决了，因此只有16个miss！还是很牛的！</p>
+<p>但是还有4大个对角线块，我们没有做任何优化，因此每个对角线块都会额外产生19个miss！恁多！</p>
+<p>幸运的是，即便如此，总miss仍然小于400！过了！！那要不然就不优化了吧。</p>
+<h4 id="3-Excellent优化思路-1"><a href="#3-Excellent优化思路-1" class="headerlink" title="3.Excellent优化思路"></a><strong>3.Excellent优化思路</strong></h4><p>不行，就是要优化！</p>
+<p>同样的，优化的思路就是去尝试解决对角线块的冲突问题。</p>
+<p>我的想法很简单，块内有3个操作步骤，每一步都可以当做独立的一部分进行优化（就像16x16矩阵中的那样）</p>
+<p>但是我没办法优化优化到理论最优解，作业太多，遂放弃。</p>
+<p>具体就不细讲了，感兴趣的自己可以研究一下。</p>
+<p>补：</p>
+<p><strong>我找到一篇文章，里面的思路可以把这道题优化到理论最优解259次（只能膜了，非常巧妙）</strong></p>
+<p><strong><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/387662272">https://zhuanlan.zhihu.com/p/387662272</a></strong></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" class="category-chain-item">计算机组成原理</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">#计算机组成原理</a>
+      
+        <a href="/tags/Cache/">#Cache</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>BUAA2022-CacheLab</div>
+      <div>https://pcpas.github.io/2022/11/16/BUAA2022-CacheLab/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>pcpa997</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年11月16日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/03/20/OS-lab1-Summary/" title="OS_lab1_内核启动">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">OS_lab1_内核启动</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/09/MediaPipe%E6%89%AB%E7%9B%B2/" title="MediaPipe扫盲">
+                        <span class="hidden-mobile">MediaPipe扫盲</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
