@@ -1,0 +1,752 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="pcpa997">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="BUAA_OS_Lab4总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OS_lab4_系统调用和fork">
+<meta property="og:url" content="https://pcpas.github.io/2023/05/22/OS-lab5-Summary/index.html">
+<meta property="og:site_name" content="PCPA&#39;s world">
+<meta property="og:description" content="BUAA_OS_Lab4总结">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141829.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230522152337.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141939.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144052.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144340.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230519145425.png">
+<meta property="article:published_time" content="2023-05-22T05:03:39.000Z">
+<meta property="article:modified_time" content="2023-05-26T05:22:55.304Z">
+<meta property="article:author" content="pcpa997">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141829.png">
+  
+  
+  <title>OS_lab4_系统调用和fork - PCPA&#39;s world</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"pcpas.github.io","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>PCPA&#39;s world</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">OS_lab4_系统调用和fork</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-22 13:03" pubdate>
+          2023年5月22日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          114 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">OS_lab4_系统调用和fork</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="文件系统概述"><a href="#文件系统概述" class="headerlink" title="文件系统概述"></a>文件系统概述</h1><p>广义上，一切带标识的、在逻辑上有完整意义的字节序列都可以称为“文件”。文件系统将外部设备中的资源抽象为文件，从而可以统一管理外部设备，实现对数据的存储、组织、访问和修改等操作。在本实验中，我们拟实现一个精简的文件系统，其中需要对<strong>三种设备</strong>进行统一管理， 即文件设备（file，即狭义的“文件”）、控制台（console）和管道（pipe）。其中，后两者将在下一个实验“管道与 Shell”中进行使用。</p>
+<p>下图为我们文件系统的总览：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141829.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>还有一张图很好的展示了不同层级的抽象函数调用关系。</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230522152337.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h1 id="外部存储设备驱动"><a href="#外部存储设备驱动" class="headerlink" title="外部存储设备驱动"></a>外部存储设备驱动</h1><p>通常，我们需要按一定顺序读写设备寄存器，来实现对外部设备的操作。为了将这种操作转化为具有通用、明确语义的接口，必须实现相应的驱动程序。在本部分，我们将实现 IDE 磁盘的用户态驱动程序，该驱动程序将通过系统调用的方式陷入内核，对磁盘镜像进行读写操作。<br>MOS已经在<code>kern/console.c</code>中使用MMIO技术为我们实现了简单的console驱动程序, 我们的实验里需要我们实现IDE 磁盘驱动，也就是下图的部分：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141939.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>相比于console驱动程序, IDE的驱动程序更加复杂, 并且本次要编写的驱动程序完全运行在用户空间。</p>
+<h2 id="内存映射-I-x2F-O-MMIO"><a href="#内存映射-I-x2F-O-MMIO" class="headerlink" title="内存映射 I&#x2F;O (MMIO)"></a>内存映射 I&#x2F;O (MMIO)</h2><p>几乎每一种 外设都是通过读写设备上的寄存器来进行数据通信，外设寄存器也称为 I&#x2F;O 端口，主要用来访问 I&#x2F;O 设备。外设寄存器通常包括控制寄存器、状态寄存器和数据寄存器，这些寄存器被映射到<strong>指定的物理地址空间</strong>。</p>
+<p>IDE 磁盘驱动程序位于用户空间，用户态进程若是直接 读写内核虚拟地址将会由处理器引发一个地址错误（ADEL&#x2F;S）。所以对于设备的读写必须通过 系统调用来实现。<br>因此我们引入<code>sys_write_dev</code> 和 <code>sys_read_dev</code> 两个系统调用:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//这里使用定义的宏也许会更好? </span><br><span class="hljs-comment">//但是因为没有引用头文件并不能使用...</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title function_">is_illegal_pa_range</span><span class="hljs-params">(u_int pa, u_int len)</span> &#123;<br>	<span class="hljs-keyword">if</span> (len &lt;= <span class="hljs-number">0</span>) <br>		<span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">if</span>(pa &gt;= <span class="hljs-number">0x10000000</span> &amp;&amp; pa + len &lt;= <span class="hljs-number">0x10000000</span> + <span class="hljs-number">0x20</span>)<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">if</span>(pa &gt;= <span class="hljs-number">0x13000000</span> &amp;&amp; pa + len &lt;= <span class="hljs-number">0x13000000</span> + <span class="hljs-number">0x4200</span>)<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">if</span>(pa &gt;= <span class="hljs-number">0x15000000</span> &amp;&amp; pa + len &lt;= <span class="hljs-number">0x15000000</span> + <span class="hljs-number">0x200</span>)<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">sys_write_dev</span><span class="hljs-params">(u_int va, u_int pa, u_int len)</span> &#123;<br>	<span class="hljs-comment">/* Exercise 5.1: Your code here. (1/2) */</span><br>	<span class="hljs-keyword">if</span>(is_illegal_va_range(va, len))<br>		<span class="hljs-keyword">return</span> -E_INVAL;<br>	<span class="hljs-keyword">if</span>(is_illegal_pa_range(pa, len))<br>		<span class="hljs-keyword">return</span> -E_INVAL;<br>	<span class="hljs-comment">//注意地址转换</span><br>	<span class="hljs-built_in">memcpy</span>(pa+KSEG1, va, len);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">sys_read_dev</span><span class="hljs-params">(u_int va, u_int pa, u_int len)</span> &#123;<br>	<span class="hljs-comment">/* Exercise 5.1: Your code here. (2/2) */</span><br>	<span class="hljs-keyword">if</span>(is_illegal_va_range(va, len))<br>		<span class="hljs-keyword">return</span> -E_INVAL;<br>	<span class="hljs-keyword">if</span>(is_illegal_pa_range(pa, len))<br>		<span class="hljs-keyword">return</span> -E_INVAL;<br>	<span class="hljs-comment">//注意地址转换</span><br>	<span class="hljs-built_in">memcpy</span>(va, pa+KSEG1, len);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>通过这两个系统调用，我们就可以对IDE磁盘映射到内核空间的I&#x2F;O寄存器进行读写了。</p>
+<h2 id="IDE磁盘"><a href="#IDE磁盘" class="headerlink" title="IDE磁盘"></a>IDE磁盘</h2><blockquote>
+<p>下面简单介绍与磁盘相关的基本知识，首先是几个基本概念： </p>
+<ol>
+<li>扇区 (sector): 磁盘盘片被划分成很多扇形的区域，这些区域叫做扇区。<strong>扇区是磁盘执行读写操作的单位</strong>，一般是 <strong>512 字节</strong>。扇区的大小是一个磁盘的硬件属性。 </li>
+<li>磁道 (track): 盘片上以盘片中心为圆心，不同半径的同心圆。 </li>
+<li>柱面 (cylinder): 硬盘中，不同盘片相同半径的磁道所组成的圆柱面。 </li>
+<li>磁头 (head): 每个磁盘有两个面，每个面都有一个磁头。当对磁盘进行读写操作时，磁头在盘片上快速移动。</li>
+</ol>
+</blockquote>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144052.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>接下来我们看看IDE内核的I&#x2F;O寄存器映射:<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144340.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>通过系统调用<code>sys_write_dev</code> 和 <code>sys_read_dev</code>,我们可以读写寄存器的值,从而实现对IDE磁盘的读写。</p>
+<h1 id="文件系统结构"><a href="#文件系统结构" class="headerlink" title="文件系统结构"></a>文件系统结构</h1><h2 id="磁盘空间的基本布局"><a href="#磁盘空间的基本布局" class="headerlink" title="磁盘空间的基本布局"></a>磁盘空间的基本布局</h2><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230519145425.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>不同于扇区，磁盘块是一个<strong>虚拟概念</strong>，是操作系统与磁盘交互的最小单位；操作系统将相邻的扇区组合在一起，形成磁盘块进行整体操作。<br>磁盘块的大小由操作系统决定，一般由 2 的 n 次方个扇区构成。</p>
+<p>MOS 操作系统把磁盘最开始的一个磁盘块 (4096 字节) 当作<strong>引导扇区和分区表</strong>使用。接下来的一个磁盘块作为**超级块 (Super Block)**，用来描述文件系统的基本信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Super</span> </span><br><span class="hljs-class">&#123;</span> <br>	u_int s_magic; <span class="hljs-comment">// Magic number: FS_MAGIC </span><br>	u_int s_nblocks; <span class="hljs-comment">// Total number of blocks on disk</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> <span class="hljs-title">s_root</span>;</span> <span class="hljs-comment">// Root directory node </span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="磁盘资源管理"><a href="#磁盘资源管理" class="headerlink" title="磁盘资源管理"></a>磁盘资源管理</h2><p>在文件系统中，我们使用<strong>位图 (Bitmap) 法</strong>来管理空闲的磁盘资源，用一个二进制位 bit 标识磁盘中的一个磁盘块的使用情况（1 表示空闲，0 表示占用）。<br>首先来梳理一下定义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//disk-&gt;以磁盘块为单位</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Block</span> &#123;</span><br>    <span class="hljs-type">uint8_t</span> data[BY2BLK];<br>    <span class="hljs-type">uint32_t</span> type;<br>&#125; disk[NBLOCK];<br><span class="hljs-comment">//需要多少block来装位图(天花板除)</span><br>nbitblock = (NBLOCK + BIT2BLK - <span class="hljs-number">1</span>) / BIT2BLK;<br><span class="hljs-comment">//初始化时,标记为空闲</span><br><span class="hljs-built_in">memset</span>(disk[<span class="hljs-number">2</span> + i].data, <span class="hljs-number">0xff</span>, BY2BLK);<br><span class="hljs-comment">//但是如果最后有一些多余的bit,全部标记为占用</span><br><span class="hljs-built_in">memset</span>(disk[<span class="hljs-number">2</span> + (nbitblock - <span class="hljs-number">1</span>)].data + diff, <span class="hljs-number">0x00</span>, BY2BLK - diff);<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//bitmap-&gt;将磁盘中的位图读入文件系统(通过read_bitmap)</span><br><span class="hljs-comment">//bitmap数组的一个成员可以存放32位</span><br><span class="hljs-type">uint32_t</span> *bitmap;<br><span class="hljs-comment">//Mark a block as free in the bitmap</span><br>bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-number">1</span> &lt;&lt; (blockno % <span class="hljs-number">32</span>));<br></code></pre></td></tr></table></figure>
+
+<h2 id="文件的描述和管理"><a href="#文件的描述和管理" class="headerlink" title="文件的描述和管理"></a>文件的描述和管理</h2><p>操作系统要想管理一类资源，就得有相应的数据结构。对于描述和管理文件来说，一般使用 文件控制块（File 结构体）。<br>此处需要注意, 不论是f_direct数组的内容, 还是f_indirect, 都是uint32_t, 即这不是传统意义上的指针, 而是指disk数组使用的bno.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//size为256B</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> &#123;</span><br>    <span class="hljs-type">char</span> f_name[MAXNAMELEN]; <span class="hljs-comment">// filename</span><br>    <span class="hljs-type">uint32_t</span> f_size;     <span class="hljs-comment">// file size in bytes</span><br>    <span class="hljs-type">uint32_t</span> f_type;     <span class="hljs-comment">// file type</span><br>    <span class="hljs-type">uint32_t</span> f_direct[NDIRECT];<br>    <span class="hljs-type">uint32_t</span> f_indirect;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">f_dir</span>;</span> <span class="hljs-comment">// the pointer to the dir where this file is in, valid only in memory.</span><br>    <span class="hljs-type">char</span> f_pad[BY2FILE - MAXNAMELEN - (<span class="hljs-number">3</span> + NDIRECT) * <span class="hljs-number">4</span> - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">void</span> *)];<br>&#125; __attribute__((aligned(<span class="hljs-number">4</span>), packed));<br></code></pre></td></tr></table></figure>
+
+<h2 id="块缓存"><a href="#块缓存" class="headerlink" title="块缓存"></a>块缓存</h2><p>我理解的块缓存: 因为文件进程的需要, 我们希望能使用虚拟地址直接实现对磁盘的读写, 但是实际上我们只能调用磁盘驱动非常复杂地进行操作.<br>解决办法就是将磁盘直接全部映射到文件服务进程虚拟空间的某处, 如果读取就可以直接读取, 如果发生了修改就将缓存写回磁盘, 从而提高了效率.</p>
+<h1 id="梳理调用关系"><a href="#梳理调用关系" class="headerlink" title="梳理调用关系"></a>梳理调用关系</h1><h2 id="ide磁盘"><a href="#ide磁盘" class="headerlink" title="ide磁盘"></a>ide磁盘</h2><p>ide磁盘中的寄存器会映射在内核空间中, 允许我们在此基础上建立驱动读写ide.</p>
+<h2 id="内核"><a href="#内核" class="headerlink" title="内核"></a>内核</h2><p>内核通过接受来自驱动程序的<code>sys_read_dev</code>和<code>sys_write_dev</code>来读写寄存器</p>
+<h2 id="磁盘驱动–ide-c"><a href="#磁盘驱动–ide-c" class="headerlink" title="磁盘驱动–ide.c"></a>磁盘驱动–ide.c</h2><p>在驱动层次, 我们封装了<code>ide_write</code>和<code>ide_read</code>来读写磁盘, 驱动属于文件进程的一部分, 为文件提供操作磁盘的方法.</p>
+<h2 id="文件系统底层部分–fs-c"><a href="#文件系统底层部分–fs-c" class="headerlink" title="文件系统底层部分–fs.c"></a>文件系统底层部分–fs.c</h2><p>此时, 大多数操作是对进程的块缓存进行操作, 最后再调用驱动对磁盘修改.<br>下面是fs.c中提供的对缓存区的一些操作函数, 借助这些函数, 我们可以比较轻松地操作缓存区了,此时的操作主要以block为单位:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> *<span class="hljs-title function_">diskaddr</span><span class="hljs-params">(u_int blockno)</span><span class="hljs-comment">//查块对应的虚拟地址</span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">va_is_mapped</span><span class="hljs-params">(<span class="hljs-type">void</span> *va)</span><br><span class="hljs-type">void</span> *<span class="hljs-title function_">block_is_mapped</span><span class="hljs-params">(u_int blockno)</span><span class="hljs-comment">//调用va_is_mapped</span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">va_is_dirty</span><span class="hljs-params">(<span class="hljs-type">void</span> *va)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">block_is_dirty</span><span class="hljs-params">(u_int blockno)</span><span class="hljs-comment">//调用va_is_mapped和va_is_dirty</span><br><br><span class="hljs-comment">//为va对应的物理页加上PTE_DIRTY权限</span><br><span class="hljs-comment">//diskaddr, va_is_mapped, va_is_dirty, syscall_mem_map</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">dirty_block</span><span class="hljs-params">(u_int blockno)</span><br><span class="hljs-comment">//将缓存内容写入对应的磁盘块</span><br><span class="hljs-comment">//block_is_mapped, diskaddr, ide_write</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">write_block</span><span class="hljs-params">(u_int blockno)</span><br><br><span class="hljs-comment">//将磁盘块写入缓存区,将缓存的va保存在blk中返回</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">read_block</span><span class="hljs-params">(u_int blockno, <span class="hljs-type">void</span> **blk, u_int *isnew)</span><br><span class="hljs-comment">//为block申请一个物理页</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">map_block</span><span class="hljs-params">(u_int blockno)</span><br><span class="hljs-comment">//Unmap a disk block in cache(会将缓存写回)</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">unmap_block</span><span class="hljs-params">(u_int blockno)</span><br><span class="hljs-comment">//查询bitmap中block是否空闲(不涉及缓存)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">block_is_free</span><span class="hljs-params">(u_int blockno)</span><br><span class="hljs-comment">//修改bitmap, 标记某个block为free(没有清空内容)</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">free_block</span><span class="hljs-params">(u_int blockno)</span><br><span class="hljs-comment">//Search in the bitmap for a free block and allocate it.(同时会修改bitmap)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">alloc_block_num</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br><span class="hljs-comment">//Allocate a block -- first find a free block in the bitmap, then map it into memory.</span><br><span class="hljs-comment">//调用alloc_block_num,map_block,free_block</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">alloc_block</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br><br><span class="hljs-comment">//  Initialize the file system.</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">fs_init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> &#123;<br>    read_super();<br>    check_write_block();<br>    read_bitmap();<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>接下来是一些更上一级的函数,这些函数的特点是以file为单位:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//找到某文件的第filebno个块在整个磁盘的bno的指针*ppdiskbno, 如果alloc=1, 那么会在没有indirect块的时候帮忙建立</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_block_walk</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int filebno, <span class="hljs-type">uint32_t</span> **ppdiskbno, u_int alloc)</span><br><span class="hljs-comment">//将diskbno的值设置为某文件的第filebno个块在整个磁盘的bno</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_map_block</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int filebno, u_int *diskbno, u_int alloc)</span><br><span class="hljs-comment">//删掉文件的第filebno个块</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_clear_block</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int filebno)</span><br><span class="hljs-comment">//得到文件的第filebno个块的va</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_get_block</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int filebno, <span class="hljs-type">void</span> **blk)</span><br><span class="hljs-comment">//Mark the offset/BY2BLK&#x27;th block dirty in file f.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_dirty</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int offset)</span><br><span class="hljs-comment">//Find a file named &#x27;name&#x27; in the directory &#x27;dir&#x27;. If found, set *file to it.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">dir_lookup</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *dir, <span class="hljs-type">char</span> *name, <span class="hljs-keyword">struct</span> File **file)</span><br><span class="hljs-comment">//在dir下申请一个新的File,并借助file返回</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">dir_alloc_file</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *dir, <span class="hljs-keyword">struct</span> File **file)</span><br><span class="hljs-comment">//用path找到对应的File结构体,用pfile返回</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">walk_path</span><span class="hljs-params">(<span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> File **pdir, <span class="hljs-keyword">struct</span> File **pfile, <span class="hljs-type">char</span> *lastelem)</span><br></code></pre></td></tr></table></figure>
+
+<p>在此基础上, 还有几个最能代表这一层次的函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//用path找到对应的File结构体,用file返回</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_open</span><span class="hljs-params">(<span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> File **file)</span><br><span class="hljs-comment">//使用path创建文件</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_create</span><span class="hljs-params">(<span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> File **file)</span><br><span class="hljs-comment">//文件大小发生变化后, 释放不需要的磁盘块(如果更大则不做处理)</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">file_truncate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int newsize)</span><br><span class="hljs-comment">//将file的缓存写入磁盘</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">file_flush</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f)</span><br><span class="hljs-comment">//设置文件的大小</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_set_size</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f, u_int newsize)</span><br><span class="hljs-comment">//将所有的缓存写入磁盘</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">fs_sync</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br><span class="hljs-comment">//关闭文件: 将相关缓存写入</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">file_close</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f)</span><br><span class="hljs-comment">//删除文件:名字清空/磁盘块全部释放</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_remove</span><span class="hljs-params">(<span class="hljs-type">char</span> *path)</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="文件系统服务层–serv-c"><a href="#文件系统服务层–serv-c" class="headerlink" title="文件系统服务层–serv.c"></a>文件系统服务层–serv.c</h2><p>这一层次的函数主要是对来自其他进程的ipc请求进行处理.<br>本层次有一个结构体, 用来记录一个打开的文件的基本信息.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Open</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">o_file</span>;</span> <span class="hljs-comment">// mapped descriptor for open file</span><br>    u_int o_fileid;      <span class="hljs-comment">// file id</span><br>    <span class="hljs-type">int</span> o_mode;      <span class="hljs-comment">// open mode</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Filefd</span> *<span class="hljs-title">o_ff</span>;</span> <span class="hljs-comment">// va of filefd page</span><br>&#125;;<br><span class="hljs-comment">// Max number of open files in the file system at once</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAXOPEN 1024</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FILEVA 0x60000000</span><br><br><span class="hljs-comment">// initialize to force into data section</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Open</span> <span class="hljs-title">opentab</span>[<span class="hljs-title">MAXOPEN</span>] =</span> &#123;&#123;<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>&#125;&#125;;<br><br><span class="hljs-comment">// Virtual address at which to receive page mappings containing client requests.</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> REQVA 0x0ffff000</span><br></code></pre></td></tr></table></figure>
+
+<p>接下来是一些函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//Initialize file system server process.</span><br><span class="hljs-comment">//值得注意的是每个Open结构体是在初始化的时候确定序号和FileFd的地址</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">serve_init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br><span class="hljs-comment">//Allocate an open file.</span><br><span class="hljs-comment">//o传递Open结构体,返回对应的o_fileid</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">open_alloc</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Open **o)</span><br><span class="hljs-comment">//Look up an open file for envid.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">open_lookup</span><span class="hljs-params">(u_int envid, u_int fileid, <span class="hljs-keyword">struct</span> Open **po)</span><br></code></pre></td></tr></table></figure>
+<p>实际提供服务的函数, 使用ipc_recv接受请求, 其中具体的请求处理都用ipc_send来进行回复.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">serve</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> &#123;<br>	u_int req, whom, perm;<br><br>	<span class="hljs-keyword">for</span> (;;) &#123;<br>		perm = <span class="hljs-number">0</span>;<br><br>		req = ipc_recv(&amp;whom, (<span class="hljs-type">void</span> *)REQVA, &amp;perm);<br><br>		<span class="hljs-comment">// All requests must contain an argument page</span><br>		<span class="hljs-keyword">if</span> (!(perm &amp; PTE_V)) &#123;<br>			debugf(<span class="hljs-string">&quot;Invalid request from %08x: no argument page\n&quot;</span>, whom);<br>			<span class="hljs-keyword">continue</span>; <span class="hljs-comment">// just leave it hanging, waiting for the next request.</span><br>		&#125;<br><br>		<span class="hljs-keyword">switch</span> (req) &#123;<br>		<span class="hljs-keyword">case</span> FSREQ_OPEN:<br>			serve_open(whom, (<span class="hljs-keyword">struct</span> Fsreq_open *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_MAP:<br>			serve_map(whom, (<span class="hljs-keyword">struct</span> Fsreq_map *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_SET_SIZE:<br>			serve_set_size(whom, (<span class="hljs-keyword">struct</span> Fsreq_set_size *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_CLOSE:<br>			serve_close(whom, (<span class="hljs-keyword">struct</span> Fsreq_close *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_DIRTY:<br>			serve_dirty(whom, (<span class="hljs-keyword">struct</span> Fsreq_dirty *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_REMOVE:<br>			serve_remove(whom, (<span class="hljs-keyword">struct</span> Fsreq_remove *)REQVA);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">case</span> FSREQ_SYNC:<br>			serve_sync(whom);<br>			<span class="hljs-keyword">break</span>;<br><br>		<span class="hljs-keyword">default</span>:<br>			debugf(<span class="hljs-string">&quot;Invalid request code %d from %08x\n&quot;</span>, whom, req);<br>			<span class="hljs-keyword">break</span>;<br>		&#125;<br><br>		syscall_mem_unmap(<span class="hljs-number">0</span>, (<span class="hljs-type">void</span> *)REQVA);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>定义的请求结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//保存在fsreq.h文件中</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_OPEN 1</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_MAP 2</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_SET_SIZE 3</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_CLOSE 4</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_DIRTY 5</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_REMOVE 6</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_SYNC 7</span><br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_open</span> &#123;</span><br>	<span class="hljs-type">char</span> req_path[MAXPATHLEN];<br>	u_int req_omode;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_map</span> &#123;</span><br>	<span class="hljs-type">int</span> req_fileid;<br>	u_int req_offset;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_set_size</span> &#123;</span><br>	<span class="hljs-type">int</span> req_fileid;<br>	u_int req_size;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_close</span> &#123;</span><br>	<span class="hljs-type">int</span> req_fileid;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_dirty</span> &#123;</span><br>	<span class="hljs-type">int</span> req_fileid;<br>	u_int req_offset;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_remove</span> &#123;</span><br>	<span class="hljs-type">char</span> req_path[MAXPATHLEN];<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>至此, 文件系统的部分就基本结束了, 文件系统使用<code>ipc_recv</code>来接受其他进程的请求.</p>
+<h2 id="用户服务的提供者–fd-c"><a href="#用户服务的提供者–fd-c" class="headerlink" title="用户服务的提供者–fd.c"></a>用户服务的提供者–fd.c</h2><p>在用户的视角看, 对文件的一切操作其实都是通过文件描述符fd实现的.<br>因此我们从高到低, 从fd.c来分析MOS是怎么为用户进程提供服务的:<br>首先是一些值得注意的定义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*</span><br><span class="hljs-comment">内存空间中有专门的地址存放文件描述符，也就是FDTABLE，这里可以看成一个数组，每个Fd占一个Page大小，可以直接用fdnum作为下标获得；此外，文件的具体数据存在FILEBASE部分的内存空间，每个文件的数据最多占PDMAP大小，也可以实现fdnum到文件数据的一一映射（FILEBASE + PDMAP * fdnum）</span><br><span class="hljs-comment">*/</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAXFD 32</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FILEBASE 0x60000000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FDTABLE (FILEBASE - PDMAP)</span><br><br><span class="hljs-comment">//MOS中有三种dev, file,console和pipe.</span><br><span class="hljs-comment">//不同的dev需要绑定有自己的5个基本方法, 以便进行操作</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Dev</span> &#123;</span><br>	<span class="hljs-type">int</span> dev_id;<br>	<span class="hljs-type">char</span> *dev_name;<br>	<span class="hljs-type">int</span> (*dev_read)(<span class="hljs-keyword">struct</span> Fd *, <span class="hljs-type">void</span> *, u_int, u_int);<br>	<span class="hljs-type">int</span> (*dev_write)(<span class="hljs-keyword">struct</span> Fd *, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *, u_int, u_int);<br>	<span class="hljs-type">int</span> (*dev_close)(<span class="hljs-keyword">struct</span> Fd *);<br>	<span class="hljs-type">int</span> (*dev_stat)(<span class="hljs-keyword">struct</span> Fd *, <span class="hljs-keyword">struct</span> Stat *);<br>	<span class="hljs-type">int</span> (*dev_seek)(<span class="hljs-keyword">struct</span> Fd *, u_int);<br>&#125;;<br><br><span class="hljs-comment">// file descriptor</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fd</span> &#123;</span><br>	u_int fd_dev_id;<br>	u_int fd_offset;<br>	u_int fd_omode;<br>&#125;;<br><br><span class="hljs-comment">// State不同的dev的相同部分,抽象出来称为Stat</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Stat</span> &#123;</span><br>	<span class="hljs-type">char</span> st_name[MAXNAMELEN];<br>	u_int st_size;<br>	u_int st_isdir;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Dev</span> *<span class="hljs-title">st_dev</span>;</span><br>&#125;;<br><br><br><span class="hljs-comment">// file descriptor + file</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Filefd</span> &#123;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fd</span> <span class="hljs-title">f_fd</span>;</span><br>	u_int f_fileid;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> <span class="hljs-title">f_file</span>;</span><br>&#125;;<br><br><span class="hljs-comment">//使用fd的id来找到对应的fd和数据</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INDEX2FD(i) (FDTABLE + (i)*BY2PG)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INDEX2DATA(i) (FILEBASE + (i)*PDMAP)</span><br></code></pre></td></tr></table></figure>
+<p>下面是一些方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//Find the smallest i from 0 to MAXFD-1 that doesn&#x27;t have its fd page mapped</span><br><span class="hljs-comment">//申请fd,通过fd得到返回的fd</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fd_alloc</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd **fd)</span><br><span class="hljs-comment">//使用syscall_mem_unmap释放fd占用的页</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">fd_close</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd)</span><br><span class="hljs-comment">//Find the &#x27;Fd&#x27; page for the given fd number.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fd_lookup</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-keyword">struct</span> Fd **fd)</span><br><br><span class="hljs-comment">//一些id,data和结构体指针的转换</span><br><span class="hljs-type">void</span> *<span class="hljs-title function_">fd2data</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd)</span> &#123;<br>	<span class="hljs-keyword">return</span> (<span class="hljs-type">void</span> *)INDEX2DATA(fd2num(fd));<br>&#125;<br><span class="hljs-type">int</span> <span class="hljs-title function_">fd2num</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd)</span> &#123;<br>	<span class="hljs-keyword">return</span> ((u_int)fd - FDTABLE) / BY2PG;<br>&#125;<br><span class="hljs-type">int</span> <span class="hljs-title function_">num2fd</span><span class="hljs-params">(<span class="hljs-type">int</span> fd)</span> &#123;<br>	<span class="hljs-keyword">return</span> fd * BY2PG + FDTABLE;<br>&#125;<br><br><span class="hljs-comment">//fd主要的操作都是通过fd的序号来做的,这也和实际一致.</span><br><br><span class="hljs-comment">//关闭fd</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">close</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum)</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">close_all</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br><br><span class="hljs-comment">//应该是复制fd吧</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">dup</span><span class="hljs-params">(<span class="hljs-type">int</span> oldfdnum, <span class="hljs-type">int</span> newfdnum)</span><br><br><span class="hljs-comment">//Read at most &#x27;n&#x27; bytes from &#x27;fd&#x27; at the current seek position into &#x27;buf&#x27;.</span><br><span class="hljs-comment">//Return the number of bytes read successfully.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">read</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-type">void</span> *buf, u_int n)</span><br><span class="hljs-comment">//不是很懂</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">readn</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-type">void</span> *buf, u_int n)</span><br><span class="hljs-comment">//写</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">write</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *buf, u_int n)</span><br><span class="hljs-comment">//单纯偏移offset</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">seek</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, u_int offset)</span><br><span class="hljs-comment">//应该是初始化相关的, 目前不太清楚</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fstat</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-keyword">struct</span> Stat *stat)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">stat</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> Stat *stat)</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="用户空间的二级抽象–file-c"><a href="#用户空间的二级抽象–file-c" class="headerlink" title="用户空间的二级抽象–file.c"></a>用户空间的二级抽象–file.c</h2><p>以上的fd.c我们都是对dev进行的操作, 但是具体到我们目前的文件系统, 我们实际上需要指定我们的dev是file</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//声明了devfile这个dev</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Dev</span> <span class="hljs-title">devfile</span> =</span> &#123;<br>    .dev_id = <span class="hljs-string">&#x27;f&#x27;</span>,<br>    .dev_name = <span class="hljs-string">&quot;file&quot;</span>,<br>    .dev_read = file_read,<br>    .dev_write = file_write,<br>    .dev_close = file_close,<br>    .dev_stat = file_stat,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>下面是file的方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Open a file (or directory).</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">open</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, <span class="hljs-type">int</span> mode)</span><br><span class="hljs-comment">//  Close a file descriptor</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">file_close</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd)</span><br><span class="hljs-comment">//  Read &#x27;n&#x27; bytes from &#x27;fd&#x27; at the current seek position into &#x27;buf&#x27;.</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">file_read</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd, <span class="hljs-type">void</span> *buf, u_int n, u_int offset)</span><br><span class="hljs-comment">//  Find the virtual address of the page that maps the file block starting at &#x27;offset&#x27;.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">read_map</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, u_int offset, <span class="hljs-type">void</span> **blk)</span><br><span class="hljs-comment">//  Write &#x27;n&#x27; bytes from &#x27;buf&#x27; to &#x27;fd&#x27; at the current seek position.</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">file_write</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *buf, u_int n, u_int offset)</span><br><span class="hljs-comment">//将dev初始化为file</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">file_stat</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Fd *fd, <span class="hljs-keyword">struct</span> Stat *st)</span><br><span class="hljs-comment">//  Truncate or extend an open file to &#x27;size&#x27; bytes</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">ftruncate</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, u_int size)</span><br><span class="hljs-comment">//  Delete a file or directory.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">remove</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path)</span><br><span class="hljs-comment">//  Synchronize disk with buffer cache</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">sync</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="用户进程与文件管理进程的通讯–fsipc-c"><a href="#用户进程与文件管理进程的通讯–fsipc-c" class="headerlink" title="用户进程与文件管理进程的通讯–fsipc.c"></a>用户进程与文件管理进程的通讯–fsipc.c</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//首先是定义的缓存区</span><br>u_char fsipcbuf[BY2PG] __attribute__((aligned(BY2PG)));<br><br><span class="hljs-comment">//Send an IPC request to the file server, and wait for a reply.</span><br><span class="hljs-comment">//这里的type实际上是上面文件系统需要接受的类型宏</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">fsipc</span><span class="hljs-params">(u_int type, <span class="hljs-type">void</span> *fsreq, <span class="hljs-type">void</span> *dstva, u_int *perm)</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">fsipc</span><span class="hljs-params">(u_int type, <span class="hljs-type">void</span> *fsreq, <span class="hljs-type">void</span> *dstva, u_int *perm)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_open</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, u_int omode, <span class="hljs-keyword">struct</span> Fd *fd)</span><br>the server sends<br><span class="hljs-comment">// send us back a mapping(也就是va) for a page containing that block.</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_map</span><span class="hljs-params">(u_int fileid, u_int offset, <span class="hljs-type">void</span> *dstva)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_set_size</span><span class="hljs-params">(u_int fileid, u_int size)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_close</span><span class="hljs-params">(u_int fileid)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_dirty</span><span class="hljs-params">(u_int fileid, u_int offset)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_remove</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path)</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_sync</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br></code></pre></td></tr></table></figure>
+
+<p>至此, 这个关系算是捋清楚了!</p>
+<h1 id="速记"><a href="#速记" class="headerlink" title="速记"></a>速记</h1><h2 id="设备映射的物理地址"><a href="#设备映射的物理地址" class="headerlink" title="设备映射的物理地址"></a>设备映射的物理地址</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//console</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_ADDRESS 0x10000000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_LENGTH 0x00000020</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_PUTGETCHAR 0x0000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_HALT 0x0010</span><br><br><span class="hljs-comment">//disk</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_ADDRESS 0x13000000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_OFFSET 0x0000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_OFFSET_HIGH32 0x0008</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_ID 0x0010</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_START_OPERATION 0x0020</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_STATUS 0x0030</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_BUFFER 0x4000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_BUFFER_LEN 0x200</span><br><span class="hljs-comment">/*  Operations:  */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_OPERATION_READ 0</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_DISK_OPERATION_WRITE 1</span><br><br><span class="hljs-comment">//rtc</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_ADDRESS 0x15000000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_LENGTH 0x00000200</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_TRIGGER_READ 0x0000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_SEC 0x0010</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_USEC 0x0020</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_HZ 0x0100</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_INTERRUPT_ACK 0x0110</span><br></code></pre></td></tr></table></figure>
+<h2 id="几个结构体"><a href="#几个结构体" class="headerlink" title="几个结构体"></a>几个结构体</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Block</span> &#123;</span><br>    <span class="hljs-type">uint8_t</span> data[BY2BLK];<br>    <span class="hljs-type">uint32_t</span> type;<br>&#125; disk[NBLOCK];<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> &#123;</span><br>    <span class="hljs-type">char</span> f_name[MAXNAMELEN]; <span class="hljs-comment">// filename</span><br>    <span class="hljs-type">uint32_t</span> f_size;     <span class="hljs-comment">// file size in bytes</span><br>    <span class="hljs-type">uint32_t</span> f_type;     <span class="hljs-comment">// file type</span><br>    <span class="hljs-type">uint32_t</span> f_direct[NDIRECT];<br>    <span class="hljs-type">uint32_t</span> f_indirect;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">f_dir</span>;</span> <span class="hljs-comment">// the pointer to the dir where this file is in, valid only in memory.</span><br>    <span class="hljs-type">char</span> f_pad[BY2FILE - MAXNAMELEN - (<span class="hljs-number">3</span> + NDIRECT) * <span class="hljs-number">4</span> - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">void</span> *)];<br>&#125; __attribute__((aligned(<span class="hljs-number">4</span>), packed));<br></code></pre></td></tr></table></figure>
+
+<h1 id="Debug"><a href="#Debug" class="headerlink" title="Debug"></a>Debug</h1><p>这次debug的时间比较短, 但是错的地方都挺隐蔽+脑残的…<br>总结几点:</p>
+<h2 id="for循环"><a href="#for循环" class="headerlink" title="for循环"></a>for循环</h2><p>首先要对自己写的代码有一个基础的理解: 为什么要用for循环<br>接着, for循环里面的变量是什么—-老是忘记在for循环里面使用变量导致错误!</p>
+<h2 id="根据测试寻找bug"><a href="#根据测试寻找bug" class="headerlink" title="根据测试寻找bug"></a>根据测试寻找bug</h2><ol>
+<li>总体理解测试的过程, 了解有哪些测试点</li>
+<li>卡在哪个点, 就一层层梳理函数的调用关系, 看看能不能直接找到错误函数</li>
+<li>如果找不到或者不知道错在哪, 通过改变测试函数(特别是结合测试点)来尝试理解错误的原因</li>
+</ol>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">#操作系统</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">#内存管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OS_lab4_系统调用和fork</div>
+      <div>https://pcpas.github.io/2023/05/22/OS-lab5-Summary/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>pcpa997</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月22日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/05/08/OS-lab4-Summary/" title="OS_lab4_系统调用和fork">
+                        <span class="hidden-mobile">OS_lab4_系统调用和fork</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
