@@ -184,7 +184,7 @@
     <link href="/2022/11/09/MediaPipe%E6%89%AB%E7%9B%B2/"/>
     <url>/2022/11/09/MediaPipe%E6%89%AB%E7%9B%B2/</url>
     
-    <content type="html"><![CDATA[<h1 id="MediaPipe"><a href="#MediaPipe" class="headerlink" title="MediaPipe"></a>MediaPipe</h1><h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h2><h3 id="1-1-什么是MediaPipe"><a href="#1-1-什么是MediaPipe" class="headerlink" title="1.1 什么是MediaPipe"></a>1.1 什么是MediaPipe</h3><div class="note note-primary">            <p>MediaPipe is a project by Google that offers “open-source, cross-platform, customizable ML solutions for live and streaming media”. In other words, MediaPipe provides access to a wide variety of powerful Machine Learning models <strong>built with the hardware limitations of mobile devices in mind</strong>. </p>          </div><p>简而言之，MediaPipe相当于帮我们把轮子造好了，如果你想在你的项目里新添加一个轻度但是高效的CV功能，那么就可以选用MediaPipe。</p><h3 id="1-2-链接指路："><a href="#1-2-链接指路：" class="headerlink" title="1.2 链接指路："></a>1.2 链接指路：</h3><p>非常适合入门👉<a href="https://www.assemblyai.com/blog/mediapipe-for-dummies/">MediaPipe for Dummies</a></p><h2 id="2-MediaPipe的安装"><a href="#2-MediaPipe的安装" class="headerlink" title="2.MediaPipe的安装"></a>2.MediaPipe的安装</h2><h3 id="2-1-前置知识"><a href="#2-1-前置知识" class="headerlink" title="2.1 前置知识"></a>2.1 前置知识</h3>]]></content>
+    <content type="html"><![CDATA[<h1 id="MediaPipe"><a href="#MediaPipe" class="headerlink" title="MediaPipe"></a>MediaPipe</h1><h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h2><h3 id="1-1-什么是MediaPipe"><a href="#1-1-什么是MediaPipe" class="headerlink" title="1.1 什么是MediaPipe"></a>1.1 什么是MediaPipe</h3><div class="note note-primary">            <p>MediaPipe is a project by Google that offers “open-source, cross-platform, customizable ML solutions for live and streaming media”. In other words, MediaPipe provides access to a wide variety of powerful Machine Learning models <strong>built with the hardware limitations of mobile devices in mind</strong>. </p>          </div><p>简而言之，MediaPipe相当于帮我们把轮子造好了，如果你想在你的项目里新添加一个轻度但是高效的CV功能，那么就可以选用MediaPipe。</p><h3 id="1-2-链接指路："><a href="#1-2-链接指路：" class="headerlink" title="1.2 链接指路："></a>1.2 链接指路：</h3><p>非常适合入门👉<a href="https://www.assemblyai.com/blog/mediapipe-for-dummies/">MediaPipe for Dummies</a></p><h2 id="2-MediaPipe的安装"><a href="#2-MediaPipe的安装" class="headerlink" title="2.MediaPipe的安装"></a>2.MediaPipe的安装</h2><h3 id="2-1-前置知识"><a href="#2-1-前置知识" class="headerlink" title="2.1 前置知识"></a>2.1 前置知识</h3><p>…等待填坑</p>]]></content>
     
     
     <categories>
@@ -267,35 +267,6 @@
       <tag>JAVA</tag>
       
       <tag>协同</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>算法改错本</title>
-    <link href="/2022/09/21/%E7%AE%97%E6%B3%95%E6%94%B9%E9%94%99%E6%9C%AC/"/>
-    <url>/2022/09/21/%E7%AE%97%E6%B3%95%E6%94%B9%E9%94%99%E6%9C%AC/</url>
-    
-    <content type="html"><![CDATA[<h1 id="总结篇"><a href="#总结篇" class="headerlink" title="总结篇"></a>总结篇</h1><p>在这里，我将给出一些<strong>必须遵守</strong>的<strong>铁律</strong>和<strong>绝对不能触碰</strong>的<strong>禁忌</strong>！！！</p><p>胆敢违反，你就死定了。</p><ol><li><p><strong>禁止卡着开数组（狭义）。</strong></p><p>对于大部分简单题来说，需要开的数组都是远远小于内存限制的，此时请你不要卡着开，求求你了谢谢。（因为可能会导致意想不到的错误）</p><p>同样的，这条定律经过拓展，也可以用来指代一切卡着开的东西。</p><p>举例：计算中数据很大（接近int的上限，或者数量级很接近），甚至他都提示你了要取模，求求你用longlong来计算，明知要爆还以硬要用int你可真是天才！！！！！！省下来的空间拿去喂猪吗？？？？？</p></li><li><p><strong>禁止用没有熟练掌握的知识</strong></p><p>你会用STL吗你就用？？？可以用C写为什么一定要用C++？？简单问题为什么要复杂化？？？你Debug就爽了？？？</p></li><li><p><strong>能不用递归就不要用递归</strong></p><p>特别是广搜或者复杂的数列，你用递归就是找死，必爆栈。此时用动态规划和队列等来用循环做是个好选择。</p></li><li><p><strong>高精度比较用乘法，大数字相乘用除法</strong></p><p>乘法的缺点是容易爆！除法的缺点是精度低！所以按需使用便好。</p></li><li><p><strong>空间换时间</strong></p><p>通常，很小的空间就能避免进行<strong>重复运算</strong>，从而极大缩短运算时间！因此，能换就换！</p></li><li></li></ol><p>​</p>]]></content>
-    
-    
-    <categories>
-      
-      <category>技术</category>
-      
-      <category>算法</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>C++</tag>
-      
-      <tag>算法</tag>
       
     </tags>
     
