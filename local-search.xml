@@ -4,6 +4,35 @@
   
   
   <entry>
+    <title>词法分析</title>
+    <link href="/2023/09/19/%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/"/>
+    <url>/2023/09/19/%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/</url>
+    
+    <content type="html"><![CDATA[<h1 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h1><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本次的编译器实现我准备采用<code>Java</code>语言来写，主要有三个方面的考虑：</p><ol><li>之前上过JAVA-OOP，对java的语法和面向对象编程的机制都更加熟悉。</li><li>因为我是Mac和Win双持用户，再加上考试的时候的评测机的C艹编译器也捉摸不定，想统一环境实在有些困难，此时Java虚拟机的优势就显现的非常明显了。</li><li>小伙伴们都用的Java，方便交流讨论。</li></ol><p>确定了语言之后，就可以<del>快乐的</del>开始写代码了！</p><h1 id="总体设计"><a href="#总体设计" class="headerlink" title="总体设计"></a>总体设计</h1><p>考虑到之后还会有很多新需求，无论如何可能都没有办法避免重构，所以其实一开始也不用设计的太好啦！</p><p>但是为了能减少以后的工作量，一定程度的设计也是要有的。我没有按照课程组的推荐去参考pascals和pl0的编译器——太古老了。这从1989流传至今，甚至是用word文档保存的代码，看得人头疼。</p><p>因此，我挑挑选选，决定参考<code>javac</code>的源代码。</p><p>主要有两个优势：</p><ol><li>GitHub上有现成的源码，查看非常方便。</li><li>javac的源码是用Java语言写的，非常适合我学习借鉴；同时Java语言本身与C也比较相似，没有很大的迁移成本。</li></ol><p>稍微阅读了一些源码，再结合一些前辈的经验，我写的简化版架构如下：</p><figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext">-MyCompiler<br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Frontend</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">exception</span><br>    -SysException.java<br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Factory.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Tokens.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Tokenizer.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Backend</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span><br></code></pre></td></tr></table></figure><p>其中：</p><ul><li><code>Compiler.java</code> 负责编译器的主体任务，包括初始化，启动和销毁。</li><li><code>Frontend</code>包负责前端工作，当然就包括本次的词法分析。<ul><li><code>Tokens.java</code>负责声明所有的Token。</li><li>Tokenizer.java负责做词法分析。</li><li>Scanner.java是为以后预留的类，方便后续的工作。</li><li>Factory.java负责产生和提供Tokenizer、Scanner、Tokens等类的实例，保证单例。</li><li>exception包里声明可能出现的异常。</li></ul></li><li><code>Backend</code>包负责后端工作，目前是个摆设。</li></ul><h1 id="词法分析-1"><a href="#词法分析-1" class="headerlink" title="词法分析"></a>词法分析</h1><p>这部分最重要的是画状态图，把状态转移图画出来了，写代码就非常愉快了！😄</p><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20230919213836456.png"></p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这次实验还是比较简单的，但是需要我们一开始把框架搭好！希望之后不会反复重构吧～～</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>技术</category>
+      
+      <category>编译技术</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>编译技术</tag>
+      
+      <tag>词法分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>OS_lab5_文件系统</title>
     <link href="/2023/05/22/OS-lab5-Summary/"/>
     <url>/2023/05/22/OS-lab5-Summary/</url>
