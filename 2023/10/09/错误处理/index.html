@@ -1,0 +1,798 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="pcpa997">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从零开始的编译器之词法分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="错误处理和符号表">
+<meta property="og:url" content="https://pcpas.github.io/2023/10/09/%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="PCPA&#39;s world">
+<meta property="og:description" content="从零开始的编译器之词法分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231010104043778.png">
+<meta property="article:published_time" content="2023-10-09T07:15:42.000Z">
+<meta property="article:modified_time" content="2023-10-16T08:02:31.606Z">
+<meta property="article:author" content="pcpa997">
+<meta property="article:tag" content="编译技术">
+<meta property="article:tag" content="词法分析">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231010104043778.png">
+  
+  
+  <title>错误处理和符号表 - PCPA&#39;s world</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"pcpas.github.io","root":"/","version":"1.8.14","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>PCPA&#39;s world</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">错误处理和符号表</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-10-09 15:15" pubdate>
+          2023年10月9日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          45 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">错误处理和符号表</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="错误处理和符号表"><a href="#错误处理和符号表" class="headerlink" title="错误处理和符号表"></a>错误处理和符号表</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前的部分一直都没管错误处理和符号表，其实这也是不太对的，因为这两个部分会贯穿我们编译的全过程。</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231010104043778.png" srcset="/img/loading.gif" lazyload alt="image-20231010104043778"></p>
+<p>本次实验的目的就是去补充错误处理和符号表这两个之前未曾完善的部分。</p>
+<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><table>
+<thead>
+<tr>
+<th>错误类型</th>
+<th>错误类别码</th>
+<th>解释</th>
+<th>对应文法及出错符号 ( … 表示省略该条规则后续部分)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>非法符号</td>
+<td>a</td>
+<td>格式字符串中出现非法字符报错行号为 <strong><FormatString></strong> 所在行数。</td>
+<td><FormatString> → ‘“‘{<Char>}’”</td>
+</tr>
+<tr>
+<td>名字重定义</td>
+<td>b</td>
+<td>函数名或者变量名在<strong>当前作用域</strong>下重复定义。注意，变量一定是同一级作用域下才会判定出错，不同级作用域下，内层会覆盖外层定义。报错行号为 <strong><Ident></strong> 所在行数。</td>
+<td><ConstDef>→<Ident> … <VarDef>→<Ident> … <Ident> … <FuncDef>→<FuncType><Ident> … <FuncFParam> → <BType> <Ident> …</td>
+</tr>
+<tr>
+<td>未定义的名字</td>
+<td>c</td>
+<td>使用了未定义的标识符报错行号为 <strong><Ident></strong> 所在行数。</td>
+<td><LVal>→<Ident> … <UnaryExp>→<Ident> …</td>
+</tr>
+<tr>
+<td>函数参数个数不匹配</td>
+<td>d</td>
+<td>函数调用语句中，参数个数与函数定义中的参数个数不匹配。报错行号为函数调用语句的<strong>函数名</strong>所在行数。</td>
+<td><UnaryExp>→<Ident>‘(’[<FuncRParams>]‘)’</td>
+</tr>
+<tr>
+<td>函数参数类型不匹配</td>
+<td>e</td>
+<td>函数调用语句中，参数类型与函数定义中对应位置的参数类型不匹配。报错行号为函数调用语句的<strong>函数名</strong>所在行数。</td>
+<td><UnaryExp>→<Ident>‘(’[<FuncRParams>]‘)’</td>
+</tr>
+<tr>
+<td>无返回值的函数存在不匹配的return语句</td>
+<td>f</td>
+<td>报错行号为 <strong>‘return’</strong> 所在行号。</td>
+<td><Stmt>→‘return’ {‘[’<Exp>’]’}‘;’</td>
+</tr>
+<tr>
+<td>有返回值的函数缺少return语句</td>
+<td>g</td>
+<td>只需要考虑函数末尾是否存在return语句，<strong>无需考虑数据流</strong>。报错行号为函数<strong>结尾的’}’</strong> 所在行号。</td>
+<td><FuncDef> → <FuncType> <Ident> ‘(’ [<FuncFParams>] ‘)’ <Block> <MainFuncDef> → ‘int’ ‘main’ ‘(’ ‘)’ <Block></td>
+</tr>
+<tr>
+<td>不能改变常量的值</td>
+<td>h</td>
+<td><LVal>为常量时，不能对其修改。报错行号为 <strong><LVal></strong> 所在行号。</td>
+<td><Stmt>→<LVal>‘&#x3D;’ <Exp>‘;’ <Stmt>→<LVal>‘&#x3D;’ ‘getint’ ‘(’ ‘)’ ‘;’</td>
+</tr>
+<tr>
+<td>缺少分号</td>
+<td>i</td>
+<td>报错行号为分号<strong>前一个非终结符</strong>所在行号。</td>
+<td><Stmt>,<ConstDecl>及<VarDecl>中的’;’</td>
+</tr>
+<tr>
+<td>缺少右小括号’)’</td>
+<td>j</td>
+<td>报错行号为右小括号<strong>前一个非终结符</strong>所在行号。</td>
+<td>函数调用(<UnaryExp>)、函数定义(<FuncDef>)及<Stmt>中的’)’</td>
+</tr>
+<tr>
+<td>缺少右中括号’]’</td>
+<td>k</td>
+<td>报错行号为右中括号<strong>前一个非终结符</strong>所在行号。</td>
+<td>数组定义(<ConstDef>,<VarDef>,<FuncFParam>)和使用(<LVal>)中的’]’</td>
+</tr>
+<tr>
+<td>printf中格式字符与表达式个数不匹配</td>
+<td>l</td>
+<td>报错行号为 <strong>‘printf’</strong> 所在行号。</td>
+<td><Stmt> →‘printf’‘(’<FormatString>{,<Exp>}’)’‘;’</td>
+</tr>
+<tr>
+<td>在非循环块中使用break和continue语句</td>
+<td>m</td>
+<td>报错行号为 <strong>‘break’</strong> 与 <strong>’continue’</strong> 所在行号。</td>
+<td><Stmt>→‘break’‘;’ <Stmt>→‘continue’‘;’</td>
+</tr>
+</tbody></table>
+<h3 id="错误的分类"><a href="#错误的分类" class="headerlink" title="错误的分类"></a>错误的分类</h3><p>根据以上的错误规则，我们可以将错误分为三类：</p>
+<ol>
+<li>在词法分析阶段可以检查的错误：a</li>
+<li>在语法分析阶段可以检查的错误：i、j、k</li>
+<li>需要借助符号表进行检查的错误：其他错误</li>
+</ol>
+<p>其中第一类和第三类错误我们可以在语义分析中一边建立符号表，一边进行检测；而第二类错误我们必须要在语法分析阶段就识别并局部化，否则会影响到后续的工作。</p>
+<h3 id="错误的局部化"><a href="#错误的局部化" class="headerlink" title="错误的局部化"></a>错误的局部化</h3><p>在正确构建语法树的前提下，第一类和第三类错误的局部化是自动的。唯有第二类错误可能严重破坏语法树的构建，导致程序RE或者构建出完全错误的语法树，所以我们这里需要着重分析一下<strong>第二类错误</strong>。</p>
+<p>在之前的代码中，我有不少地方的判断都是依赖于<code>;])</code>这三个符号，如果这三个符号发生缺失，程序有时会RE，有时会导致语法树完全畸形。</p>
+<p>此外，如果缺少这三个符号，语法树会不完整，导致在错误处理时取对应位置的结点时会取到错误的结点。</p>
+<p>这里我采取的措施是：</p>
+<ol>
+<li>在语法分析时，遇到要处理回溯的问题时，<strong>不要使用</strong><code>;])</code>这三个符号做判断。（尽管这样会变得更简单）</li>
+<li>如果发现了这三个符号缺失，添加错误后在语法树中<strong>手动补充这个缺失</strong>。（因为这三个符号的有无并不影响实际的分析，补充后后期工作会变得更加简洁）</li>
+</ol>
+<h3 id="函数内部的错误检查"><a href="#函数内部的错误检查" class="headerlink" title="函数内部的错误检查"></a>函数内部的错误检查</h3><p>虽然说正统的栈式符号表中，函数被调用时才开始建符号表。但是在我们的SysY语言中，在函数的定义处直接建表检查也是可以的，甚至会简化一些流程，因此这里我就偷懒直接检查了。</p>
+<h2 id="总体设计"><a href="#总体设计" class="headerlink" title="总体设计"></a>总体设计</h2><p>因为此处的错误处理需要处理的错误较少，仅需要粗粒度的判断即可。如果在之前递归下降子程序的类中进行设计，不仅工作量巨大，并且由于并不知道遍历抽象语法树时的最终要求，在之后生成中间代码的步骤中还可能面临多处重构的风险，故我单独将这部分抽出来，单独遍历一遍来找错误，以减少编码量和重构风险。</p>
+<p>注意，这样的设计在总体来看不是最优的，而且会导致结构性地对错误的遗漏和性能的下降（Maybe），但是从完成任务的角度，我认为这样的设计是蛮不错的。</p>
+<p>具体来说，我建立了两个类：</p>
+<p><code>SysYException</code>和<code>ExceptionHandler</code>，显然地，<code>SysYException</code>是错误类，而对语法树遍历找错误、错误的添加和输出等任务主要在<code>ExceptionHandler</code>类中完成。</p>
+<p>此外，错误处理的分析需要先建立符号表，所以我还在<code>frontend</code>中添加了一个<code>symbolTable</code>包，包括<code>SymbolTable</code>,<code>Symbol</code>,<code>VarSymbol</code>和<code>FuncSymbol</code>四个类。</p>
+<p><code>SymbolTable</code>是符号表类，用于存储符号表。</p>
+<p><code>Symbol</code>是符号基类，<code>VarSymbol</code>和<code>FuncSymbol</code>都继承于它，分别为变量符号和函数符号。</p>
+<p>此时的文件树为：</p>
+<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext">-MyCompiler<br>	<span class="hljs-bullet">-</span> <span class="hljs-string">exception</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">SysException.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">ExceptionHandler.java</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">frontend</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">tree</span><br>    	<span class="hljs-bullet">-</span> <span class="hljs-string">BasicNode.java</span><br>    	... //其他节点类<br>    <span class="hljs-bullet">-</span> <span class="hljs-string">symbolTable</span><br>    	<span class="hljs-bullet">-</span> <span class="hljs-string">Symbol</span><br>    	<span class="hljs-bullet">-</span> <span class="hljs-string">SymbolTable</span><br>    	<span class="hljs-bullet">-</span> <span class="hljs-string">VarSymbol</span><br>    	<span class="hljs-bullet">-</span> <span class="hljs-string">FuncSymbol</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Unit.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Factory.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Tokens.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Tokenizer.java</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">backend</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="SymbolTable"><a href="#SymbolTable" class="headerlink" title="SymbolTable"></a>SymbolTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SymbolTable</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Map&lt;String, Symbol&gt; symbolMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;(); <span class="hljs-comment">//符号表主体</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> SymbolTable parent; <span class="hljs-comment">//指向父节点</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> inLoop;	<span class="hljs-comment">//是否在循环中</span><br><br>  	<span class="hljs-comment">//指定符号表是否在循环中</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">SymbolTable</span><span class="hljs-params">(SymbolTable parent, <span class="hljs-type">boolean</span> inLoop)</span> &#123;&#125;<br><br>  	<span class="hljs-comment">//继承父符号表的循环情况</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">SymbolTable</span><span class="hljs-params">(SymbolTable parent)</span> &#123;...&#125;<br><br>    <span class="hljs-keyword">public</span> Symbol <span class="hljs-title function_">findSymbol</span><span class="hljs-params">(String name)</span>&#123;...&#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">isInLoop</span><span class="hljs-params">()</span>&#123;...&#125;<br><br>    <span class="hljs-keyword">public</span> Symbol <span class="hljs-title function_">findSymbolInAll</span><span class="hljs-params">(String name)</span>&#123;...&#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addSymbol</span><span class="hljs-params">(Symbol symbol)</span>&#123;...&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Symbol"><a href="#Symbol" class="headerlink" title="Symbol"></a>Symbol</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Symbol</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> String name;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Symbol</span><span class="hljs-params">(String name)</span> &#123;<br>        <span class="hljs-built_in">this</span>.name = name;<br>    &#125;<br>&#125;<br><span class="hljs-comment">//变量类符号</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">VarSymbol</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Symbol</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> dimension;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> isConst;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">VarSymbol</span><span class="hljs-params">(String name, <span class="hljs-type">int</span> dimension, <span class="hljs-type">boolean</span> isConst)</span> &#123;...&#125;<br>&#125;<br><span class="hljs-comment">//函数类符号</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FuncSymbol</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Symbol</span>&#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> returnType retType;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> List&lt;FuncFParam&gt; params;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> Block block;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">FuncSymbol</span><span class="hljs-params">(String name, returnType retType, List&lt;FuncFParam&gt; params, Block block)</span> &#123;...&#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">returnType</span>&#123;<br>        INT,<br>        VOID;<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="ExceptionHandler"><a href="#ExceptionHandler" class="headerlink" title="ExceptionHandler"></a>ExceptionHandler</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ExceptionHandler</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> BufferedWriter bufferedWriter;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> List&lt;SysYException&gt; errors = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(); <span class="hljs-comment">//存放所有的错误</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">SymbolTable</span> <span class="hljs-variable">rootTable</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SymbolTable</span>(<span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>); <span class="hljs-comment">//全局符号表</span><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">ExceptionHandler</span><span class="hljs-params">(BufferedWriter bufferedWriter)</span> &#123;...&#125;<br>		<span class="hljs-comment">//添加错误</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addError</span><span class="hljs-params">(SysYException e)</span> &#123;...&#125;<br>		<span class="hljs-comment">//获得错误数</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">size</span><span class="hljs-params">()</span> &#123;...&#125;<br>		<span class="hljs-comment">//打印全部错误，便与调试</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">printErrors</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> IOException &#123;...&#125;<br>  	<span class="hljs-comment">//遍历抽象语法树分析错误</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">analyseError</span><span class="hljs-params">(CompUnit compUnit)</span> &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; compUnit.derivations.size(); i++) &#123;<br>            <span class="hljs-type">Unit</span> <span class="hljs-variable">unit</span> <span class="hljs-operator">=</span> compUnit.derivations.get(i);<br>            <span class="hljs-keyword">if</span> (unit <span class="hljs-keyword">instanceof</span> ConstDecl) &#123;<br>                analyseConstDecl(rootTable, (ConstDecl) unit);<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (unit <span class="hljs-keyword">instanceof</span> VarDecl) &#123;<br>                analyseVarDecl(rootTable, (VarDecl) unit);<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (unit <span class="hljs-keyword">instanceof</span> FuncDef) &#123;<br>                analyseFuncDef(rootTable, (FuncDef) unit);<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (unit <span class="hljs-keyword">instanceof</span> MainFuncDef) &#123;<br>                analyseMainFuncDef(rootTable, (MainFuncDef) unit);<br>            &#125;<br>        &#125;<br>    &#125;<br>  	<span class="hljs-comment">//更多的analyse函数，递归遍历抽象语法树</span><br>  	...<br>    <span class="hljs-comment">//一些重要的工具函数，用于简化代码</span><br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="SysYException"><a href="#SysYException" class="headerlink" title="SysYException"></a>SysYException</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SysYException</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Exception</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Comparable</span>&lt;SysYException&gt;&#123;<br>    <span class="hljs-keyword">public</span> ExceptionKind kind;<br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> line;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">SysYException</span><span class="hljs-params">(ExceptionKind kind, <span class="hljs-type">int</span> line)</span> &#123;<br>        <span class="hljs-built_in">this</span>.kind = kind;<br>        <span class="hljs-built_in">this</span>.line = line;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">toString</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-keyword">return</span> line+<span class="hljs-string">&quot; &quot;</span>+kind.code;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">compareTo</span><span class="hljs-params">(SysYException o)</span> &#123;<br>        <span class="hljs-keyword">return</span> Integer.compare(<span class="hljs-built_in">this</span>.line, o.line);<br>    &#125;<br><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">ExceptionKind</span> &#123;<br>        ILLEGAL_SYMBOL(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;格式字符串中出现非法字符&quot;</span>),<br>				...<br>        ERROR(<span class="hljs-string">&quot;unexpected error&quot;</span>, <span class="hljs-string">&quot;未知错误&quot;</span>);<br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> String code;<br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> String description;<br><br>        ExceptionKind(String s, String description) &#123;<br>            <span class="hljs-built_in">this</span>.code = s;<br>            <span class="hljs-built_in">this</span>.description = description;<br>        &#125;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次实验比语法分析感觉有又困难了一些，而且想通过测试的调试难度也明显增加，太可怕了。。。</p>
+<p>这更突出一开始构思好架构，增加代码的完善性和稳健性的重要性。</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/" class="category-chain-item">编译技术</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/">#编译技术</a>
+      
+        <a href="/tags/%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/">#词法分析</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>错误处理和符号表</div>
+      <div>https://pcpas.github.io/2023/10/09/错误处理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>pcpa997</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年10月9日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/10/15/%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F/" title="如何设计一个高并发系统">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">如何设计一个高并发系统</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/30/%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90/" title="语法分析">
+                        <span class="hidden-mobile">语法分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
