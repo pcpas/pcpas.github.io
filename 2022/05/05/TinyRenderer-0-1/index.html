@@ -1,0 +1,890 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="TinyRendererWIki 0&amp;1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TinyRenderer 0&amp;1">
+<meta property="og:url" content="http://example.com/2022/05/05/TinyRenderer-0-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="TinyRendererWIki 0&amp;1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2022/05/14/31d795e4522403f6.png">
+<meta property="article:published_time" content="2022-05-05T07:59:04.000Z">
+<meta property="article:modified_time" content="2022-05-18T08:44:22.000Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="图形学">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="TinyRenderer">
+<meta property="article:tag" content="软件光栅化渲染器">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s3.bmp.ovh/imgs/2022/05/14/31d795e4522403f6.png">
+  
+  
+  
+  <title>TinyRenderer 0&amp;1 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="TinyRenderer 0&amp;1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-05 15:59" pubdate>
+          2022年5月5日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">TinyRenderer 0&amp;1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>TinyRenderer是国外一个大佬写的几百行的软件光栅化渲染器，API模拟了OpenGL，主要目的在于理解OpenGL在后台干了什么。</p>
+<p>通过复现这段大约500行的代码, 我想我能更加深入的了解图形学的底层原理.</p>
+<p>有些话适合用中文,有些话适合用英文(包括一些引用),原谅我中英混杂(反正也不算是教程吧</p>
+<p>(btw, I want to say that this is not just a simple translated version of the wiki on github, it is consist of my own feelings and thoughts.)</p>
+<p>我的IDE(雾)使用的是VScode搭配自带的插件, 多文件编译直接使用了自带的插件C&#x2F;C++ Project Generator.</p>
+<p>顺带一提，里面贴的代码都是我自己写的，可能不够工整和正确，如果需要能保证规范正确的源代码请访问<a target="_blank" rel="noopener" href="https://github.com/ssloy/tinyrenderer/wiki">该项目的GitHub</a>。</p>
+<h1 id="TinyRenderer-0-draw-a-ponit-on-your-screen"><a href="#TinyRenderer-0-draw-a-ponit-on-your-screen" class="headerlink" title="TinyRenderer 0 : draw a ponit on your screen"></a>TinyRenderer 0 : draw a ponit on your screen</h1><div class="note note-success">
+            <p>Since the goal is to minimize external dependencies, I am allowed to only work with <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Truevision_TGA">TGA</a> files. It’s one of the simplest formats that supports images in RGB&#x2F;RGBA&#x2F;black and white formats. So, as a starting point, I’ll obtain a simple way to work with pictures. You should note that the only functionality available at the very beginning (in addition to loading and saving images) is the capability to set the color of one pixel.</p>
+          </div>
+
+<p>There are no functions for drawing line segments and triangles. I’ll have to do all of this by hand.</p>
+<h2 id="Include-tgas-file"><a href="#Include-tgas-file" class="headerlink" title="Include tgas file"></a>Include tgas file</h2><p>因为开始这个项目需要对tga文件的读取和保存功能，我们需要先下载 <code>tgaimage.h</code>和 <code>tgaimage.cpp</code>两个文件，并放入我们的项目中。引入后，可能需要先熟悉一下自带的方法，以备之后使用所需。</p>
+<p>此外，我为了在电脑上直接查看tga类型的文件，还在网上下载了一个tga view软件。</p>
+<h2 id="just-draw-a-point"><a href="#just-draw-a-point" class="headerlink" title="just draw a point"></a>just draw a point</h2><p>因为这一步太简单，我没什么好说的。</p>
+<p>直接复制啦~</p>
+<div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tgaimage.h&quot;</span></span>
+<span class="hljs-type">const</span> TGAColor white = <span class="hljs-built_in">TGAColor</span>(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+<span class="hljs-type">const</span> TGAColor red   = <span class="hljs-built_in">TGAColor</span>(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">255</span>);
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> </span>&#123;
+        <span class="hljs-function">TGAImage <span class="hljs-title">image</span><span class="hljs-params">(<span class="hljs-number">100</span>, <span class="hljs-number">100</span>, TGAImage::RGB)</span></span>;
+        image.<span class="hljs-built_in">set</span>(<span class="hljs-number">52</span>, <span class="hljs-number">41</span>, red);
+        image.<span class="hljs-built_in">flip_vertically</span>(); <span class="hljs-comment">// i want to have the origin at the left bottom corner of the image</span>
+        image.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;output.tga&quot;</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<h1 id="TinyRenderer-1-draw-a-line"><a href="#TinyRenderer-1-draw-a-line" class="headerlink" title="TinyRenderer 1 : draw a line"></a>TinyRenderer 1 : draw a line</h1><p>在本章节中,作者总共进行了5次尝试:</p>
+<h2 id="1-画一条普通的线"><a href="#1-画一条普通的线" class="headerlink" title="1. 画一条普通的线"></a>1. 画一条普通的线</h2><div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">float</span> t=<span class="hljs-number">0.</span>; t&lt;<span class="hljs-number">1.</span>; t+=<span class="hljs-number">.01</span>) &#123; 
+        <span class="hljs-type">int</span> x = x0 + (x1-x0)*t; 
+        <span class="hljs-type">int</span> y = y0 + (y1-y0)*t; 
+        image.<span class="hljs-built_in">set</span>(x, y, color); 
+    &#125; 
+&#125;</code></pre></div>
+
+<p>这种算法固然可以,但是由于我们很难决定t的增量值:</p>
+<div class="code-wrapper"><pre><code class="hljs">当t的增量过小,产生大量资源浪费
+
+当t的增量过大,线条割裂感严重
+</code></pre></div>
+<p>因此这是一种低效的算法</p>
+<p>进行改良:</p>
+<div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x=x0; x&lt;=x1; x++) &#123; 
+        <span class="hljs-type">float</span> t = (x-x0)/(<span class="hljs-type">float</span>)(x1-x0); 
+        <span class="hljs-type">int</span> y = y0*(<span class="hljs-number">1.</span>-t) + y1*t; 
+        image.<span class="hljs-built_in">set</span>(x, y, color); 
+    &#125; 
+&#125;</code></pre></div>
+
+<p>此时,t的大小自动产生,不需要我们自己设置了!但是产生了新的问题:</p>
+<h2 id="2-同时画三条线-各自具备自己的特点"><a href="#2-同时画三条线-各自具备自己的特点" class="headerlink" title="2.同时画三条线,各自具备自己的特点:"></a>2.同时画三条线,各自具备自己的特点:</h2><div class="code-wrapper"><pre><code class="hljs apache"><span class="hljs-attribute">line</span>(<span class="hljs-number">13</span>, <span class="hljs-number">20</span>, <span class="hljs-number">80</span>, <span class="hljs-number">40</span>, image, white); 
+<span class="hljs-attribute">line</span>(<span class="hljs-number">20</span>, <span class="hljs-number">13</span>, <span class="hljs-number">40</span>, <span class="hljs-number">80</span>, image, red); 
+<span class="hljs-attribute">line</span>(<span class="hljs-number">80</span>, <span class="hljs-number">40</span>, <span class="hljs-number">13</span>, <span class="hljs-number">20</span>, image, red);</code></pre></div>
+
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/31d795e4522403f6.png" srcset="/img/loading.gif" lazyload></p>
+<p>此时可以看到, 结果和我们预想的明显不同, 那么发生了什么问题呢?</p>
+<p>第一条线, 和第一次尝试一样没有区别, 成功</p>
+<p>第二条线是一条陡峭(steep)的线,此时我们可以看到线段非常明显的产生割裂—&gt;x的增量小,y的增量大,明显,应该考虑利用y生成x</p>
+<p>第三条线完全没出现: 因为是从右到左给的点,函数不兼容!</p>
+<p>有没有什么办法,可以使其具有对称性(交换两点的位置得到相同的直线)和不受线段斜率影响呢?</p>
+<h2 id="3-进行算法的改良"><a href="#3-进行算法的改良" class="headerlink" title="3.进行算法的改良"></a>3.进行算法的改良</h2><div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
+    <span class="hljs-type">bool</span> steep = <span class="hljs-literal">false</span>; 
+    <span class="hljs-keyword">if</span> (std::<span class="hljs-built_in">abs</span>(x0-x1)&lt;std::<span class="hljs-built_in">abs</span>(y0-y1)) &#123; <span class="hljs-comment">// if the line is steep, we transpose the image </span>
+        std::<span class="hljs-built_in">swap</span>(x0, y0); 
+        std::<span class="hljs-built_in">swap</span>(x1, y1); 
+        steep = <span class="hljs-literal">true</span>; 
+    &#125; 
+    <span class="hljs-keyword">if</span> (x0&gt;x1) &#123; <span class="hljs-comment">// make it left−to−right </span>
+        std::<span class="hljs-built_in">swap</span>(x0, x1); 
+        std::<span class="hljs-built_in">swap</span>(y0, y1); 
+    &#125; 
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x=x0; x&lt;=x1; x++) &#123; 
+        <span class="hljs-type">float</span> t = (x-x0)/(<span class="hljs-type">float</span>)(x1-x0); 
+        <span class="hljs-type">int</span> y = y0*(<span class="hljs-number">1.</span>-t) + y1*t; 
+        <span class="hljs-keyword">if</span> (steep) &#123; 
+            image.<span class="hljs-built_in">set</span>(y, x, color); <span class="hljs-comment">// if transposed, de−transpose </span>
+        &#125; <span class="hljs-keyword">else</span> &#123; 
+            image.<span class="hljs-built_in">set</span>(x, y, color); 
+        &#125; 
+    &#125; 
+&#125;</code></pre></div>
+
+<p>可以看到,此时我们解决了以上两种情况,但是,到此为止了吗?</p>
+<p>图形学是一个性能敏感的学科!尤其是实时渲染, 非常看重fps,因此,我们尝试着优化一下性能吧?</p>
+<p>不急,先看看哪部分最值得优化:</p>
+<div class="code-wrapper"><pre><code class="hljs zephir">%   cumulative   <span class="hljs-keyword">self</span>              <span class="hljs-keyword">self</span>     total 
+ time   seconds   seconds    calls  ms/call  ms/call  name 
+ <span class="hljs-number">69.16</span>      <span class="hljs-number">2.95</span>     <span class="hljs-number">2.95</span>  <span class="hljs-number">3000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  line(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, TGAImage&amp;, TGAColor) 
+ <span class="hljs-number">19.46</span>      <span class="hljs-number">3.78</span>     <span class="hljs-number">0.83</span> <span class="hljs-number">204000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAImage::set(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, TGAColor) 
+  <span class="hljs-number">8.91</span>      <span class="hljs-number">4.16</span>     <span class="hljs-number">0.38</span> <span class="hljs-number">207000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAColor::TGAColor(TGAColor <span class="hljs-keyword">const</span>&amp;) 
+  <span class="hljs-number">1.64</span>      <span class="hljs-number">4.23</span>     <span class="hljs-number">0.07</span>        <span class="hljs-number">2</span>    <span class="hljs-number">35.04</span>    <span class="hljs-number">35.04</span>  TGAColor::TGAColor(<span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>) 
+  <span class="hljs-number">0.94</span>      <span class="hljs-number">4.27</span>     <span class="hljs-number">0.04</span>                             TGAImage::get(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>)</code></pre></div>
+
+<p>可以看到, 画线段的line函数花费了70%的时间!(果然是我们函数写的太丑了</p>
+<p>下面我们来看看看如何优化吧!</p>
+<h2 id="4-算法的性能优化"><a href="#4-算法的性能优化" class="headerlink" title="4.算法的性能优化"></a>4.算法的性能优化</h2><p>先上代码!</p>
+<div class="code-wrapper"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
+    <span class="hljs-type">bool</span> steep = <span class="hljs-literal">false</span>; 
+    <span class="hljs-keyword">if</span> (std::<span class="hljs-built_in">abs</span>(x0-x1)&lt;std::<span class="hljs-built_in">abs</span>(y0-y1)) &#123; 
+        std::<span class="hljs-built_in">swap</span>(x0, y0); 
+        std::<span class="hljs-built_in">swap</span>(x1, y1); 
+        steep = <span class="hljs-literal">true</span>; 
+    &#125; 
+    <span class="hljs-keyword">if</span> (x0&gt;x1) &#123; 
+        std::<span class="hljs-built_in">swap</span>(x0, x1); 
+        std::<span class="hljs-built_in">swap</span>(y0, y1); 
+    &#125; 
+    <span class="hljs-type">int</span> dx = x1-x0; 
+    <span class="hljs-type">int</span> dy = y1-y0; 
+    <span class="hljs-type">float</span> derror = std::<span class="hljs-built_in">abs</span>(dy/<span class="hljs-built_in">float</span>(dx)); 
+    <span class="hljs-type">float</span> error = <span class="hljs-number">0</span>; 
+    <span class="hljs-type">int</span> y = y0; 
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x=x0; x&lt;=x1; x++) &#123; 
+        <span class="hljs-keyword">if</span> (steep) &#123; 
+            image.<span class="hljs-built_in">set</span>(y, x, color); 
+        &#125; <span class="hljs-keyword">else</span> &#123; 
+            image.<span class="hljs-built_in">set</span>(x, y, color); 
+        &#125; 
+        error += derror; 
+        <span class="hljs-keyword">if</span> (error&gt;<span class="hljs-number">.5</span>) &#123; 
+            y += (y1&gt;y0?<span class="hljs-number">1</span>:<span class="hljs-number">-1</span>); 
+            error -= <span class="hljs-number">1.</span>; 
+        &#125; 
+    &#125; 
+&#125;</code></pre></div>
+
+<p>区别在哪里?</p>
+<p>在最新的函数里,我们将dx,dy提出来做了计算,这样就不用在循环里做反复的计算了!可以想象,应该能省小一半的时间吧!</p>
+<div class="code-wrapper"><pre><code class="hljs pgsql">%   cumulative   self              self     total 
+ <span class="hljs-type">time</span>   seconds   seconds    calls  ms/<span class="hljs-keyword">call</span>  ms/<span class="hljs-keyword">call</span>  <span class="hljs-type">name</span> 
+ <span class="hljs-number">38.79</span>      <span class="hljs-number">0.93</span>     <span class="hljs-number">0.93</span>  <span class="hljs-number">3000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  line(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>, <span class="hljs-type">int</span>, <span class="hljs-type">int</span>, TGAImage&amp;, TGAColor) 
+ <span class="hljs-number">37.54</span>      <span class="hljs-number">1.83</span>     <span class="hljs-number">0.90</span> <span class="hljs-number">204000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAImage::<span class="hljs-keyword">set</span>(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>, TGAColor) 
+ <span class="hljs-number">19.60</span>      <span class="hljs-number">2.30</span>     <span class="hljs-number">0.47</span> <span class="hljs-number">204000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAColor::TGAColor(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>) 
+  <span class="hljs-number">2.09</span>      <span class="hljs-number">2.35</span>     <span class="hljs-number">0.05</span>        <span class="hljs-number">2</span>    <span class="hljs-number">25.03</span>    <span class="hljs-number">25.03</span>  TGAColor::TGAColor(unsigned <span class="hljs-type">char</span>, unsigned <span class="hljs-type">char</span>, unsigned <span class="hljs-type">char</span>, unsigned <span class="hljs-type">char</span>) 
+  <span class="hljs-number">1.25</span>      <span class="hljs-number">2.38</span>     <span class="hljs-number">0.03</span>                             TGAImage::<span class="hljs-keyword">get</span>(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>)</code></pre></div>
+
+<p>果不其然!省了一大半的时间!</p>
+<p>还能不能继续省呢?</p>
+<p>可以! C++语言中, 浮点数计算时间远超整型数!</p>
+<p>既然像素一定是整数,为什么我们要用浮点数!不如取整吧!</p>
+<h2 id="5-Bresenham’s-Line-Drawing-Algorithm"><a href="#5-Bresenham’s-Line-Drawing-Algorithm" class="headerlink" title="5.Bresenham’s Line Drawing Algorithm"></a>5.Bresenham’s Line Drawing Algorithm</h2><div class="code-wrapper"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
+    <span class="hljs-type">bool</span> steep = <span class="hljs-literal">false</span>; 
+    <span class="hljs-keyword">if</span> (std::<span class="hljs-built_in">abs</span>(x0-x1)&lt;std::<span class="hljs-built_in">abs</span>(y0-y1)) &#123; 
+        std::<span class="hljs-built_in">swap</span>(x0, y0); 
+        std::<span class="hljs-built_in">swap</span>(x1, y1); 
+        steep = <span class="hljs-literal">true</span>; 
+    &#125; 
+    <span class="hljs-keyword">if</span> (x0&gt;x1) &#123; 
+        std::<span class="hljs-built_in">swap</span>(x0, x1); 
+        std::<span class="hljs-built_in">swap</span>(y0, y1); 
+    &#125; 
+    <span class="hljs-type">int</span> dx = x1-x0; 
+    <span class="hljs-type">int</span> dy = y1-y0; 
+    <span class="hljs-type">int</span> derror2 = std::<span class="hljs-built_in">abs</span>(dy)*<span class="hljs-number">2</span>; 
+    <span class="hljs-type">int</span> error2 = <span class="hljs-number">0</span>; 
+    <span class="hljs-type">int</span> y = y0; 
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x=x0; x&lt;=x1; x++) &#123; 
+        <span class="hljs-keyword">if</span> (steep) &#123; 
+            image.<span class="hljs-built_in">set</span>(y, x, color); 
+        &#125; <span class="hljs-keyword">else</span> &#123; 
+            image.<span class="hljs-built_in">set</span>(x, y, color); 
+        &#125; 
+        error2 += derror2; 
+        <span class="hljs-keyword">if</span> (error2 &gt; dx) &#123; 
+            y += (y1&gt;y0?<span class="hljs-number">1</span>:<span class="hljs-number">-1</span>); 
+            error2 -= dx*<span class="hljs-number">2</span>; 
+        &#125; 
+    &#125; 
+&#125;</code></pre></div>
+
+<p>嗯嗯, 摆脱了浮点数,再来看看时间:</p>
+<div class="code-wrapper"><pre><code class="hljs zephir">%   cumulative   <span class="hljs-keyword">self</span>              <span class="hljs-keyword">self</span>     total 
+ time   seconds   seconds    calls  ms/call  ms/call  name 
+ <span class="hljs-number">42.77</span>      <span class="hljs-number">0.91</span>     <span class="hljs-number">0.91</span> <span class="hljs-number">204000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAImage::set(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, TGAColor) 
+ <span class="hljs-number">30.08</span>      <span class="hljs-number">1.55</span>     <span class="hljs-number">0.64</span>  <span class="hljs-number">3000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  line(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, TGAImage&amp;, TGAColor) 
+ <span class="hljs-number">21.62</span>      <span class="hljs-number">2.01</span>     <span class="hljs-number">0.46</span> <span class="hljs-number">204000000</span>     <span class="hljs-number">0.00</span>     <span class="hljs-number">0.00</span>  TGAColor::TGAColor(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>) 
+  <span class="hljs-number">1.88</span>      <span class="hljs-number">2.05</span>     <span class="hljs-number">0.04</span>        <span class="hljs-number">2</span>    <span class="hljs-number">20.02</span>    <span class="hljs-number">20.02</span>  TGAColor::TGAColor(<span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span>)</code></pre></div>
+
+<p>又快了不少! 甚至掉下耗时第一名了!真厉害!</p>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6.总结"></a>6.总结</h2><p>结合五次尝试,我说说我自己的感想吧:</p>
+<ol>
+<li>光栅化是以屏幕为基础的,也就是说心里一定要有像素的概念! 现实世界不能无限细分,有些数学会被限制拳脚,但也因此我们能产生像bresenham算法这样化零为整的偷懒方法!</li>
+<li>性能优化比想象的重要. 图形学的算法几乎都是极度复杂的递归或者迭代算法,一个小小的改变就能极大影响速度<br>通过两个简单的改动,我们将line()函数优化到了原来的1&#x2F;5.</li>
+<li>考虑一定要周全. 图形学是一个不在乎边界条件的学科,但是也是一个非常严谨的学科. 一个函数的不严谨会在无数次调用中发挥巨大的杀伤力</li>
+</ol>
+<p><strong>这里我必须告诫我自己: 你一定要能动手写代码!千万不能照抄! 一定要能自己写! 看着简单但其实不写是不会发现坑的!</strong></p>
+<p>最后贴一下自己的代码:</p>
+<div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//bresenham&#x27;s line drawing algorithem</span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">line</span><span class="hljs-params">(<span class="hljs-type">int</span> x0, <span class="hljs-type">int</span> y0, <span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1, TGAImage &amp;image, TGAColor color)</span> </span>&#123;
+    <span class="hljs-type">bool</span> steep = <span class="hljs-literal">false</span>;
+    <span class="hljs-keyword">if</span> (std::<span class="hljs-built_in">abs</span>(x0-x1)&lt;std::<span class="hljs-built_in">abs</span>(y0-y1)) &#123;
+        std::<span class="hljs-built_in">swap</span>(x0, y0);
+        std::<span class="hljs-built_in">swap</span>(x1, y1);
+        steep = <span class="hljs-literal">true</span>;
+    &#125;
+    <span class="hljs-keyword">if</span> (x0&gt;x1) &#123;
+        std::<span class="hljs-built_in">swap</span>(x0, x1);
+        std::<span class="hljs-built_in">swap</span>(y0, y1);
+    &#125;
+    <span class="hljs-type">int</span> dy = y1 - y0;
+    <span class="hljs-type">int</span> dx = x1 - x0;
+    <span class="hljs-type">int</span> error = <span class="hljs-number">0</span>;
+    <span class="hljs-type">int</span> derror = std::<span class="hljs-built_in">abs</span>(dy) * <span class="hljs-number">2</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> x = x0,y = y0; x &lt;= x1; x++)
+    &#123;
+  
+        <span class="hljs-keyword">if</span> (steep) &#123;
+            image.<span class="hljs-built_in">set</span>(y, x, color);
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            image.<span class="hljs-built_in">set</span>(x, y, color);
+        &#125;
+        error += derror;
+        <span class="hljs-keyword">if</span>(errno&gt;dx)
+        &#123;
+            y += (y1&gt;y0?<span class="hljs-number">1</span>:<span class="hljs-number">-1</span>); 
+            error -= dx*<span class="hljs-number">2</span>; 
+        &#125;
+    &#125;
+&#125;</code></pre></div>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" class="category-chain-item">图形学</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E5%9B%BE%E5%BD%A2%E5%AD%A6/TinyRenderer/" class="category-chain-item">TinyRenderer</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" class="print-no-link">#图形学</a>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/TinyRenderer/" class="print-no-link">#TinyRenderer</a>
+      
+        <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%85%89%E6%A0%85%E5%8C%96%E6%B8%B2%E6%9F%93%E5%99%A8/" class="print-no-link">#软件光栅化渲染器</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>TinyRenderer 0&amp;1</div>
+      <div>http://example.com/2022/05/05/TinyRenderer-0-1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/06/C-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/" title="C++ 面向对象编程课程笔记">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++ 面向对象编程课程笔记</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/01/%E5%9C%A8unity%E4%B8%AD%E4%BD%BF%E7%94%A8MYsql/" title="在unity中使用MYsql">
+                        <span class="hidden-mobile">在unity中使用MYsql</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

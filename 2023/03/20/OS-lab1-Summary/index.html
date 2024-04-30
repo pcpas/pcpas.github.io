@@ -1,0 +1,845 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="BUAA_OS_Lab1总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OS_lab1_内核启动">
+<meta property="og:url" content="http://example.com/2023/03/20/OS-lab1-Summary/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="BUAA_OS_Lab1总结">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319210414.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png">
+<meta property="article:published_time" content="2023-03-20T08:16:24.000Z">
+<meta property="article:modified_time" content="2023-04-04T09:28:38.000Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319210414.png">
+  
+  
+  
+  <title>OS_lab1_内核启动 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="OS_lab1_内核启动"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-20 16:16" pubdate>
+          2023年3月20日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">OS_lab1_内核启动</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="多个C文件的连接和编译"><a href="#多个C文件的连接和编译" class="headerlink" title="多个C文件的连接和编译"></a>多个C文件的连接和编译</h1><h2 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h2><p>![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319200455.png)<br> 多个C语言文件编译成为一个可执行文件,首先通过<code>gcc -c &lt;filename&gt;</code>将.c文件编译为.o二进制文件, 再通过链接的方式将多个.o文件链接在一起(此时最后每条指令的地址也因此确定), 生产最后的可执行文件.</p>
+<h2 id="ELF文件-深入探究编译链接"><a href="#ELF文件-深入探究编译链接" class="headerlink" title="ELF文件 - 深入探究编译链接"></a>ELF文件 - 深入探究编译链接</h2><p>链接器通过哪些信息来链接多个目标文件呢？—- 目标文件(比如说: elf文件)</p>
+<p>在目标文件中，记录了代码各个段的具体信息。链接器通过这些信息来将目标文件链接到一起。而 ELF(Executable and Linkable Format) 正是 Unix 上常用的一种 目标文件格式。其实，不仅仅是目标文件，可执行文件也是使用 ELF 格式记录的。这一点通过 ELF 的全称也可以看出来。</p>
+<p><strong>.o 文件就是 ELF 所包含的三种文件类型中的一种</strong>，称为可重 定位 (relocatable) 文件，其它两种文件类型分别是可执行 (executable) 文件和共享对象 (shared object) 文件，这两种文件都需要链接器对可重定位文件进行处理才能生成。</p>
+<p>ELF文件结构:<br>![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319201114.png)<br>段头表（或程序头表，program header table），主要包含程序中各个段（segment）的信息， <strong>段的信息需要在运行时刻使用</strong>。<br>节头表（section header table），主要包含程序中各个节（section）的信息，<strong>节的信息需要 在程序编译和链接的时候使用</strong>。(因此在这里我们主要关心节头表)<br>段头表和节头表指向了同样的地方，这意味着两者只是程序数据的两种视图:</p>
+<ol>
+<li>组成可重定位文件，参与可执行文件和可共享文件的链接。此时使用节头表。</li>
+<li>组成可执行文件或者可共享文件，在运行时为加载器提供信息。此时使用段头表。</li>
+</ol>
+<p>现在来逐一分析ELF文件内容:</p>
+<h3 id="ELF文件头"><a href="#ELF文件头" class="headerlink" title="ELF文件头"></a>ELF文件头</h3><p>ELF 的文件头，就是一个存了关于 ELF 文件信息的结构体。 首先，结构体中存储了 ELF 的魔数，以验证这是一个有效的 ELF。当我们验证了这是个 ELF 文件之后，便可以通过 ELF 头中提供的信息，进一步地解析 ELF 文件了。<br>存放了<code>Elf32_Ehdr</code>, <code>Elf32_Shdr</code>和<code>Elf32_Phdr</code>三种数据结构.<br>Ehdr : elf文件结构 ; <strong>Shdr: 节头表结构</strong> ; Phdr: 段头表结构</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span>
+    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> e_ident[EI_NIDENT]; <span class="hljs-comment">/* Magic number and other info */</span>
+    Elf32_Half e_type;        <span class="hljs-comment">/* Object file type */</span>
+    Elf32_Half e_machine;         <span class="hljs-comment">/* Architecture */</span>
+    Elf32_Word e_version;         <span class="hljs-comment">/* Object file version */</span>
+    Elf32_Addr e_entry;       <span class="hljs-comment">/* Entry point virtual address */</span>
+    Elf32_Off e_phoff;        <span class="hljs-comment">/* Program header table file offset */</span>
+    Elf32_Off e_shoff;        <span class="hljs-comment">/* Section header table file offset */</span>
+    Elf32_Word e_flags;       <span class="hljs-comment">/* Processor-specific flags */</span>
+    Elf32_Half e_ehsize;          <span class="hljs-comment">/* ELF header size in bytes */</span>
+    Elf32_Half e_phentsize;       <span class="hljs-comment">/* Program header table entry size */</span>
+    Elf32_Half e_phnum;       <span class="hljs-comment">/* Program header table entry count */</span>
+    Elf32_Half e_shentsize;       <span class="hljs-comment">/* Section header table entry size */</span>
+    Elf32_Half e_shnum;       <span class="hljs-comment">/* Section header table entry count */</span>
+    Elf32_Half e_shstrndx;        <span class="hljs-comment">/* Section header string table index */</span>
+&#125; Elf32_Ehdr;</code></pre></div>
+<p>可以看到, ehdr中包含了很多关键信息,如<code>e_phoff</code>, <code>e_shoff</code>. </p>
+<div class="code-wrapper"><pre><code class="hljs c">Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;</code></pre></div>
+<p>我们在读取elf文件一开始将ELF文件的入口作为一个<code>Elf32_Ehdr *</code>类型的指针, 这样做的好处是在地址空间自动的划出一个<code>sizeof(Elf32_Ehdr)</code>大小的区域, 这片区域自然就是ELF文件头.</p>
+<h3 id="读取ELF文件"><a href="#读取ELF文件" class="headerlink" title="读取ELF文件"></a>读取ELF文件</h3><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">readelf</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *binary, <span class="hljs-type">size_t</span> size)</span> &#123;
+    Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
+    <span class="hljs-comment">// Check whether `binary` is a ELF file.</span>
+    <span class="hljs-keyword">if</span> (!is_elf_format(binary, size)) &#123;
+        <span class="hljs-built_in">fputs</span>(<span class="hljs-string">&quot;not an elf file\n&quot;</span>, <span class="hljs-built_in">stderr</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+    &#125;
+    <span class="hljs-comment">// Get the address of the section table, the number of section headers and the size of a section header.</span>
+    <span class="hljs-type">const</span> <span class="hljs-type">void</span> *sh_table;
+    Elf32_Half sh_entry_count;
+    Elf32_Half sh_entry_size;
+    <span class="hljs-comment">/* Exercise 1.1: Your code here. (1/2) */</span>
+    <span class="hljs-comment">//这里主要考察的就是有没有去读elf.h文件,如果读了就知道这些数据全部在文件头中给出</span>
+    sh_table = binary + ehdr-&gt;e_shoff;
+    sh_entry_count = ehdr-&gt;e_shnum;
+    sh_entry_size = ehdr-&gt;e_shentsize;
+    <span class="hljs-comment">// For each section header, output its index and the section address.</span>
+    <span class="hljs-comment">//注意,Elf32_Shdr这个结构体，是一个节头部表的一个条目（即一个表项），而不是一个一整个段头部表, 起到存储对应的节的信息. 这里我们将对应的节的地址取出</span>
+    <span class="hljs-comment">// The index should start from 0.</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; sh_entry_count; i++) &#123;
+        <span class="hljs-type">const</span> Elf32_Shdr *shdr;
+        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> addr;
+        <span class="hljs-comment">/* Exercise 1.1: Your code here. (2/2) */</span>
+        addr = ((Elf32_Shdr *)(sh_table + i*sh_entry_size))-&gt;sh_addr;
+        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d:0x%x\n&quot;</span>, i, addr);
+    &#125;
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<h2 id="关于ELF32和ELF64文件"><a href="#关于ELF32和ELF64文件" class="headerlink" title="关于ELF32和ELF64文件"></a>关于ELF32和ELF64文件</h2><p>我们编写的 readelf 程序是不能解析 readelf 文件本身的，而我们刚才介绍的系统工具 readelf 则可以解析，这是为什么呢？<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319210414.png" srcset="/img/loading.gif" lazyload><br>可以发现, readelf文件是一个ELF64类型的文件, 而我们编写的<code>readelf.c</code>只能读取elf32类型的文件.<br>对比官方<code>elf.h</code>和MOS的<code>elf.h</code></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//linux elf.h</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">elf64_hdr</span> &#123;</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>	e_ident[EI_NIDENT];	 <span class="hljs-comment">//魔数 7F+’E’+’L’+’F’</span>
+  Elf64_Half e_type;				 <span class="hljs-comment">//文件类型 </span>
+  Elf64_Half e_machine;				 <span class="hljs-comment">//机器类型</span>
+  Elf64_Word e_version;				 <span class="hljs-comment">//文件版本</span>
+  Elf64_Addr e_entry;			     <span class="hljs-comment">//进程开始的虚地址，即系统将控制转移的位置</span>
+  Elf64_Off e_phoff;				 <span class="hljs-comment">//program header table的文件偏移</span>
+  Elf64_Off e_shoff;		         <span class="hljs-comment">//section header表的文件偏移</span>
+  Elf64_Word e_flags;				 <span class="hljs-comment">//处理器相关的标志</span>
+  Elf64_Half e_ehsize;				 <span class="hljs-comment">//ELF文件头的长度</span>
+  Elf64_Half e_phentsize;			 <span class="hljs-comment">//program header表中的入口的长度</span>
+  Elf64_Half e_phnum;				 <span class="hljs-comment">//program header表中的入口数目</span>
+  Elf64_Half e_shentsize;			 <span class="hljs-comment">//section header表中的入口的长度</span>
+  Elf64_Half e_shnum;				 <span class="hljs-comment">//section header表中的入口数目</span>
+  Elf64_Half e_shstrndx;			 <span class="hljs-comment">//section名表的位置，指出在section header表中的索引</span>
+&#125; Elf64_Ehdr;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">elf64_phdr</span> &#123;</span>
+  Elf64_Word p_type;		<span class="hljs-comment">//段的类型</span>
+  Elf64_Word p_flags;       <span class="hljs-comment">//段标志</span>
+  Elf64_Off p_offset;		<span class="hljs-comment">//段偏移</span>
+  Elf64_Addr p_vaddr;		<span class="hljs-comment">//段虚地址</span>
+  Elf64_Addr p_paddr;		<span class="hljs-comment">//段物理地址</span>
+  Elf64_Xword p_filesz;		<span class="hljs-comment">//段大小</span>
+  Elf64_Xword p_memsz;		<span class="hljs-comment">//段在内存的占用</span>
+  Elf64_Xword p_align;		<span class="hljs-comment">//段对齐</span>
+&#125; Elf64_Phdr;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">elf64_shdr</span> &#123;</span>
+  Elf64_Word sh_name;		<span class="hljs-comment">//段名，值为符号表索引</span>
+  Elf64_Word sh_type;		<span class="hljs-comment">//类别</span>
+  Elf64_Xword sh_flags;		<span class="hljs-comment">//程执行时的特性</span>
+  Elf64_Addr sh_addr;		<span class="hljs-comment">//进程的内存映像中出现，则给出开始的虚地址</span>
+  Elf64_Off sh_offset;		<span class="hljs-comment">//偏移</span>
+  Elf64_Xword sh_size;		<span class="hljs-comment">//大小</span>
+  Elf64_Word sh_link;		<span class="hljs-comment">//相对其他段的索引</span>
+  Elf64_Word sh_info;		<span class="hljs-comment">//信息</span>
+  Elf64_Xword sh_addralign;	<span class="hljs-comment">//对齐</span>
+  Elf64_Xword sh_entsize;	<span class="hljs-comment">//</span>
+&#125; Elf64_Shdr;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">elf64_sym</span> &#123;</span>
+  Elf64_Word st_name;		<span class="hljs-comment">//符号名</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>	st_info;	<span class="hljs-comment">//符号类型</span>
+  <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>	st_other;	<span class="hljs-comment">//其他</span>
+  Elf64_Half st_shndx;		<span class="hljs-comment">//段索引</span>
+  Elf64_Addr st_value;		<span class="hljs-comment">//符号地址值</span>
+  Elf64_Xword st_size;		<span class="hljs-comment">//符号大小</span>
+&#125; Elf64_Sym;
+</code></pre></div>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//MOS elf.h</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span>
+
+    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> e_ident[EI_NIDENT]; <span class="hljs-comment">/* Magic number and other info */</span>
+    Elf32_Half e_type;        <span class="hljs-comment">/* Object file type */</span>
+    Elf32_Half e_machine;         <span class="hljs-comment">/* Architecture */</span>
+    Elf32_Word e_version;         <span class="hljs-comment">/* Object file version */</span>
+    Elf32_Addr e_entry;       <span class="hljs-comment">/* Entry point virtual address */</span>
+    Elf32_Off e_phoff;        <span class="hljs-comment">/* Program header table file offset */</span>
+    Elf32_Off e_shoff;        <span class="hljs-comment">/* Section header table file offset */</span>
+    Elf32_Word e_flags;       <span class="hljs-comment">/* Processor-specific flags */</span>
+    Elf32_Half e_ehsize;          <span class="hljs-comment">/* ELF header size in bytes */</span>
+    Elf32_Half e_phentsize;       <span class="hljs-comment">/* Program header table entry size */</span>
+    Elf32_Half e_phnum;       <span class="hljs-comment">/* Program header table entry count */</span>
+    Elf32_Half e_shentsize;       <span class="hljs-comment">/* Section header table entry size */</span>
+    Elf32_Half e_shnum;       <span class="hljs-comment">/* Section header table entry count */</span>
+    Elf32_Half e_shstrndx;        <span class="hljs-comment">/* Section header string table index */</span>
+&#125; Elf32_Ehdr;
+
+<span class="hljs-comment">//余下相似,不在复制</span></code></pre></div>
+<p>但是因为readelf.c源代码几乎全部使用宏, 感觉如果想写一个解析elf64的readelf.c几乎不需要什么改动, 很疑惑(感觉会在这里出题呀)?</p>
+<h2 id="可执行文件的运行"><a href="#可执行文件的运行" class="headerlink" title="可执行文件的运行"></a>可执行文件的运行</h2><h3 id="内核在哪里-内存布局"><a href="#内核在哪里-内存布局" class="headerlink" title="内核在哪里:内存布局"></a>内核在哪里:内存布局</h3><p>只要我们能够将内核加载到正确的位置上，我们的内核就应该 可以运行起来。<br>思考到这里，我们又发现了几个重要的问题。 </p>
+<ol>
+<li>什么叫做正确的位置？到底放在哪里才叫正确。 </li>
+<li>哪个段被加载到哪里是记录在编译器编译出来的 ELF 文件里的，我们怎么才能修改它呢？</li>
+</ol>
+<p>关于内核应该被加载到哪里: kseg0<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png" srcset="/img/loading.gif" lazyload></p>
+<div class="code-wrapper"><pre><code class="hljs gherkin">/<span class="hljs-symbol">*</span>
+ o     4G -----------&gt;  +----------------------------+------------0x100000000
+ o                      |<span class="hljs-string">       ...                  </span>|<span class="hljs-string">  kseg2</span>
+<span class="hljs-string"> o      KSEG2    -----&gt; +----------------------------+------------0xc000 0000</span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">          Devices           </span>|<span class="hljs-string">  kseg1</span>
+<span class="hljs-string"> o      KSEG1    -----&gt; +----------------------------+------------0xa000 0000</span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">      Invalid Memory        </span>|<span class="hljs-string">   /</span>|<span class="hljs-string">\</span>
+<span class="hljs-string"> o                      +----------------------------+----</span>|<span class="hljs-string">-------Physical Memory Max</span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">       ...                  </span>|<span class="hljs-string">  kseg0</span>
+<span class="hljs-string"> o      KSTACKTOP-----&gt; +----------------------------+----</span>|<span class="hljs-string">-------0x8040 0000-------end</span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">       Kernel Stack         </span>|<span class="hljs-string">    </span>|<span class="hljs-string"> KSTKSIZE            /</span>|<span class="hljs-string">\</span>
+<span class="hljs-string"> o                      +----------------------------+----</span>|<span class="hljs-string">------                </span>|
+ o                      |<span class="hljs-string">       Kernel Text          </span>|<span class="hljs-string">    </span>|<span class="hljs-string">                    PDMAP</span>
+<span class="hljs-string"> o      KERNBASE -----&gt; +----------------------------+----</span>|<span class="hljs-string">-------0x8001 0000    </span>|
+ o                      |<span class="hljs-string">      Exception Entry       </span>|<span class="hljs-string">   \</span>|<span class="hljs-string">/                    \</span>|<span class="hljs-string">/</span>
+<span class="hljs-string"> o      ULIM     -----&gt; +----------------------------+------------0x8000 0000-------</span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">         User VPT           </span>|<span class="hljs-string">     PDMAP                /</span>|<span class="hljs-string">\</span>
+<span class="hljs-string"> o      UVPT     -----&gt; +----------------------------+------------0x7fc0 0000    </span>|
+ o                      |<span class="hljs-string">           pages            </span>|<span class="hljs-string">     PDMAP                 </span>|
+ o      UPAGES   -----&gt; +----------------------------+------------0x7f80 0000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">           envs             </span>|<span class="hljs-string">     PDMAP                 </span>|
+ o  UTOP,UENVS   -----&gt; +----------------------------+------------0x7f40 0000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o  UXSTACKTOP -/       </span>|<span class="hljs-string">     user exception stack   </span>|<span class="hljs-string">     BY2PG                 </span>|
+ o                      +----------------------------+------------0x7f3f f000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">                            </span>|<span class="hljs-string">     BY2PG                 </span>|
+ o      USTACKTOP ----&gt; +----------------------------+------------0x7f3f e000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">     normal user stack      </span>|<span class="hljs-string">     BY2PG                 </span>|
+ o                      +----------------------------+------------0x7f3f d000    |<span class="hljs-string"></span>
+<span class="hljs-string"> a                      </span>|<span class="hljs-string">                            </span>|<span class="hljs-string">                           </span>|
+ a                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                           |<span class="hljs-string"></span>
+<span class="hljs-string"> a                      .                            .                           </span>|
+ a                      .                            .                         kuseg
+ a                      .                            .                           |<span class="hljs-string"></span>
+<span class="hljs-string"> a                      </span>|<span class="hljs-string">~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>|<span class="hljs-string">                           </span>|
+ a                      |<span class="hljs-string">                            </span>|<span class="hljs-string">                           </span>|
+ o       UTEXT   -----&gt; +----------------------------+------------0x0040 0000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">      reserved for COW      </span>|<span class="hljs-string">     BY2PG                 </span>|
+ o       UCOW    -----&gt; +----------------------------+------------0x003f f000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">   reversed for temporary   </span>|<span class="hljs-string">     BY2PG                 </span>|
+ o       UTEMP   -----&gt; +----------------------------+------------0x003f e000    |<span class="hljs-string"></span>
+<span class="hljs-string"> o                      </span>|<span class="hljs-string">       invalid memory       </span>|<span class="hljs-string">                          \</span>|<span class="hljs-string">/</span>
+<span class="hljs-string"> a     0 ------------&gt;  +----------------------------+ ----------------------------</span>
+<span class="hljs-string"> o</span>
+<span class="hljs-string">*/</span></code></pre></div>
+
+<p>在发现了内核的正确位置后，我们只需要想办法让内核被加载到那里就可以了。<br>编译器在生成 ELF 文件时就已经记录了各节所需要被加载到的位置。最终的可执行文件实际上是由链接器产生的（它将多个目标文件链接 产生最终可执行文件）。因此，我们所需要做的，就是控制链接器的链接过程。</p>
+<h3 id="Linker-Script"><a href="#Linker-Script" class="headerlink" title="Linker Script"></a>Linker Script</h3><p>Linker Script 中记录了各个节应该如何映射到段，以及各个段应该被加载到的位置.<br>在链接过程中，目标文件被 看成节的集合，并使用节头表来描述各个节的组织。<br>换句话说，节记录了在链接过程中所需要的必要信息。<br>其中最为重要的三个节为.text、.data、.bss。<br>这三个节的意义是必须要掌握的：<br>.text 保存可执行文件的操作指令。<br>.data 保存已初始化的全局变量和静态变量。<br>.bss 保存未初始化的全局变量和静态变量。</p>
+<p>这里比较简单,略过~</p>
+<p>自此, 内核就成功被装在内存中了.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#操作系统</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="print-no-link">#内存管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OS_lab1_内核启动</div>
+      <div>http://example.com/2023/03/20/OS-lab1-Summary/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/04/04/OS-lab2-Summary/" title="OS_lab2_内存管理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">OS_lab2_内存管理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/16/BUAA2022-CacheLab/" title="BUAA2022-CacheLab">
+                        <span class="hidden-mobile">BUAA2022-CacheLab</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

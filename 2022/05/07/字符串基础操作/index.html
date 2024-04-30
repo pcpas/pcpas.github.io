@@ -1,0 +1,872 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="字符串！非常容易debug到崩溃嘻嘻">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串基础操作">
+<meta property="og:url" content="http://example.com/2022/05/07/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="字符串！非常容易debug到崩溃嘻嘻">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-07T12:08:38.000Z">
+<meta property="article:modified_time" content="2022-05-10T13:33:34.000Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="数据结构">
+<meta property="article:tag" content="字符串操作">
+<meta property="article:tag" content="后缀表达式">
+<meta property="article:tag" content="高精度计算">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>字符串基础操作 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="字符串基础操作"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-07 20:08" pubdate>
+          2022年5月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">字符串基础操作</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="关于"><a href="#关于" class="headerlink" title="关于"></a>关于</h1><p>笔者一直认为，字符串应该是每个刚入门代码的人心里最大的噩梦。不论是一堆莫名其妙的报错，永远都猜不对的+1还是不+1，还是那几个有无数潜规则的字符串函数，没调过大半天都不好意思说掌握了字符串。</p>
+<p>但是！字符串是入门还是很有道理的，因为真的很简单！只要心里逻辑清晰一点！就没问题！</p>
+<p>全文都以C语言为示例，高级语言字符串操作越来越简单。</p>
+<p>下面是笔者总结的一些易错、易混的概念和操作！</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="字符串的初始化"><a href="#字符串的初始化" class="headerlink" title="字符串的初始化"></a>字符串的初始化</h2><p>下面能正确进行字符串赋值，并且能确保字符串以’\0’结尾的操作是[ ] 【 正确答案: c】<br>(A)  char s[5] &#x3D; {“ABCDE”};<br>(B)  char s[5] &#x3D; {’A’, ’B’, ’C’, ’D’, ’E’};<br>(C)  char *s; s &#x3D; “ABCDE”;<br>(D)  char *s; scanf(“%s”, s);</p>
+<div class="note note-success">
+            <p>解释：A、B 爆数组了 ，但是两种初始化方法都是OK的</p><p>D、<strong>操作野指针</strong></p><p>答应我，记得初始化指针！</p>
+          </div>
+
+<h2 id="将字符串s中所有的字符“c”删除"><a href="#将字符串s中所有的字符“c”删除" class="headerlink" title="将字符串s中所有的字符“c”删除"></a>将字符串s中所有的字符“c”删除</h2><p>比较Tricky的小函数吧，好用的</p>
+<div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//下面程序的功能是将字符串s中所有的字符“c”删除。</span>
+<span class="hljs-function"><span class="hljs-type">char</span>* <span class="hljs-title">delete</span><span class="hljs-params">(<span class="hljs-type">char</span> *s)</span></span>
+<span class="hljs-function"></span>&#123;
+<span class="hljs-type">int</span> i,j;
+<span class="hljs-keyword">for</span>(i=j=<span class="hljs-number">0</span>;s[i];i++)
+&#123;
+<span class="hljs-keyword">if</span>(s[i]!=<span class="hljs-string">&#x27;c&#x27;</span>) s[j++] = s[i];
+&#125;
+s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
+<span class="hljs-keyword">return</span> s;
+&#125;</code></pre></div>
+
+<h2 id="关于如何理解形参中的指针"><a href="#关于如何理解形参中的指针" class="headerlink" title="关于如何理解形参中的指针"></a>关于如何理解形参中的指针</h2><div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//判断以下程序是否正确-----不正确!</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">char</span> *q)</span></span>
+<span class="hljs-function"></span>&#123;
+   	<span class="hljs-comment">//此处的q为形参q!影响不了实参q!深刻理解传指针和传值的区别!</span>
+	<span class="hljs-type">char</span> a[]=<span class="hljs-string">&quot;hello&quot;</span>;
+        q=a;
+&#125;
+<span class="hljs-built_in">main</span>()  
+&#123;
+           <span class="hljs-type">char</span> *p;
+           <span class="hljs-built_in">func</span>(p);
+           <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s\n&quot;</span>,p);
+&#125;</code></pre></div>
+
+<div class="note note-success">
+            <p>这里需要大家真的理解指针和数组名的含义才能辨析。</p><p>但其实也不难吧，就是很有迷惑性~</p>
+          </div>
+
+<h2 id="手写strcat（闹着玩的）"><a href="#手写strcat（闹着玩的）" class="headerlink" title="手写strcat（闹着玩的）"></a>手写strcat（闹着玩的）</h2><div class="code-wrapper"><pre><code class="hljs pgsql">//函数<span class="hljs-keyword">index</span>(<span class="hljs-type">char</span> s[],<span class="hljs-type">char</span> t[])检查字符串s中是否包含字符串t，若包含，则返回t在s中的开始位置(下标值)，否则返回<span class="hljs-number">-1</span>。
+//C 库函数 <span class="hljs-type">char</span> *strstr(const <span class="hljs-type">char</span> *haystack, const <span class="hljs-type">char</span> *needle) 在字符串 haystack 中查找第一次出现字符串 needle 的位置，不包含终止符 <span class="hljs-string">&#x27;\0&#x27;</span>,若不包含,返回<span class="hljs-keyword">null</span>.
+
+<span class="hljs-type">int</span> <span class="hljs-keyword">index</span>(<span class="hljs-type">char</span> s[],<span class="hljs-type">char</span> t[])
+&#123;
+ <span class="hljs-type">int</span> i,j,k;
+ <span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span>;s[i]!=<span class="hljs-string">&#x27;\0&#x27;</span>;i++)
+ &#123;
+  <span class="hljs-keyword">for</span>(j=i,k=<span class="hljs-number">0</span>; s[j]!=<span class="hljs-string">&#x27;\0&#x27;</span>&amp;&amp;s[j]==t[k];j++,k++)
+   ;
+  <span class="hljs-keyword">if</span>(t[k] == <span class="hljs-string">&#x27;\0&#x27;</span>)
+   <span class="hljs-keyword">return</span> i;
+ &#125;
+ <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+&#125;</code></pre></div>
+
+<div class="note note-success">
+            <p>同样没什么好说的，理解不了可以放弃了</p><p>进阶： KMP查找（不过想说一句，在考试的时候用就是 “可以但有病”）</p>
+          </div>
+
+<h2 id="invert函数"><a href="#invert函数" class="headerlink" title="invert函数"></a>invert函数</h2><div class="code-wrapper"><pre><code class="hljs axapta"><span class="hljs-keyword">void</span> invert (<span class="hljs-built_in">char</span> <span class="hljs-built_in">str</span> [] )
+&#123;
+ <span class="hljs-built_in">int</span> i,j,k;
+ <span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span>,j=strlen(<span class="hljs-built_in">str</span>)<span class="hljs-number">-1</span>;i&lt;j;i++,j--)
+ &#123;
+  k=<span class="hljs-built_in">str</span>[i];
+  <span class="hljs-built_in">str</span>[i]=<span class="hljs-built_in">str</span>[j];
+  <span class="hljs-built_in">str</span>[j]=k;
+ &#125;
+&#125;</code></pre></div>
+
+<div class="note note-success">
+            <p>Easier than easier</p>
+          </div>
+
+<h2 id="算术运算表达式-支持空格、连乘连除"><a href="#算术运算表达式-支持空格、连乘连除" class="headerlink" title="算术运算表达式(支持空格、连乘连除)"></a>算术运算表达式(支持空格、连乘连除)</h2><p>这道题就还是比较有难度了，下面我们来拆分一下本题的需求！</p>
+<h3 id="1-处理数据的范围"><a href="#1-处理数据的范围" class="headerlink" title="1. 处理数据的范围"></a>1. 处理数据的范围</h3><p>支持浮点数吗？支持超大数吗？数组该开多大？该用int、long还是double？</p>
+<p>浮点数： atoi函数面临失效风险，需要手写转换函数</p>
+<p>高精计算： 这都值得单独开一篇来说了！</p>
+<p>总之！做一道题，特别是这些脑筋急转弯题！非常需要考虑这个问题！</p>
+<h3 id="2-处理表达式"><a href="#2-处理表达式" class="headerlink" title="2.处理表达式"></a>2.处理表达式</h3><p>给你一个充满空格的表达式，你打算如何读入？又该如何储存？</p>
+<p>我认为好的做法应该是getchar读入，顺便消去空格，以&#x3D;为结尾</p>
+<p>根据本学期所学的内容，将表达式无脑先转为后缀表达式存起来应该是聪明的做法！（因为有板子呀嘿嘿）</p>
+<h3 id="3-中缀转后缀并计算"><a href="#3-中缀转后缀并计算" class="headerlink" title="3.中缀转后缀并计算"></a>3.中缀转后缀并计算</h3><p>中缀转后缀应该是一个树的问题？idk，但是至少对于表达式而言，我们采用这样的方法：</p>
+<div class="note note-primary">
+            <ol><li>从左至右进行遍历。</li><li>遇到运算数直接输出。</li><li>遇到左括号（作为最高优先级符号）直接入栈。</li><li>遇到右括号，弹出一切符号直到遇到左括号，然后把这对括号弹出但是不存。</li><li>遇到普通运算符，不断将其与栈顶元素比较，若高于栈顶则入栈，否则弹出当前栈顶，继续比较，直到高于栈顶或者栈空，入栈。</li><li>对象处理完毕，全部出栈。</li></ol>
+          </div>
+
+<p>下面是一个示例（我自己的板子）：</p>
+<div class="code-wrapper"><pre><code class="hljs cpp">
+<span class="hljs-comment">//不支持高精度和浮点数！</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-comment">//获取中缀表达式</span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">getExpresion</span><span class="hljs-params">(<span class="hljs-type">char</span>* s)</span></span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-type">char</span> c;
+    <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">while</span>((c = <span class="hljs-built_in">getchar</span>())!= <span class="hljs-string">&#x27;=&#x27;</span>)
+    &#123;
+        <span class="hljs-keyword">if</span>(c!=<span class="hljs-string">&#x27; &#x27;</span>)
+        &#123;
+            s[i++] = c;
+        &#125;
+    &#125;
+    s[i] = <span class="hljs-string">&#x27;\0&#x27;</span>;
+&#125;
+<span class="hljs-comment">//进行转换</span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">trans</span><span class="hljs-params">(<span class="hljs-type">char</span> *s, <span class="hljs-type">char</span> *t)</span> </span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-comment">//规定符号优先级</span>
+    <span class="hljs-type">int</span> prior[<span class="hljs-number">300</span>] = &#123;<span class="hljs-number">0</span>&#125;;
+    prior[<span class="hljs-string">&#x27;+&#x27;</span>] = <span class="hljs-number">1</span>, prior[<span class="hljs-string">&#x27;-&#x27;</span>] = <span class="hljs-number">1</span>, prior[<span class="hljs-string">&#x27;*&#x27;</span>] = <span class="hljs-number">2</span>, prior[<span class="hljs-string">&#x27;/&#x27;</span>] = <span class="hljs-number">2</span>;
+    <span class="hljs-comment">//处理开始</span>
+    <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>, j = <span class="hljs-number">0</span>;
+    <span class="hljs-type">char</span> stack[<span class="hljs-number">100000</span>] = &#123;<span class="hljs-string">&#x27;\0&#x27;</span>&#125;;
+    <span class="hljs-type">int</span> top = <span class="hljs-number">-1</span>;
+    <span class="hljs-keyword">while</span>(s[i])
+    &#123;
+        <span class="hljs-keyword">if</span>(s[i]&gt;=<span class="hljs-string">&#x27;0&#x27;</span>&amp;&amp;s[i]&lt;=<span class="hljs-string">&#x27;9&#x27;</span>) <span class="hljs-comment">//如果是数字，直接输出</span>
+        &#123;
+            <span class="hljs-keyword">while</span>(s[i]&gt;=<span class="hljs-string">&#x27;0&#x27;</span>&amp;&amp;s[i]&lt;=<span class="hljs-string">&#x27;9&#x27;</span>)
+            &#123;
+                t[j++] = s[i++];
+            &#125;
+            t[j++] = <span class="hljs-string">&#x27; &#x27;</span>;
+            i--;
+        &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(s[i]==<span class="hljs-string">&#x27;)&#x27;</span>)<span class="hljs-comment">//如果是右括号</span>
+        &#123;
+            <span class="hljs-keyword">while</span>(stack[top]!=<span class="hljs-string">&#x27;(&#x27;</span>)
+            &#123;
+                t[j++] = stack[top--];
+            &#125;
+            top--;
+        &#125;<span class="hljs-keyword">else</span><span class="hljs-comment">//如果是运算符或(</span>
+        &#123;
+            <span class="hljs-keyword">while</span>(top!=<span class="hljs-number">-1</span> &amp;&amp; prior[stack[top]]&gt;=prior[s[i]] &amp;&amp; stack[top]!=<span class="hljs-string">&#x27;(&#x27;</span>)
+            &#123;
+                t[j++] = stack[top--];
+            &#125;
+            stack[++top] = s[i];
+        &#125;
+        i++;
+    &#125;
+    <span class="hljs-keyword">while</span>(top!=<span class="hljs-number">-1</span>)
+    &#123;
+        t[j++] = stack[top--];
+    &#125;
+    t[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
+&#125;
+<span class="hljs-comment">//计算</span>
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">cal</span><span class="hljs-params">(<span class="hljs-type">char</span> *t)</span></span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>;
+    <span class="hljs-type">int</span> stack[<span class="hljs-number">10000</span>];
+    <span class="hljs-type">int</span> top = <span class="hljs-number">-1</span>;
+    <span class="hljs-keyword">while</span>(t[i])
+    &#123;
+        <span class="hljs-type">int</span> j = <span class="hljs-number">0</span>;
+        <span class="hljs-type">char</span> temp[<span class="hljs-number">100</span>];
+        <span class="hljs-keyword">if</span>(t[i]&gt;=<span class="hljs-string">&#x27;0&#x27;</span>&amp;&amp;t[i]&lt;=<span class="hljs-string">&#x27;9&#x27;</span>)
+        &#123;
+            <span class="hljs-keyword">while</span>(t[i]!=<span class="hljs-string">&#x27; &#x27;</span>)
+            &#123;
+                temp[j++] = t[i++];
+            &#125;
+            temp[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
+            <span class="hljs-type">int</span> x = <span class="hljs-built_in">atoi</span>(temp);
+            stack[++top] = x;
+        &#125;<span class="hljs-keyword">else</span>
+        &#123;
+            <span class="hljs-keyword">if</span>(t[i] == <span class="hljs-string">&#x27;+&#x27;</span>)
+            &#123;
+                <span class="hljs-type">int</span> x = stack[top--];
+                <span class="hljs-type">int</span> y = stack[top--];
+                stack[++top] = y + x;
+            &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(t[i] == <span class="hljs-string">&#x27;-&#x27;</span>)
+            &#123;
+                <span class="hljs-type">int</span> x = stack[top--];
+                <span class="hljs-type">int</span> y = stack[top--];
+                stack[++top] = y - x;
+            &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(t[i] == <span class="hljs-string">&#x27;*&#x27;</span>)
+            &#123;
+                <span class="hljs-type">int</span> x = stack[top--];
+                <span class="hljs-type">int</span> y = stack[top--];
+                stack[++top] = y * x;
+            &#125;<span class="hljs-keyword">else</span>
+            &#123;
+                <span class="hljs-type">int</span> x = stack[top--];
+                <span class="hljs-type">int</span> y = stack[top--];
+                <span class="hljs-comment">//printf(&quot;%d / %d\n&quot;, y, x);</span>
+                stack[++top] = y / x;
+            &#125;
+        &#125;
+        i++;
+    &#125;
+    <span class="hljs-keyword">return</span> stack[top--];
+&#125;
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-type">char</span> s[<span class="hljs-number">100000</span>];
+    <span class="hljs-type">char</span> t[<span class="hljs-number">100000</span>];
+    <span class="hljs-built_in">getExpresion</span>(s);
+    <span class="hljs-built_in">puts</span>(s);
+    <span class="hljs-built_in">trans</span>(s, t);
+    <span class="hljs-built_in">puts</span>(t);
+    <span class="hljs-type">int</span> ans = <span class="hljs-built_in">cal</span>(t);
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, ans);
+&#125;</code></pre></div>
+
+<h2 id="高精度计算"><a href="#高精度计算" class="headerlink" title="高精度计算"></a>高精度计算</h2><h3 id="加法"><a href="#加法" class="headerlink" title="加法"></a>加法</h3><h3 id="减法"><a href="#减法" class="headerlink" title="减法"></a>减法</h3>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="category-chain-item">数据结构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="print-no-link">#数据结构</a>
+      
+        <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%93%8D%E4%BD%9C/" class="print-no-link">#字符串操作</a>
+      
+        <a href="/tags/%E5%90%8E%E7%BC%80%E8%A1%A8%E8%BE%BE%E5%BC%8F/" class="print-no-link">#后缀表达式</a>
+      
+        <a href="/tags/%E9%AB%98%E7%B2%BE%E5%BA%A6%E8%AE%A1%E7%AE%97/" class="print-no-link">#高精度计算</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>字符串基础操作</div>
+      <div>http://example.com/2022/05/07/字符串基础操作/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/08/%E8%B0%93%E8%AF%8D%E9%80%BB%E8%BE%91%E5%91%BD%E9%A2%98/" title="谓词逻辑命题">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">谓词逻辑命题</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/07/%E5%9C%A8unity%E4%B8%AD%E9%80%9A%E8%BF%87%E4%BD%BF%E7%94%A8EPPLUS%E5%86%99%E5%85%A5%E5%92%8C%E8%AF%BB%E5%8F%96excel/" title="在unity中通过使用EPPLUS写入和读取excel">
+                        <span class="hidden-mobile">在unity中通过使用EPPLUS写入和读取excel</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

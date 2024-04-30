@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从零开始的编译器之目标代码生成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标代码生成">
+<meta property="og:url" content="http://example.com/2023/11/19/%E7%9B%AE%E6%A0%87%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="从零开始的编译器之目标代码生成">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212142956012.png">
+<meta property="article:published_time" content="2023-11-19T04:18:22.000Z">
+<meta property="article:modified_time" content="2023-12-12T06:55:36.959Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="编译技术">
+<meta property="article:tag" content="MIPS">
+<meta property="article:tag" content="代码生成">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212142956012.png">
+  
+  
+  
+  <title>目标代码生成 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="目标代码生成"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-11-19 12:18" pubdate>
+          2023年11月19日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">目标代码生成</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="目标代码生成之MIPS"><a href="#目标代码生成之MIPS" class="headerlink" title="目标代码生成之MIPS"></a>目标代码生成之MIPS</h1><h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p>所有MIPS代码生成的部分都属于包<code>backend</code>，结构如下：</p>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212142956012.png" srcset="/img/loading.gif" lazyload alt="image-20231212142956012" style="zoom:50%;" />
+
+<p>接下来我们具体介绍一下：</p>
+<ol>
+<li><code>MIPSInst</code>包：这个包用于存放MPIS的指令，分为Syscall指令，I型指令，J型指令，和R型指令，这四个类又继承于基类<code>MInstruction</code>。</li>
+<li><code>MIPSTable</code>包：这个包用于存放MIPS生成过程中的符号表和符号类。</li>
+<li><code>MIPSValues</code>包：这个包用于存放MIPS生成中的Value类。所有Value都要实现接口<code>MValue</code>，包括MemAddr、Label、MInstruction、MFucntion、MBasicBlock、Register等。此外，还有接口<code>Immediate</code>用于表示MIPS中的立即数，<code>FrameStack</code>中的占位符<code>Placeholder</code>类和<code>ImmediateNumber</code>类实现了这个接口。</li>
+<li><code>BackController</code>类：这个类用于生成和管理<code>MIPSBuilder</code>、<code>RegisterManager</code>等单例类，并控制文件的读写。</li>
+<li><code>MIPSBuilder</code>类：这个类是生成MIPS代码的主类，通过分析此前生成的LLVM代码来生成对应的MIPS代码。</li>
+<li><code>RegisterManager</code>类：这个类用于管理和分配寄存器。</li>
+</ol>
+<h2 id="指令的翻译"><a href="#指令的翻译" class="headerlink" title="指令的翻译"></a>指令的翻译</h2><p>在开始翻译之前，我们首先需要理清思路。以一段简单的C语言代码为例：</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> a=<span class="hljs-number">2</span>,b[<span class="hljs-number">3</span>]=&#123;<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>&#125;,c;
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span>&#123;
+    <span class="hljs-type">int</span> x=<span class="hljs-number">1</span>,y=<span class="hljs-number">2</span>;
+    y = x+y;
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<p>生成LLVM中间代码为：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">@a = dso_local global i32 2
+@b = dso_local global [3 x i32] [i32 1, i32 2, i32 3]
+@c = dso_local global i32 0
+
+define dso_local i32 @main ()&#123;
+	%1 = alloca i32
+	store i32 1, i32* %1
+	%2 = alloca i32
+	store i32 2, i32* %2
+	%3 = load i32, i32* %1
+	%4 = load i32, i32* %2
+	%5 = add i32 %3, %4
+	store i32 %5, i32* %2
+	ret i32 0
+&#125;</code></pre></div>
+
+<blockquote>
+<p>⚠️注意：我们的任务是将生成的LLVM中间代码翻译为MIPS汇编代码，因此不应该在生成时继续依赖原始的C代码。</p>
+</blockquote>
+<p>可以看出，在目标代码生成的过程中，我们需要存放在符号表里的是全局变量和使用<code>alloc</code>指令申请的变量（即C语言中的局部变量）</p>
+<p>因为在此阶段我们不考虑优化，因此全部的局部变量我们都存放在内存中。</p>
+<p>故符号表为：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>symbolType</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a</td>
+<td>GLOBAL</td>
+</tr>
+<tr>
+<td>b</td>
+<td>GLOBAL</td>
+</tr>
+<tr>
+<td>c</td>
+<td>GLOBAL</td>
+</tr>
+<tr>
+<td>%1</td>
+<td>MEM</td>
+</tr>
+<tr>
+<td>%2</td>
+<td>MEM</td>
+</tr>
+</tbody></table>
+<p>由于我们在编写LLVM时每次访问某个变量都会重新申请寄存器存放其值，LLVM中每个寄存器（除了存放变量地址的寄存器外）都只会被访问一次。通过这个性质，我们容易知道，当代码中同时未被访问的临时寄存器不超过10个（MIPS中只有10个$t寄存器）时，临时变量都不需要写入内存。</p>
+<p>在目标代码生成阶段，<strong>我们暂时有理由相信同时需要准备的临时寄存器不超过10个</strong>。因为这样的样例非常强。把寄存器的分配统一留到后面代码优化时可能是个更节省时间的选择。</p>
+<p>基于如上假设，指令的翻译将会变的非常简单。</p>
+<h3 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h3><div class="code-wrapper"><pre><code class="hljs assembly">%1 = alloca i32</code></pre></div>
+
+<p>显然，这对应着一个需要存入内存和符号表的变量，但是没有被使用。因此，我们只需要在符号表记录下其位置，而不需要翻译为任何命令。</p>
+<p>值得注意的是，对于普通变量和数组指针，我们只需要申请一个word的空间就够了，但是对于局部数组，我们要根据数组内元素的数量申请n个wrod。</p>
+<h3 id="store"><a href="#store" class="headerlink" title="store"></a>store</h3><p>赋值有四种情况：</p>
+<ol>
+<li>给局部普通变量赋值</li>
+<li>给局部数组变量赋值</li>
+<li>给全局普通变量赋值</li>
+<li>给全局数组变量赋值</li>
+<li>给参数普通和数组变量赋值</li>
+</ol>
+<p>我们来依次分析这四种情况：</p>
+<p><strong>情况一： 给局部普通变量赋值</strong></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> k=<span class="hljs-number">1</span>;</code></pre></div>
+
+<p>LLVM</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%7 = alloca i32
+store i32 1, i32* %7</code></pre></div>
+
+<p>这种情况下，%7所对应的一定是MIPS栈空间的一段内存地址，且符号表中已经记录，直接查表即可。</p>
+<p>此外，如果store的值是常量(除了0)的话，要先把常量load进临时寄存器，然后再sw。</p>
+<p>MIPS</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">li $t0 1
+sw $t0 offset($fp)</code></pre></div>
+
+<p><strong>情况二： 给局部数组变量赋值</strong></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> p[<span class="hljs-number">1</span>]=&#123;<span class="hljs-number">1</span>&#125;;</code></pre></div>
+
+<div class="code-wrapper"><pre><code class="hljs assembly">%8 = alloca [1 x i32]
+%9 = getelementptr [1 x i32], [1 x i32]* %8, i32 0, i32 0
+store i32 1, i32* %9</code></pre></div>
+
+<p>这种情况下，此前我们一定已经翻译了<code>%9 = getelementptr [1 x i32], [1 x i32]* %8, i32 0, i32 0</code>这条指令。这条取址指令也不用翻译为任何MIPS指令，只需要将标识符<code>%9</code>和其对应的地址记录在符号表中。因此查表就可以得到%9对应的偏移</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">li $t0 1
+sw $t0 offset($fp)</code></pre></div>
+
+<p><strong>情况三： 给全局普通变量赋值</strong></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//a是全局变量</span>
+a = <span class="hljs-number">3</span>;</code></pre></div>
+
+<div class="code-wrapper"><pre><code class="hljs assembly">store i32 3, i32* @a</code></pre></div>
+
+<p>这种情况下，我们的做法甚至更简单。</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">li $t0 3
+sw $t0 a</code></pre></div>
+
+<p><strong>情况四： 给全局数组变量赋值</strong></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//b是全局数组</span>
+b[<span class="hljs-number">2</span>] = <span class="hljs-number">10</span></code></pre></div>
+
+<div class="code-wrapper"><pre><code class="hljs assembly">%8 = getelementptr [3 x i32], [3 x i32]* @b, i32 0, i32 2
+store i32 10, i32* %8</code></pre></div>
+
+<p>这种情况下，此前我们一定已经翻译了<code>%8 = getelementptr [3 x i32], [3 x i32]* @b, i32 0, i32 2</code>这条指令。这条取址指令也不用翻译为任何MIPS指令，只需要将标识符<code>%8</code>和其对应的地址记录在符号表中。因此查表就可以得到%8对应的地址。</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">li $t0 10
+sw $t0 offset(b)</code></pre></div>
+
+<p><strong>情况五：给参数普通和数组变量赋值</strong></p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">fun</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b[])</span>&#123;
+  a = <span class="hljs-number">5</span>;
+	b[<span class="hljs-number">0</span>] = <span class="hljs-number">10</span>;
+&#125;</code></pre></div>
+
+<p>这一点会比较神奇。我们知道llvm对于传参的处理是要先保存在本地的寄存器中，然后再进行取用，这其实与MIPS的机制不太符合。</p>
+<p>因为MIPS每个函数的栈帧会专门留出传参区域供后续函数使用，因此重复的保存似乎显得非常多余。</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">define dso_local void @fun (i32 %0, i32* %1)&#123;
+	//保存参数
+	%3 = alloca i32
+	store i32 %0, i32* %3
+	%4 = alloca i32*
+	store i32* %1, i32** %4
+	//函数开始
+	store i32 5, i32* %3
+	%5 = load i32*, i32** %4
+	%6 = getelementptr i32, i32* %5, i32 0
+	store i32 10, i32* %6
+	ret void
+&#125;</code></pre></div>
+
+<p>因此，我们在保存参数的阶段可以不要直接翻译，而是把<code>%3</code>，<code>%4</code>及其对应的内存地址直接存入符号表。</p>
+<p>这样，对于<code>  a = 5;</code>的处理就与前文完全一致，为</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">li $t0 10
+sw $t0 %3</code></pre></div>
+
+<p>而对于<code>b[0] = 10;</code>我们反推回去：<code>%6</code>一定存放了其对应的地址记录，<code>%5</code>存放了<code>%4</code>对应的地址，故也与前文无异。</p>
+<p><strong>所以总结下来，store的翻译不会因为情况不同而产生不同的处理方式，直接查表即可。</strong></p>
+<p>最后补充一下rt不是立即数的情况，如：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">store i32 %7, i32* %8</code></pre></div>
+
+<p>这种情况下，<code>%7</code>也成了需要查表访问的对象。根据LLVM的性质，我们知道在此之前一定会有一个<code>load</code>语句帮我们将<code>%7</code>放在临时寄存器中并记录在符号表里，因此我们直接查表使用即可。</p>
+<h3 id="load"><a href="#load" class="headerlink" title="load"></a>load</h3><p>只会有这三种情况</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">load i32, i32* %4 
+load i32*, i32** %5
+load [3 x i32]*, [3 x i32]** %6</code></pre></div>
+
+<p>调用load时，我们有理由相信<code>%4 %5 %6</code>三个标识符已经在表里了。</p>
+<p>所以直接查表翻译即可。</p>
+<h3 id="getelementptr"><a href="#getelementptr" class="headerlink" title="getelementptr"></a>getelementptr</h3><p>在LLVM中，只有在使用数组的时候会用到getelementptr，因此我们考虑全局数组、局部数组和参数数组三种情况：</p>
+<ol>
+<li><strong>全局数组和局部数组</strong></li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">%16 = getelementptr [3 x i32], [3 x i32]* @b, i32 0, i32 2
+%17 = load i32, i32* %16
+
+%18 = getelementptr [2 x i32], [2 x i32]* %8, i32 0, i32 0
+%19 = load i32, i32* %18</code></pre></div>
+
+<p>对于全局数组来说，基地址即为<code>@b</code>，而在mips中直接根据维度计算出偏移即可，因此可以翻译为：</p>
+<div class="code-wrapper"><pre><code class="hljs mipsasm"><span class="hljs-keyword">addi </span>$<span class="hljs-built_in">t0</span> <span class="hljs-keyword">b </span><span class="hljs-number">3</span>*<span class="hljs-number">0</span>+<span class="hljs-number">1</span>*<span class="hljs-number">2</span>
+<span class="hljs-keyword">lw </span>$<span class="hljs-built_in">t1</span> $<span class="hljs-built_in">t0</span>
+
+<span class="hljs-keyword">addi </span>$<span class="hljs-built_in">t0</span> getReg(%<span class="hljs-number">8</span>) <span class="hljs-number">2</span>*<span class="hljs-number">0</span>+<span class="hljs-number">1</span>*<span class="hljs-number">0</span>
+<span class="hljs-keyword">lw </span>$<span class="hljs-built_in">t2</span> $<span class="hljs-built_in">t0</span></code></pre></div>
+
+<p>但是需要注意的是，<code>getelementptr</code>后面的偏移量有可能不是常数而是寄存器的值，这时候就得先取出来了。</p>
+<ol start="2">
+<li><strong>参数数组</strong></li>
+</ol>
+<p>这部分比较复杂，先不说明。若有时间再具体介绍。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>MIPS生成指导书给出的教程比较简略，因此需要发挥自己的主观能动性，先学习和了解MIPS的基本知识，如寄存器用法、函数调用等，然后根据自己的中间代码进行生成。生成的我累死了。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/" class="category-chain-item">编译技术</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/" class="print-no-link">#编译技术</a>
+      
+        <a href="/tags/MIPS/" class="print-no-link">#MIPS</a>
+      
+        <a href="/tags/%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90/" class="print-no-link">#代码生成</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>目标代码生成</div>
+      <div>http://example.com/2023/11/19/目标代码生成/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年11月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/11/26/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/" title="代码优化">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">代码优化</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/11/15/%E7%94%9F%E6%88%90%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81/" title="中间代码生成">
+                        <span class="hidden-mobile">中间代码生成</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

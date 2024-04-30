@@ -1,0 +1,707 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="自学3D Gaussian Splatting路上记录的笔记和问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="3DGS学习笔记">
+<meta property="og:url" content="http://example.com/2024/04/21/3DGS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="自学3D Gaussian Splatting路上记录的笔记和问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240429162200528.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240421222005501.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240421221359455.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240429172822712.png">
+<meta property="article:published_time" content="2024-04-21T14:21:55.000Z">
+<meta property="article:modified_time" content="2024-04-29T10:35:24.478Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="图形学">
+<meta property="article:tag" content="3DGS">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240429162200528.png">
+  
+  
+  
+  <title>3DGS学习笔记 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="3DGS学习笔记"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-04-21 22:21" pubdate>
+          2024年4月21日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">3DGS学习笔记</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="3DGS-Learning-Notes"><a href="#3DGS-Learning-Notes" class="headerlink" title="3DGS Learning Notes"></a>3DGS Learning Notes</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>3D 高斯泼溅技术（3D Gaussian Splatting，简称3DGS）由 <a target="_blank" rel="noopener" href="https://huggingface.co/papers/2308.04079">3D Gaussian Splatting for Real-Time Radiance Field Rendering</a> 一文首次提出。作为一种光栅化技术，3D 高斯泼溅可用于实时且逼真地渲染从一小组图像中学到的场景。</p>
+<p>具体来说，给定一组图像，我们利用SFM方法将其转化为一组稀疏点云，以此为基元3D高斯的均值初始值，通过迭代优化，得到完整的场景模型。</p>
+<h2 id="2-3D高斯"><a href="#2-3D高斯" class="headerlink" title="2 3D高斯"></a>2 3D高斯</h2><p>3D高斯可以看作一个椭球体，位置由其均值决定，大小由其协方差决定；高斯的颜色使用球谐函数表示，因为从不同的方向看上去高斯可能呈现不同的颜色；最后每个3D高斯还拥有自己的不透明度。<br>$$<br>p(x)&#x3D;\frac{1}{ | \Sigma|^{1 &#x2F; 2} (2 \pi)^{3 &#x2F; 2}} \exp \left(-\frac{1}{2}(\mathbf{x}-\mu)^{T} \Sigma^{-1}(\mathbf{x}-\mu)\right)<br>$$</p>
+<p>三维高斯的协方差矩阵是一个半正定的实对称矩阵，因此它一定可以被正交对角化：<br>$$<br>\Sigma&#x3D;Q \Lambda Q^T<br>$$<br>其中$\Lambda$是特征值矩阵，又因为其半正定性，因此可以进行分解：<br>$$<br>\Sigma&#x3D;Q \Lambda^{\frac{1}{2}} \Lambda^{\frac{1}{2}}Q^T<br>$$<br>其中$\Lambda^{\frac{1}{2}}$是对角矩阵，其转置等于自身，因此可以写为：<br>$$<br>\Sigma&#x3D;(Q\Lambda^{\frac{1}{2}})((\Lambda^{\frac{1}{2}})^TQ^T)<br>$$</p>
+<p>这里的$\Lambda^{\frac{1}{2}} $和$Q$有自己的物理意义，可以理解为高斯椭球的Scaling和Rotating，因此有：<br>$$<br>\Sigma&#x3D;RSS^TR^T<br>$$</p>
+<h2 id="3-初始化"><a href="#3-初始化" class="headerlink" title="3 初始化"></a>3 初始化</h2><p>首先，我们需要获取一组欲建模场景的图像，并使用运动恢复结构 (Structure from Motion，SfM) 方法从一组图像中估计出3D点云。我们可以直接调用 <a target="_blank" rel="noopener" href="https://colmap.github.io/">COLMAP</a> 库来完成这一步。</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240429162200528.png" srcset="/img/loading.gif" lazyload alt="image-20240429162200528"></p>
+<p>接下来，把每个点建模成一个 3D 高斯图像。从 SfM 数据中，我们能推断出每个高斯图像的位置和颜色。这对于一般的光栅化已经够用了，但如果要产生更高质量的表征的话，我们还需要对每个高斯图像进行训练，以推断出更精细的位置和颜色，并推断出协方差（即大小）和透明度。</p>
+<h2 id="4-训练"><a href="#4-训练" class="headerlink" title="4 训练"></a>4 训练</h2><p>与神经网络类似，3DGS使用随机梯度下降法进行训练，但这里没有神经网络的层的概念 (都是 3D 高斯函数)。</p>
+<p>训练步骤如下:</p>
+<ol>
+<li>用当前所有可微高斯图像渲染出图像 (稍后详细介绍)</li>
+<li>根据渲染图像和真实图像之间的差异计算损失</li>
+<li>根据损失调整每个高斯图像的参数</li>
+<li>根据情况对当前相关高斯图像进行自动致密化及修剪（densify_and_prune）</li>
+</ol>
+<p>步骤 1-3 比较简单，下面稍微解释一下第 4 步的工作:</p>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240421222005501.png" srcset="/img/loading.gif" lazyload alt="image-20240421222005501" style="zoom:50%;" />
+
+<ul>
+<li>如果某高斯图像的梯度很大 (即它错得比较离谱)，则对其进行分割或克隆<ul>
+<li>如果该高斯图像很小，则克隆它</li>
+<li>如果该高斯图像很大，则将其分割</li>
+</ul>
+</li>
+<li>如果该高斯图像的 alpha 太低，则将其删除</li>
+</ul>
+<p>这么做能帮助高斯图像更好地拟合精细的细节，同时修剪掉不必要的高斯图像。</p>
+<h2 id="5-可微的高斯光栅化"><a href="#5-可微的高斯光栅化" class="headerlink" title="5 可微的高斯光栅化"></a>5 可微的高斯光栅化</h2><p>渲染器可微代表着我们可以用随机梯度下降法来训练它，因此这样的渲染方法非常重要。</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240421221359455.png" srcset="/img/loading.gif" lazyload alt="image-20240421221359455"></p>
+<p>上面是3D GS 光栅化的示意图。</p>
+<p> (a) Splatting步骤将 3D 高斯函数投影到2D图像空间中。</p>
+<p> (b) 3D GS 将图像分成多个不重叠的块，即tile。</p>
+<p> (c) 3D GS 复制覆盖多个瓷砖的高斯函数，为每个副本分配一个标识符，即tile ID。</p>
+<p> (d) 通过渲染排序后的高斯函数，我们可以获得tile内的所有像素。</p>
+<p>那么3D高斯函数该如何进行投影，每个像素点最终的颜色又是如何计算出来的呢？</p>
+<p>首先我们看一个NeRf-style的体渲染方程：<br>$$<br>\begin{aligned}<br>C(p) &amp; &#x3D;\sum_{i&#x3D;1}^{N} c_{i}\left(1-\exp \left(-\sigma_{i} \delta_{i}\right)\right) T_{i} \<br>&amp; &#x3D;\sum_{i&#x3D;1}^{N} c_{i}\left(1-\exp \left(-\sigma_{i} \delta_{i}\right)\right) \exp \left(-\sum_{j&#x3D;1}^{i-1} \sigma_{j} \delta_{j}\right) \<br>&amp; &#x3D;\sum_{i&#x3D;1}^{N} c_{i}( \underbrace{1-\exp \left(-\sigma_{i} \delta_{i}\right))}<em>{\alpha</em>{i}} \prod_{j&#x3D;1}^{i-1} \underbrace{\exp \left(-\sigma_{j} \delta_{j}\right)}<em>{1-\alpha</em>{j}} \<br>&amp; &#x3D;\sum_{i&#x3D;1}^{N} c_{i} \alpha_{i} \underbrace{\prod_{j&#x3D;1}^{i-1}\left(1-\alpha_{j}\right)}_{\text {transmittance }}<br>\end{aligned}<br>$$<br>其中$\sigma$是体密度，$\delta$是采样间距，$\alpha$是不透明度。</p>
+<p>3D高斯公式为：<br>$$<br>p(x)&#x3D;\frac{1}{ | \Sigma|^{1 &#x2F; 2} (2 \pi)^{3 &#x2F; 2}} \exp \left(-\frac{1}{2}(\mathbf{x}-\mu)^{T} \Sigma^{-1}(\mathbf{x}-\mu)\right)<br>$$<br>这里我们将$p(x)$理解为这个高斯对空间中某点$x$的影响。我们忽略其归一化项，通过不透明度进行加权，得到公式：<br>$$<br>f_{i}(p)&#x3D;\sigma\left(\alpha_{i}\right) \exp \left(-\frac{1}{2}\left(p-\mu_{i}\right) \Sigma_{i}^{-1}\left(p-\mu_{i}\right)\right)<br>$$<br>其中不透明度为$\sigma(\alpha_{i})$​，应用 sigmoid 函数将参数映射到 [0, 1] 区间。</p>
+<p>因此上述的体渲染方程就可以被改写为：<br>$$<br>C(p)&#x3D;\sum_{i \in N} c_{i} f_{i}^{2 D}(p) \underbrace{\prod_{j&#x3D;1}^{i-1}\left(1-f_{j}^{2 D}(p)\right)}_{\text {transmittance }}<br>$$<br>其中$f_i^{2D}(p)$表示第$i$个3D高斯函数的2D投影在$p$点的不透明度。</p>
+<p>如何进行投影呢？</p>
+<p>首先，我们需要通过相机的外参矩阵View Matrix $W$ 将坐标从世界坐标系转换到相机坐标系：<br>$$<br>W&#x3D;<br>[R \mid \boldsymbol{t}]&#x3D;\left[\begin{array}{lll|l}<br>r_{1,1} &amp; r_{1,2} &amp; r_{1,3} &amp; t_{1} \<br>r_{2,1} &amp; r_{2,2} &amp; r_{2,3} &amp; t_{2} \<br>r_{3,1} &amp; r_{3,2} &amp; r_{3,3} &amp; t_{3}<br>\end{array}\right]<br>$$<br>接着，我们需要根据相机的内参矩阵计算出其投影矩阵。投影矩阵的作用是将坐标从相机坐标系转换为光线坐标系，也可以理解为图片坐标系。</p>
+<p>相机内参矩阵的一般形式可以写为：<br>$$<br>K&#x3D;\left(\begin{array}{ccc}<br>f_{x} &amp; s &amp; x_{0} \<br>0 &amp; f_{y} &amp; y_{0} \<br>0 &amp; 0 &amp; 1<br>\end{array}\right)<br>$$<br>这样的形式是根据相机本身的性质，如焦距和主点位置决定的。如果我们给出投影前视椎体的对应坐标，一般性地，我们也可以将透视矩阵写作：<br>$$<br>K&#x3D;<br>\left(\begin{array}{cccc}<br>\frac{2 n}{r-l} &amp; 0 &amp; \frac{r+l}{r-l} &amp; 0 \<br>0 &amp; \frac{2 n}{t-b} &amp; \frac{t+b}{t-b} &amp; 0 \<br>0 &amp; 0 &amp; \frac{-(f+n)}{f-n} &amp; \frac{-2 f n}{f-n} \<br>0 &amp; 0 &amp; -1 &amp; 0<br>\end{array}\right)<br>$$<br>值得注意的是，这里给出的透视矩阵是遵循<a target="_blank" rel="noopener" href="https://www.songho.ca/opengl/gl_projectionmatrix.html">OpenGL规范</a>的，矩阵的形式根据坐标系和正则立方体的不同，形式上会产生差别。</p>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240429172822712.png" srcset="/img/loading.gif" lazyload alt="投影矩阵如何发挥作用" style="zoom:50%;" />
+
+<p>这里我们根据已知数据，使用的投影矩阵为：<br>$$<br>K&#x3D;\left[\begin{array}{cccc}<br>2 f_{x} &#x2F; w &amp; 0 &amp; 0 &amp; 0 \<br>0 &amp; 2 f_{y} &#x2F; h &amp; 0 &amp; 0 \<br>0 &amp; 0 &amp; (f+n) &#x2F;(f-n) &amp; -2 f n &#x2F;(f-n) \<br>0 &amp; 0 &amp; 1 &amp; 0<br>\end{array}\right]<br>$$<br>其中$(f_x,f_y)$是相机的焦距，$(w,h)$是输出图片的尺寸，$(n,f)$是近远裁剪平面。</p>
+<p>此时，求投影世界坐标系中的3D高斯的均值$\boldsymbol{\mu}$在NDC坐标系的坐标$\boldsymbol{t}$公式为：<br>$$<br>\boldsymbol{t}&#x3D;<br>\begin{array}{c}<br>\left[\begin{array}{c}<br>t_x \<br>t_y \<br>t_z \<br>t_w<br>\end{array}\right]&#x3D;K W\left[\begin{array}{c}<br>\mu_{x} \<br>\mu_{y} \<br>\mu_{z} \<br>1<br>\end{array}\right] \<br>\end{array}<br>$$<br>但是，值得注意的是，这样的投影变换是非线性的。3D高斯进行这样的变化后，投影得到的形状将不再满足高斯分布，而这点是我们不希望看到的。</p>
+<p>注意到非线性变换是局部线性的，而这种局部的线性变换可以使用其雅可比矩阵表示：<br>$$<br>J&#x3D;\left[\begin{array}{ccc}<br>f_{x} &#x2F; t_{z} &amp; 0 &amp; -f_{x} t_{x} &#x2F; t_{z}^{2} \<br>0 &amp; f_{y} &#x2F; t_{z} &amp; -f_{y} t_{y} &#x2F; t_{z}^{2} \<br>0 &amp; 0 &amp; 0<br>\end{array}\right]<br>$$<br>因此，我们粗略地认为某一3D高斯的投影变换可以使用其均值点的雅可比矩阵等效，故投影后仍能保持2D高斯的性质，协方差$\Sigma’$为：<br>$$<br>{\Sigma}^{\prime}&#x3D;JW\Sigma W^T J^T<br>$$<br>终于，我们得到了投影后的2D高斯，其均值为$\boldsymbol{t}$，协方差为$\Sigma^{\prime}$​，其第三维代表其深度，在排序时会用到，其他时候可以不用考虑。</p>
+<p>最后把数据代入渲染方程(9)就可以顺利算出每个像素的颜色了！</p>
+<h2 id="6-损失函数"><a href="#6-损失函数" class="headerlink" title="6 损失函数"></a>6 损失函数</h2><p>$$<br>\mathcal{L}&#x3D;(1-\lambda) \mathcal{L}<em>{1}+\lambda \mathcal{L}</em>{\text {D-SSIM }}<br>$$</p>
+<p>方法的损失函数比较简单，为L1_loss和D-SSIM loss的加权和，权重为超参数。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" class="category-chain-item">图形学</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" class="print-no-link">#图形学</a>
+      
+        <a href="/tags/3DGS/" class="print-no-link">#3DGS</a>
+      
+        <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" class="print-no-link">#机器学习</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>3DGS学习笔记</div>
+      <div>http://example.com/2024/04/21/3DGS学习笔记/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年4月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/11/26/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/" title="代码优化">
+                        <span class="hidden-mobile">代码优化</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

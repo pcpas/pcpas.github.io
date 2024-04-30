@@ -1,0 +1,940 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从零开始的编译器之中间代码生成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="中间代码生成">
+<meta property="og:url" content="http://example.com/2023/11/15/%E7%94%9F%E6%88%90%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="从零开始的编译器之中间代码生成">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212135953120.png">
+<meta property="article:published_time" content="2023-11-15T02:39:05.000Z">
+<meta property="article:modified_time" content="2023-12-12T07:01:55.250Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="编译技术">
+<meta property="article:tag" content="代码生成">
+<meta property="article:tag" content="LLVM">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212135953120.png">
+  
+  
+  
+  <title>中间代码生成 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="中间代码生成"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-11-15 10:39" pubdate>
+          2023年11月15日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">中间代码生成</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="LLVM中间代码生成"><a href="#LLVM中间代码生成" class="headerlink" title="LLVM中间代码生成"></a>LLVM中间代码生成</h1><h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p>中间代码生成器相关的类我全部放在了包<code>IR</code>中，结构如下：</p>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231212135953120.png" srcset="/img/loading.gif" lazyload alt="image-20231212135953120" style="zoom:25%;" />
+
+<p>其中：</p>
+<ol>
+<li><code>IRTable</code>包中存放了中间代码生成过程中使用的符号表结构以及符号类。</li>
+<li><code>Value</code>包中存放了LLVM中所有的Value类，其中<code>IRValue</code>是所有Value的基类，Fucntion、BasicBlock和Value分别代表LLVM中的函数、基本块和临时寄存器。<ol>
+<li><code>ConstVal</code>和<code>GlobalVar</code>代表常量和全局变量，继承自Value。</li>
+<li><code>Instruction</code>包中存放了所有的LLVM指令类。指令类存在一个基类<code>Instruction</code>,所有的指令类都继承自这个基类。</li>
+<li><code>Use</code>和<code>User</code>是为了代码优化，后续应该还会继续优化，因此先按下不表。</li>
+</ol>
+</li>
+<li><code>MideController</code>是整个过程的控制类，也负责生成和管理<code>Visitor</code>和<code>IRBuildFactory</code>的单例和文件的读写。</li>
+<li><code>Visitor</code>和<code>IRBuildFactory</code>两个类相互协助生成LLVM，其中<code>Visitor</code>分析抽象语法树，<code>IRBuildFactory</code>根据Visitor得到的信息生成对应的LLVM代码。</li>
+</ol>
+<p>因为指导书的内容已经较为详细具体，因此这里仅补充一个专题。</p>
+<h2 id="专题：变量的声明和使用"><a href="#专题：变量的声明和使用" class="headerlink" title="专题：变量的声明和使用"></a>专题：变量的声明和使用</h2><p>这部分比较难，所以开一个专题专门分析一下。</p>
+<h3 id="一、普通类型变量"><a href="#一、普通类型变量" class="headerlink" title="一、普通类型变量"></a>一、普通类型变量</h3><p>普通类型变量即<code>Btype</code>类型变量，因其不涉及指针和数据的操作，是最简单的变量类型。</p>
+<p>源程序：</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> a0 = <span class="hljs-number">0</span>;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">func1</span><span class="hljs-params">(<span class="hljs-type">int</span> a)</span>&#123;
+    <span class="hljs-keyword">return</span>;
+&#125;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;
+    <span class="hljs-type">int</span> a1 =<span class="hljs-number">1</span>;
+    a0 = <span class="hljs-number">2</span>;
+    a1 = <span class="hljs-number">3</span>;
+    func1(a0);
+    func1(a1);
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<h4 id="1-全局变量"><a href="#1-全局变量" class="headerlink" title="1. 全局变量"></a>1. 全局变量</h4><p>让我们将目光聚焦于生成的LLVM代码的全局变量部分：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">@a0 = global i32 0, align 4
+
+define i32 @main() &#123;
+	...
+  store i32 2, i32* @a0, align 4
+  %3 = load i32, i32* @a0, align 4
+  call void @func1(i32 %3)
+	...
+&#125;</code></pre></div>
+
+<p>可以看到，声明时，全局变量标识符<code>@a0	</code>存放了其内存地址，类型为<code>Btype*</code>。</p>
+<p>为其赋值时可直接使用<code>  store i32 2, i32* @a0, align 4</code></p>
+<p>取其值时可直接使用<code>  %3 = load i32, i32* @a0, align 4</code>。</p>
+<h4 id="2-局部变量"><a href="#2-局部变量" class="headerlink" title="2. 局部变量"></a>2. 局部变量</h4><div class="code-wrapper"><pre><code class="hljs assembly">define i32 @main() &#123;
+  %2 = alloca i32, align 4
+  store i32 1, i32* %2, align 4
+  store i32 3, i32* %2, align 4
+  %4 = load i32, i32* %2, align 4
+  call void @func1(i32 %4)
+&#125;</code></pre></div>
+
+<p>可以看到，为了声明一个局部变量，我们需要使用到<code>  %2 = alloca i32, align 4</code></p>
+<p>此时<code>%2</code>寄存器存放了这个局部变量在内存中的指针，故<code>%2</code>的类型为<code>Btype*</code>。</p>
+<p>同理，当我们想要给局部变量赋值时，只要向这段地址写入对应的值即可，<code>  store i32 3, i32* %2, align 4</code>，特别地，局部变量的初始化也可以看做是为其赋值。</p>
+<p>取其值时可直接使用<code>%4 = load i32, i32* %2, align 4</code>。</p>
+<h3 id="二、数组类型变量"><a href="#二、数组类型变量" class="headerlink" title="二、数组类型变量"></a>二、数组类型变量</h3><p>这部分非常复杂，话不多说，上代码。</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> a0[<span class="hljs-number">1</span>];
+<span class="hljs-type">int</span> b0[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>];
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">func1</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b[])</span>&#123;
+    <span class="hljs-keyword">return</span>;
+&#125;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">func2</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b[], <span class="hljs-type">int</span> c[][<span class="hljs-number">1</span>])</span>&#123;
+    a;
+    b[<span class="hljs-number">0</span>];
+    c[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>];
+
+    func1(b[<span class="hljs-number">0</span>], c[<span class="hljs-number">0</span>]);
+    func2(a, b, c);
+    <span class="hljs-keyword">return</span>;
+&#125;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;
+    <span class="hljs-type">int</span> a1[<span class="hljs-number">1</span>] = &#123;<span class="hljs-number">0</span>&#125;;
+    <span class="hljs-type">int</span> b1[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>] = &#123;&#123;<span class="hljs-number">0</span>&#125;&#125;;
+
+    a0[<span class="hljs-number">0</span>] = <span class="hljs-number">1</span>;
+    b0[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] = <span class="hljs-number">1</span>;
+
+    a1[<span class="hljs-number">0</span>] = <span class="hljs-number">1</span>;
+    b1[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] = <span class="hljs-number">1</span>;
+
+    func1(a0[<span class="hljs-number">0</span>], a0);
+    func1(a1[<span class="hljs-number">0</span>], a1);
+
+    func2(b0[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>], b0[<span class="hljs-number">0</span>], b0);
+    func2(b1[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>], b1[<span class="hljs-number">0</span>], b1);
+
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<h4 id="1-全局数组"><a href="#1-全局数组" class="headerlink" title="1. 全局数组"></a>1. 全局数组</h4><div class="code-wrapper"><pre><code class="hljs assembly">@a0 = global [1 x i32] zeroinitializer, align 4
+@b0 = global [1 x [1 x i32]] zeroinitializer, align 4
+
+define i32 @main() &#123;
+	...
+  store i32 1, i32* getelementptr inbounds ([1 x i32], [1 x i32]* @a0, i64 0, i64 0), align 4
+  store i32 1, i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0), align 4
+	...
+  %9 = load i32, i32* getelementptr inbounds ([1 x i32], [1 x i32]* @a0, i64 0, i64 0), align 4
+  call void @func1(i32 %9, i32* getelementptr inbounds ([1 x i32], [1 x i32]* @a0, i64 0, i64 0))
+  ...
+  %13 = load i32, i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0), align 4
+  call void @func2(i32 %13, i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0), [1 x i32]* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0))
+  ret i32 0
+&#125;</code></pre></div>
+
+<p>首先，在声明上，<code>@a0</code>和<code>@b0</code>仍然存放着对应数组的指针，类型分别为<code>[1 x i32]*</code>和<code>[1 x [1 x i32]]*</code>。</p>
+<p>这里我们先假设赋值语句只会对数组中的<strong>一个基本类型值</strong>进行赋值，那么，赋值的过程如下：</p>
+<ol>
+<li>根据数组标识符后的偏移值取得该“基本类型值”的内存中的指针</li>
+<li>向这段地址写入值</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">store i32 1, i32* getelementptr inbounds ([1 x i32], [1 x i32]* @a0, i64 0, i64 0), align 4
+store i32 1, i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0), align 4</code></pre></div>
+
+<p>使用其值时，逻辑会更加复杂。</p>
+<p>这里我们以<code>b0</code>为例：</p>
+<ol>
+<li>当我们要取<code>b[0][0]</code>时：</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">%13 = load i32, i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0), align 4</code></pre></div>
+
+<ol start="2">
+<li>当我们要取<code>b[0]</code>时：</li>
+</ol>
+<p>按照朴素的理解，猜想应该是：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">[1 x 32i]* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0)</code></pre></div>
+
+<p>但是其实应该是：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">i32* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0, i64 0)</code></pre></div>
+
+<p>可以看到，这两个命令对地址<code>@b0</code>的getelementptr操作完全相同，只是<code>b[0][0]</code>多了一个取值的操作。</p>
+<p>也就是说，在取址会故意多取一层，这与我们在处理函数形参时完全对应。</p>
+<ol start="3">
+<li>同样的，直接取<code>b0</code>时：</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">[1 x i32]* getelementptr inbounds ([1 x [1 x i32]], [1 x [1 x i32]]* @b0, i64 0, i64 0)</code></pre></div>
+
+<h4 id="2-局部数组"><a href="#2-局部数组" class="headerlink" title="2. 局部数组"></a>2. 局部数组</h4><div class="code-wrapper"><pre><code class="hljs assembly">define i32 @main() #0 &#123;
+	...
+  %2 = alloca [1 x i32], align 4
+  %3 = alloca [1 x [1 x i32]], align 4
+  %4 = bitcast [1 x i32]* %2 to i8*
+  call void @llvm.memset.p0i8.i64(i8* align 4 %4, i8 0, i64 4, i1 false)
+  %5 = bitcast [1 x [1 x i32]]* %3 to i8*
+  call void @llvm.memset.p0i8.i64(i8* align 4 %5, i8 0, i64 4, i1 false)
+  ...
+  %6 = getelementptr inbounds [1 x i32], [1 x i32]* %2, i64 0, i64 0
+  store i32 1, i32* %6, align 4
+  %7 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 0
+  %8 = getelementptr inbounds [1 x i32], [1 x i32]* %7, i64 0, i64 0
+  store i32 1, i32* %8, align 4
+  ...
+  %10 = getelementptr inbounds [1 x i32], [1 x i32]* %2, i64 0, i64 0
+  %11 = load i32, i32* %10, align 4
+  %12 = getelementptr inbounds [1 x i32], [1 x i32]* %2, i64 0, i64 0
+  call void @func1(i32 %11, i32* %12)
+	...
+  %14 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 0
+  %15 = getelementptr inbounds [1 x i32], [1 x i32]* %14, i64 0, i64 0
+  %16 = load i32, i32* %15, align 4
+  %17 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 1
+  %18 = getelementptr inbounds [1 x i32], [1 x i32]* %17, i64 0, i64 0
+  %19 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 0
+  call void @func2(i32 %16, i32* %18, [1 x i32]* %19)
+  ret i32 0
+&#125;</code></pre></div>
+
+<p>首先在声明时，与普通类型变量类似，数组类型变量也会先申请空间：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%2 = alloca [1 x i32], align 4
+%3 = alloca [1 x [1 x i32]], align 4</code></pre></div>
+
+<p>这段代码中的初始化部分引入了新的复杂指令和函数，故先不看。我们也可以采用赋值和<code>zeroinitialier</code>来进行初始化。</p>
+<p>那么怎么对数组元素进行赋值呢？与全局数组类似，先取得对应元素的指针，然后直接赋值即可：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%6 = getelementptr inbounds [1 x i32], [1 x i32]* %2, i64 0, i64 0
+store i32 1, i32* %6, align 4
+%7 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 0
+%8 = getelementptr inbounds [1 x i32], [1 x i32]* %7, i64 0, i64 0
+store i32 1, i32* %8, align 4</code></pre></div>
+
+<p>最后，<strong>使用的方法</strong>也和全局数组一致完全一致，这里就不再赘述。</p>
+<h3 id="三、函数中的形参"><a href="#三、函数中的形参" class="headerlink" title="三、函数中的形参"></a>三、函数中的形参</h3><div class="code-wrapper"><pre><code class="hljs assembly">define void @func2(i32 %0, i32* %1, [1 x i32]* %2) #0 &#123;
+  %4 = alloca i32, align 4
+  %5 = alloca i32*, align 8
+  %6 = alloca [1 x i32]*, align 8
+  store i32 %0, i32* %4, align 4
+  store i32* %1, i32** %5, align 8
+  store [1 x i32]* %2, [1 x i32]** %6, align 8
+  %7 = load i32, i32* %4, align 4
+  %8 = load i32*, i32** %5, align 8
+  %9 = getelementptr inbounds i32, i32* %8, i64 0
+  %10 = load i32, i32* %9, align 4
+  %11 = load [1 x i32]*, [1 x i32]** %6, align 8
+  %12 = getelementptr inbounds [1 x i32], [1 x i32]* %11, i64 0
+  %13 = getelementptr inbounds [1 x i32], [1 x i32]* %12, i64 0, i64 0
+  %14 = load i32, i32* %13, align 4
+  %15 = load i32*, i32** %5, align 8
+  %16 = getelementptr inbounds i32, i32* %15, i64 0
+  %17 = load i32, i32* %16, align 4
+  %18 = load [1 x i32]*, [1 x i32]** %6, align 8
+  %19 = getelementptr inbounds [1 x i32], [1 x i32]* %18, i64 0
+  %20 = getelementptr inbounds [1 x i32], [1 x i32]* %19, i64 0, i64 0
+  call void @func1(i32 %17, i32* %20)
+  %21 = load i32, i32* %4, align 4
+  %22 = load i32*, i32** %5, align 8
+  %23 = load [1 x i32]*, [1 x i32]** %6, align 8
+  call void @func2(i32 %21, i32* %22, [1 x i32]* %23)
+  ret void
+&#125;</code></pre></div>
+
+<p>可以看到，函数<code>@func2</code>一共接受了三种类型的参数：<code>i32</code>, <code>i32*</code>, <code>[1 x i32]*</code>，我们分别来看看如何使用。</p>
+<h4 id="1-普通类型变量"><a href="#1-普通类型变量" class="headerlink" title="1. 普通类型变量"></a>1. 普通类型变量</h4><div class="code-wrapper"><pre><code class="hljs assembly">define void @func2(i32 %0, i32* %1, [1 x i32]* %2) #0 &#123;
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %4, align 4
+  ...
+  &#125;</code></pre></div>
+
+<p>可以看到，我们只要新建一个局部变量来接受此变量即可。</p>
+<h4 id="2-数组类型变量"><a href="#2-数组类型变量" class="headerlink" title="2. 数组类型变量"></a>2. 数组类型变量</h4><p>首先我们需要注意到，无论数组类型形参的如何定义，始终都会以指针的形式出现。</p>
+<p>如下两种写法最后生成的llvm代码会完全一致。</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">func2</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b[], <span class="hljs-type">int</span> c[][<span class="hljs-number">1</span>])</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">func2</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b[<span class="hljs-number">1</span>], <span class="hljs-type">int</span> c[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>])</span>;</code></pre></div>
+
+<p>首先，我们仍然需要新建局部变量来存放指针类型的值：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%5 = alloca i32*, align 8
+%6 = alloca [1 x i32]*, align 8
+store i32* %1, i32** %5, align 8
+store [1 x i32]* %2, [1 x i32]** %6, align 8</code></pre></div>
+
+<p>接下来让我们看看赋值,已经知道赋值的流程为：取得元素地址-&gt;store，</p>
+<p>回忆一下怎么给普通的数组元素赋值：</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%6 = getelementptr inbounds [1 x i32], [1 x i32]* %2, i64 0, i64 0
+store i32 1, i32* %6, align 4
+%7 = getelementptr inbounds [1 x [1 x i32]], [1 x [1 x i32]]* %3, i64 0, i64 0
+%8 = getelementptr inbounds [1 x i32], [1 x i32]* %7, i64 0, i64 0
+store i32 1, i32* %8, align 4</code></pre></div>
+
+<p>这里的<code>%2</code>和<code>%3</code>寄存器的数据类型是<code>[1 x i32]*</code>和<code>[1 x [1 x i32]]*</code>，而我们的<code>%5</code>和<code>%6</code>的数据类型分别是<code>i32**</code>和<code>[1 x i32]**</code>。</p>
+<p>因此，我们要先使用load取得<code>%8</code>和<code>%9</code>，类型分别为<code>i32*</code>和<code>[1 x i32]*</code>，再使用<code>getelementptr</code>拿到对应位置的元素。</p>
+<div class="code-wrapper"><pre><code class="hljs assembly">%8 = load i32*, i32** %5, align 8
+%9 = getelementptr inbounds i32, i32* %8, i64 0
+store i32 1, i32* %9, align 4
+
+%10 = load [1 x i32]*, [1 x i32]** %6, align 8
+%11 = getelementptr inbounds [1 x i32], [1 x i32]* %10, i64 0
+%12 = getelementptr inbounds [1 x i32], [1 x i32]* %11, i64 0, i64 0
+store i32 2, i32* %12, align 4</code></pre></div>
+
+<p>在使用上，与之前的数组类似，分为以下几种情况：这里我们以<code>c</code>为例：</p>
+<ol>
+<li>当我们要取<code>c[0][0]</code>时：</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">%11 = load [1 x i32]*, [1 x i32]** %6, align 8
+%12 = getelementptr inbounds [1 x i32], [1 x i32]* %11, i64 0
+%13 = getelementptr inbounds [1 x i32], [1 x i32]* %12, i64 0, i64 0
+%14 = load i32, i32* %13, align 4</code></pre></div>
+
+<ol start="2">
+<li>当我们要取<code>c[0]</code>时：</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">%18 = load [1 x i32]*, [1 x i32]** %6, align 8
+%19 = getelementptr inbounds [1 x i32], [1 x i32]* %18, i64 0
+%20 = getelementptr inbounds [1 x i32], [1 x i32]* %19, i64 0, i64 0</code></pre></div>
+
+<p>可以看到，这两个命令对地址<code>@c</code>的getelementptr操作完全相同，只是<code>c[0][0]</code>多了一个取值的操作。</p>
+<p>也就是说，在取址会故意多取一层，这与我们在处理函数形参时完全对应。</p>
+<ol start="3">
+<li>同样的，直接取<code>b0</code>时：</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs assembly">%23 = load [1 x i32]*, [1 x i32]** %6, align 8</code></pre></div>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次的实验真的很难，而且时间也比较紧凑。</p>
+<p>主要的难点主要是数组、尤其是参数数组的处理以及逻辑语句，包括短路求值的处理，建议一边写文档一遍梳理思路，再写代码。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/" class="category-chain-item">编译技术</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF/" class="print-no-link">#编译技术</a>
+      
+        <a href="/tags/%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90/" class="print-no-link">#代码生成</a>
+      
+        <a href="/tags/LLVM/" class="print-no-link">#LLVM</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>中间代码生成</div>
+      <div>http://example.com/2023/11/15/生成中间代码/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年11月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/11/19/%E7%9B%AE%E6%A0%87%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90/" title="目标代码生成">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">目标代码生成</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/10/15/%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F/" title="如何设计一个高并发系统">
+                        <span class="hidden-mobile">如何设计一个高并发系统</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

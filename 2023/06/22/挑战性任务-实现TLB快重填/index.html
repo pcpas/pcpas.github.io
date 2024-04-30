@@ -1,0 +1,937 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="BUAA_OS_挑战性任务总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OS_挑战性任务-实现TLB快重填">
+<meta property="og:url" content="http://example.com/2023/06/22/%E6%8C%91%E6%88%98%E6%80%A7%E4%BB%BB%E5%8A%A1-%E5%AE%9E%E7%8E%B0TLB%E5%BF%AB%E9%87%8D%E5%A1%AB/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="BUAA_OS_挑战性任务总结">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407200928561.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407200943261.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616204601.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407201337033.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616225058.png">
+<meta property="og:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616225303.png">
+<meta property="article:published_time" content="2023-06-22T05:03:39.000Z">
+<meta property="article:modified_time" content="2024-04-07T12:16:19.527Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407200928561.png">
+  
+  
+  
+  <title>OS_挑战性任务-实现TLB快重填 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="OS_挑战性任务-实现TLB快重填"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-22 13:03" pubdate>
+          2023年6月22日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">OS_挑战性任务-实现TLB快重填</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>实现TLB快重填</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407200928561.png" srcset="/img/loading.gif" lazyload alt="image-20240407200928561"></p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407200943261.png" srcset="/img/loading.gif" lazyload alt="image-20240407200943261"></p>
+<h1 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h1><p>总的来说，lab2挑战性任务的实现过程主要分为四个部分，分别是：</p>
+<ol>
+<li>将页表映射到 kseg2 区域。</li>
+<li>初始化Context寄存器。</li>
+<li>实现 TLB 快速重填程序。</li>
+<li>实现一个测试程序体现重填加速效果。<br>接下来，我将一步一步地对我做的工作进行介绍。</li>
+</ol>
+<h2 id="将页表映射到-kseg2-区域"><a href="#将页表映射到-kseg2-区域" class="headerlink" title="将页表映射到 kseg2 区域"></a>将页表映射到 kseg2 区域</h2><p>首先我们要明确页表映射的位置。<br>kesg2空间较大（1G），且似乎未被使用过，故可以随意选择页表的映射位置。我这里选择将页表映射到kseg的起始位置，即<code>KSEG2</code>。<br>我们知道每个进程初始化其虚拟内存是在<code>\kern\env.c</code>文件中的<code>env_setup_vm</code>函数内完成的, 函数将进程的页表映射至<code>UVPT</code>。为了在在不影响 MOS 已有的页面管理机制的情况下，将 MOS 目前的页表映射到kseg2，我没有破坏原本在<code>UVPT</code>的映射, 而是选择加入新的到<code>KSEG2</code>的映射。</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">env_setup_vm</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Env *e)</span> &#123;
+	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Page</span> *<span class="hljs-title">p</span>;</span>
+	try(page_alloc(&amp;p));
+	p-&gt;pp_ref++;
+	e-&gt;env_pgdir = (Pde *)page2kva(p);
+	<span class="hljs-built_in">memcpy</span>(e-&gt;env_pgdir, base_pgdir, BY2PG);
+	e-&gt;env_pgdir[PDX(UVPT)] = PADDR(e-&gt;env_pgdir) | PTE_V;
+	p-&gt;pp_ref++;
+	e-&gt;env_pgdir[PDX(KSEG2)] = PADDR(e-&gt;env_pgdir) | PTE_V;
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<h2 id="初始化Context寄存器"><a href="#初始化Context寄存器" class="headerlink" title="初始化Context寄存器"></a>初始化Context寄存器</h2><p>首先要了解Contest寄存器的工作原理：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616204601.png" srcset="/img/loading.gif" lazyload alt="image.png"><br><code>PTEBase</code>：kseg2 页表基地址的高11位。<br><code>Bad VPN</code>：出现 TLB miss 异常的地址的虚页号，与 BadVaddr 的高位相同。</p>
+<p>这里kseg2页表基址是11位，也就是说context寄存器要求我们的页表大小是$2^{21}$位，也即是2MB对齐的，这正好对应了用户空间的大小。<br>这里的基址需要我们自己去设置，使用<code>mtc0</code>指令即可，设置一次，后面都无需设置。</p>
+<p>我是在<code>page_init</code>分页管理初始化函数中对CONTEXT寄存器进行设置的，调用了我在<code>tlb_asm.S</code>中定义的函数<code>tlb_init</code> 。</p>
+<div class="code-wrapper"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">LEAF</span><span class="hljs-params">(tlb_init)</span></span>
+    <span class="hljs-selector-tag">li</span>  t0, <span class="hljs-number">0</span>xC0000000
+    mtc0    t0, CP0_CONTEXT
+    jr ra
+<span class="hljs-function"><span class="hljs-title">END</span><span class="hljs-params">(tlb_init)</span></span></code></pre></div>
+
+<h2 id="实现-TLB-快速重填程序"><a href="#实现-TLB-快速重填程序" class="headerlink" title="实现 TLB 快速重填程序"></a>实现 TLB 快速重填程序</h2><p>这是整个任务中最困难和最复杂的部分。<br>先看代码，然后我根据代码添加注释梳理实现的思路：</p>
+<div class="code-wrapper"><pre><code class="hljs mipsasm"><span class="hljs-comment"># 声明三个变量，分别用于暂存ra，ENTRYHI和BADVADDR的值</span>
+<span class="hljs-meta">.data</span>
+<span class="hljs-symbol">temp_EPC:</span>
+<span class="hljs-meta">.word</span> <span class="hljs-number">0</span>
+<span class="hljs-symbol">temp_ENTRYHI:</span>
+<span class="hljs-meta">.word</span> <span class="hljs-number">0</span>
+<span class="hljs-symbol">temp_BADVADDR:</span>
+<span class="hljs-meta">.word</span> <span class="hljs-number">0</span>
+<span class="hljs-meta">.text</span>
+<span class="hljs-comment"># 快速重填函数的主体部分</span>
+<span class="hljs-symbol">fast_tlb_refill:</span>
+<span class="hljs-meta">.set</span> <span class="hljs-keyword">noreorder</span>
+<span class="hljs-keyword"></span><span class="hljs-meta">.set</span> noat
+	<span class="hljs-comment"># 在这个函数中最好只使用k0,k1寄存器以避免未知错误</span>
+	<span class="hljs-comment"># 从对应寄存器中取出我们想要暂存的值，包括CP0_EPC,CP0_ENTRYHI,CP0_BADVADDR</span>
+	<span class="hljs-keyword">mfc0 </span><span class="hljs-built_in">k0</span>, CP0_EPC
+	la <span class="hljs-built_in">k1</span>, temp_EPC
+	<span class="hljs-keyword">sw </span><span class="hljs-built_in">k0</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>)
+	<span class="hljs-keyword">mfc0 </span><span class="hljs-built_in">k0</span>, CP0_ENTRYHI
+	la <span class="hljs-built_in">k1</span>, temp_ENTRYHI
+	<span class="hljs-keyword">sw </span><span class="hljs-built_in">k0</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>)
+	<span class="hljs-keyword">mfc0 </span><span class="hljs-built_in">k0</span>, CP0_BADVADDR
+	la <span class="hljs-built_in">k1</span>, temp_BADVADDR
+	<span class="hljs-keyword">sw </span><span class="hljs-built_in">k0</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>)
+
+	<span class="hljs-comment"># 取得CP0_CONTEXT的值</span>
+	<span class="hljs-keyword">mfc0 </span><span class="hljs-built_in">k1</span>, CP0_CONTEXT
+	<span class="hljs-comment"># 可能会发生异常重入，重入后进入通用处理函数</span>
+	<span class="hljs-keyword">lw </span><span class="hljs-built_in">k1</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>) 
+	<span class="hljs-keyword">nop</span>
+<span class="hljs-keyword"></span>
+	<span class="hljs-comment"># 将我们获取和保存的CP0_ENTRYLO0和CP0_ENTRYHI值填入寄存器,</span>
+	la <span class="hljs-built_in">k0</span>, temp_ENTRYHI
+	<span class="hljs-keyword">lw </span><span class="hljs-built_in">k0</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k0</span>)
+	<span class="hljs-keyword">mtc0 </span><span class="hljs-built_in">k1</span>, CP0_ENTRYLO0
+	<span class="hljs-keyword">mtc0 </span><span class="hljs-built_in">k0</span>, CP0_ENTRYHI
+
+	<span class="hljs-comment"># 检查PTE是否有效</span>
+	<span class="hljs-keyword">andi </span><span class="hljs-built_in">k1</span>, <span class="hljs-built_in">k1</span>, PTE_V
+	<span class="hljs-comment"># 若PTE无效，跳转至default_tlb_refill</span>
+	<span class="hljs-keyword">beqz </span><span class="hljs-built_in">k1</span>, default_tlb_refill 
+	<span class="hljs-keyword">nop</span>
+<span class="hljs-keyword"></span>
+	<span class="hljs-comment"># 恢复CP0_EPC的值</span>
+	la <span class="hljs-built_in">k1</span>, temp_EPC
+	<span class="hljs-keyword">lw </span><span class="hljs-built_in">k1</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>)
+	<span class="hljs-keyword">nop</span>
+<span class="hljs-keyword"></span>	<span class="hljs-comment"># TLB重填</span>
+	<span class="hljs-keyword">tlbwr</span>
+<span class="hljs-keyword"></span>	<span class="hljs-keyword">nop</span>
+<span class="hljs-keyword"></span>	<span class="hljs-keyword">jr </span><span class="hljs-built_in">k1</span>
+	rfe
+<span class="hljs-symbol">	</span>
+<span class="hljs-symbol">default_tlb_refill:</span>
+	<span class="hljs-comment"># 因为可能在之前发生了异常重入，导致BADVADDR和EPC的值发生变化，因此必须在这里手动填充</span>
+	la <span class="hljs-built_in">k0</span>, temp_BADVADDR
+	la <span class="hljs-built_in">k1</span>, temp_EPC
+	<span class="hljs-keyword">lw </span><span class="hljs-built_in">k0</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k0</span>)
+	<span class="hljs-keyword">lw </span><span class="hljs-built_in">k1</span>, <span class="hljs-number">0</span>(<span class="hljs-built_in">k1</span>)
+	<span class="hljs-keyword">mtc0 </span><span class="hljs-built_in">k0</span>, CP0_BADVADDR <span class="hljs-comment">#恢复寄存器的值，下同</span>
+	<span class="hljs-keyword">mtc0 </span><span class="hljs-built_in">k1</span>, CP0_EPC
+	<span class="hljs-comment"># 填好寄存器的值后跳转到通用处理</span>
+	<span class="hljs-keyword">j </span>exc_gen_entry
+	<span class="hljs-keyword">nop</span>
+<span class="hljs-keyword"></span><span class="hljs-meta">.set</span> <span class="hljs-built_in">at</span>
+<span class="hljs-meta">.set</span> reorder</code></pre></div>
+
+<p>这里需要注意的就是两次异常处理：<br>首先，访问Kseg2区域会经过TLB，因此可能会发生异常重入现象：<br>我们访问页面的逻辑是这样的：<br>欲访问一个页面-&gt;查找TLB-&gt;TLB Miss进入快充填程序-&gt;查找位于KSEG2的页表-&gt;查找TLB<br>如果在最后一个TLB处发生了缺页，那么也就是在异常处理的过程中再次发生异常，也就是这里所说的异常重入现象。<br>MIPS R3000的机制是在此处（KESG2）发生TLB MISS是不会进入我们的快重填程序的，而是直接进入通用异常处理程序。我们必须要对这个机制有所了解，<strong>因为二次异常的发生会破坏第一次异常寄存器所保存的现场</strong>。</p>
+<p>第二就是如果发生PTE无效的情况，我们需要有所处理。<br>这里由于笔者时间有限等综合因素，其实没有什么很好的处理方法，故选择直接跳转至原本的通用异常处理程序进行处理。<br>由于局部性原理，这种情况发生的概率总体来看较小，故这是可以接受的。</p>
+<p>第三我们要记得在进程销毁时无效化旧的TLB表项。</p>
+<p>我们将页表项映射至KSEG2后，还需要在<strong>合适的时间对其无效化</strong>，如果不进行这个工作的话，<strong>可能在多进程的情况下出错。</strong></p>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20240407201337033.png" srcset="/img/loading.gif" lazyload alt="image-20240407201337033" style="zoom:50%;" />
+
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>到这里TLB快重填的实现部分就结束了，从代码量来看较为简单，但是考虑到资料较少，要写汇编代码，要对MOS和MIPS R3000的各种机制有深刻了解，debug困难等因素，其实难度并不低。<br>还剩一个部分，即编写一个测试程序进行测试，这部分我留在下文的测试程序部分进行说明。</p>
+<h1 id="测试程序"><a href="#测试程序" class="headerlink" title="测试程序"></a>测试程序</h1><p>要求为实现一个测试程序体现重填加速效果，测试程序本身及运行测试程序得到的运行结果应具有足够的可读性。<br>其实想要测试快重填的加速效果非常简单，因为用户进程运行的过程实质上不断地在进行TLB重填，故对任何用户程序都有一定的加速效果。<br>但是为了体现出直观的差异，我们需要简单地对测试程序进行设计。<br>我们知道一个物理页框的大小是4KB，如果用于存放int数组可以容纳的长度为1024，而TLB可以容纳的表项数为32个表项，所以我们可以创建一个长度为64个页框大小的数组并循环依次访问每一个页框。<br>这样可以最大化TLB MISS的次数，使得优化过后的程序体现出速度上的明显优势。</p>
+<p>程序：</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;lib.h&gt;</span></span>
+
+<span class="hljs-type">int</span> temp[<span class="hljs-number">65536</span>];
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;
+	u_int s1, us1;
+	s1 = get_time(&amp;us1);
+	debugf(<span class="hljs-string">&quot;测试程序开始运行...\n&quot;</span>);
+	debugf(<span class="hljs-string">&quot;请耐心等待\n&quot;</span>);
+	<span class="hljs-comment">//循环访问500000次</span>
+	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>; i&lt;<span class="hljs-number">500000</span> ; i++)&#123;
+		<span class="hljs-comment">//依次访问每一个页框</span>
+		<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>; j &lt; <span class="hljs-number">65536</span>; j+=<span class="hljs-number">1024</span>)&#123;
+			temp[j] = j;
+		&#125;
+	&#125;
+
+	u_int s2, us2;
+	s2 = get_time(&amp;us2);
+	debugf(<span class="hljs-string">&quot;测试程序运行结束! :)\n&quot;</span>);
+	debugf(<span class="hljs-string">&quot;总耗时约 %d 秒\n&quot;</span>, s2-s1); 
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+&#125;</code></pre></div>
+
+<p>注：这里因为时间的数量级为十秒，我忽略了毫秒带来的小于1秒的差距。</p>
+<p>使用快重填的实验结果：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616225058.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>不使用快重填的实验结果：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230616225303.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>对比发现，在测试程序上，快重填的速度大约为原方法的4.5倍，取得了较好的效果😊</p>
+<h1 id="实现过程中遇到的问题及相应的解决方案"><a href="#实现过程中遇到的问题及相应的解决方案" class="headerlink" title="实现过程中遇到的问题及相应的解决方案"></a>实现过程中遇到的问题及相应的解决方案</h1><p>我认为本实验任务和其他任务的一个明显特点就是其他实验都是写C语言代码，但是这个实验需要写汇编代码。<br>LAB2的挑战性任务从代码量来看较为简单，但是考虑到资料较少，要写汇编代码，要对MOS和MIPS R3000的各种机制有深刻了解，debug困难等因素，其实难度并不低。<br>下面我罗列一下我遇到的主要问题和解决方案。</p>
+<h2 id="怎么将页表映射到KSEG2上"><a href="#怎么将页表映射到KSEG2上" class="headerlink" title="怎么将页表映射到KSEG2上"></a>怎么将页表映射到KSEG2上</h2><p>这里其实非常考验对于页表映射的理解，需要对我们是怎样建立页表从物理空间到内核空间，再到用户空间的映射有一个全面的把握，过程非常复杂。<br>但是其实我们也可以化繁为简，抓住主要因素。<br>我们要重点理解<code>env_setup_vm</code>函数中的这行代码：</p>
+<div class="code-wrapper"><pre><code class="hljs c">e-&gt;env_pgdir[PDX(UVPT)] = PADDR(e-&gt;env_pgdir) | PTE_V;</code></pre></div>
+
+<p>其实当时的思考题也让我们去重点理解了，但是现在看来我对它的理解还是略显不足，<br>通过去梳理和理解这个过程，就可以知道其实映射很简单，就是再添加下列代码即可。</p>
+<div class="code-wrapper"><pre><code class="hljs c">p-&gt;pp_ref++;
+e-&gt;env_pgdir[PDX(KSEG2)] = PADDR(e-&gt;env_pgdir) | PTE_V;</code></pre></div>
+
+
+<h2 id="怎么理解TLB-Miss的处理过程"><a href="#怎么理解TLB-Miss的处理过程" class="headerlink" title="怎么理解TLB Miss的处理过程"></a>怎么理解TLB Miss的处理过程</h2><p>TLB miss 异常与其他异常不同，在访问用户空间 <code>kuseg</code> 地址，触发 TLB miss 异常时，CPU 的 PC 不会跳转到通用的异常处理程序入口，而是跳转到专用的处理程序入口。在我们的 MOS 中，通用异常入口位于 <code>0x80000080</code>，TLB miss 异常专用入口位于 <code>0x80000000</code>。目前的 MOS 没有实现 TLB miss 的专用快速重填程序，而是在此处直接跳转至通用异常入口进行处理。</p>
+<p>所以实现TLB的快重填实际上是要求我们完成<code>0x80000000</code>处的这个处理函数。</p>
+<p>（这里也要注意，访问 <code>kseg2</code>地址时不会进入<code>0x80000000</code> ，而是直接进入<code>0x80000080</code>， 这一点也卡了我很久。）</p>
+<p>如果我们不知道原本的TLB Miss是如何处理的，那么就很难去理解实验到底要求我们去做什么。所以在此之前我们先来学习一下通用的异常处理流程。</p>
+<h3 id="通用异常处理流程"><a href="#通用异常处理流程" class="headerlink" title="通用异常处理流程"></a>通用异常处理流程</h3><p>首先，在<code>kernel.lds</code>中增加如下代码, 为操作系统增加异常分发功能:</p>
+<div class="code-wrapper"><pre><code class="hljs c">. = <span class="hljs-number">0x80000000</span>;
+.tlb_miss_entry : &#123;
+	*(.text.tlb_miss_entry)
+&#125;
+. = <span class="hljs-number">0x80000080</span>;
+.exc_gen_entry : &#123;
+	*(.text.exc_gen_entry)
+&#125;</code></pre></div>
+
+<p>这里不需要进行任何改动.</p>
+<p>经过这里的声明, 系统在发生异常的时候就知道该去访问哪里来解决异常, 接下来我们在<code>entry.S</code>文件中完成我们两个异常处理函数</p>
+<div class="code-wrapper"><pre><code class="hljs c">.section .text.tlb_miss_entry
+tlb_miss_entry:
+	j       exc_gen_entry
+
+.section .text.exc_gen_entry
+exc_gen_entry:
+	SAVE_ALL
+	mfc0 t0, CP0_CAUSE
+	andi t0, <span class="hljs-number">0x7c</span>
+	lw t0, exception_handlers(t0)
+	jr t0</code></pre></div>
+
+<p>可以看到, 在原本的MOS中, TLB Miss后虽然会交给<code>tlb_miss_entry</code>处理, 但是实际上<code>tlb_miss_entry</code>又会紧接着转交给<code>exc_gen_entry</code>这一通用处理程序.</p>
+<ol>
+<li>首先，指令SAVE_ALL被执行。这是一个宏指令，它将所有通用寄存器保存在栈上，以便在处理异常时能够恢复它们的值。</li>
+<li>接下来，mfc0指令用于将CP0_CAUSE寄存器的内容加载到t0寄存器中。CP0_CAUSE寄存器包含了异常的原因码以及其他相关的标志位。</li>
+<li>最后, 通过异常码跳转到对应的处理程序中, 开始异常处理, 这里借用了<code>exception_handlers</code>函数, 该函数在<code>traps.c</code>文件中声明:</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> (*exception_handlers[<span class="hljs-number">32</span>])(<span class="hljs-type">void</span>) = &#123;
+    [<span class="hljs-number">0</span> ... <span class="hljs-number">31</span>] = handle_reserved,
+    [<span class="hljs-number">0</span>] = handle_int,
+    [<span class="hljs-number">2</span> ... <span class="hljs-number">3</span>] = handle_tlb,
+&#125;;</code></pre></div>
+
+
+<p>这里我们学习一下通用寄存器的TLB Miss的异常处理方法<code>handle_int</code>, 来启发我们如何编写我们自己的快速重填函数.<br>值得注意的是, <code>CP0_CAUSE</code>又将TLB Miss分为了2, 3两个异常码(load和store), 但是MOS中用了一个统一的处理函数进行处理.</p>
+<p><code>handle_int</code>是在<code>genex.S</code>文件中进行定义的:</p>
+<div class="code-wrapper"><pre><code class="hljs mipsasm">NESTED(handle_tlb, TF_SIZE + <span class="hljs-number">8</span>, <span class="hljs-built_in">zero</span>)
+	<span class="hljs-keyword">move </span>   <span class="hljs-built_in">a0</span>, <span class="hljs-built_in">sp</span>
+	<span class="hljs-keyword">addiu </span>  <span class="hljs-built_in">sp</span>, <span class="hljs-built_in">sp</span>, -<span class="hljs-number">8</span>
+	<span class="hljs-keyword">jal </span>    do_tlb_refill
+	<span class="hljs-keyword">addiu </span>  <span class="hljs-built_in">sp</span>, <span class="hljs-built_in">sp</span>, <span class="hljs-number">8</span>
+	<span class="hljs-keyword">j </span>      ret_from_exception
+END(handle_tlb)</code></pre></div>
+
+<ol>
+<li>首先, <code>move</code>指令将当前栈指针（sp）的值复制到寄存器a0中, 以便作为参数传递给<code>do_tlb_refill</code>.</li>
+<li>然后，<code>addiu</code>指令将栈指针向下调整8个字节，为<code>do_tlb_refill</code>函数的局部变量或其他需要的数据腾出空间。</li>
+<li>接着，<code>jal</code>指令调用<code>do_tlb_refill</code>函数。<code>jal</code>指令会将当前指令的地址（返回地址）保存到链接寄存器（$ra）中，并跳转到目标函数的地址。</li>
+<li>在<code>do_tlb_refill</code>函数执行完毕后，<code>addiu</code>指令将栈指针恢复回原来的位置，以释放先前分配的局部变量的空间。</li>
+<li>最后，<code>j</code>指令跳转到<code>ret_from_exception</code>，这是一个通用的异常返回例程，用于从异常处理中返回到正常的执行流程中。</li>
+</ol>
+<p>这里涉及到<code>do_tlb_refill</code>和<code>ret_from_exception</code>两个值得研究的函数, 我们先看看<code>ret_from_exception</code>有何作用:</p>
+<div class="code-wrapper"><pre><code class="hljs mipsasm">FEXPORT(ret_from_exception)
+	RESTORE_SOME
+	<span class="hljs-keyword">lw </span>     <span class="hljs-built_in">k0</span>, TF_EPC(<span class="hljs-built_in">sp</span>)
+	<span class="hljs-keyword">lw </span>     <span class="hljs-built_in">sp</span>, TF_REG29(<span class="hljs-built_in">sp</span>) <span class="hljs-comment">/* Deallocate stack */</span>
+<span class="hljs-meta">.set</span> <span class="hljs-keyword">noreorder</span>
+<span class="hljs-keyword"></span>	<span class="hljs-keyword">jr </span>     <span class="hljs-built_in">k0</span>
+	rfe
+<span class="hljs-meta">.set</span> reorder</code></pre></div>
+
+<ol>
+<li>首先函数执行了<code>RESTORE_SOME</code>指令, 这和之前进入异常通用处理程序执行的<code>SAVE ALL</code>一样是宏指令, 在<code>stackframe.h</code>函数中被提前定义。这两个宏函数是用于在异常处理过程中保存和恢复寄存器状态的工具。这两个宏函数一起工作，用于在异常处理过程中保存寄存器状态，并在异常处理结束后恢复寄存器状态。这样可以确保异常处理完成后，程序能够正确地恢复到异常发生之前的状态，并继续执行。</li>
+<li>然后，lw指令从栈中加载<code>TF_EPC(sp)</code>的值到k0寄存器中。<code>TF_EPC</code>是异常发生时保存的EPC（Exception Program Counter）寄存器的偏移量，用于存储引发异常的指令地址。</li>
+<li>紧接着，lw指令从栈中加载<code>TF_REG29(sp)</code>的值到sp寄存器中。<code>TF_REG29</code>是异常发生时保存的栈指针的偏移量，通过加载它的值到sp寄存器，可以恢复之前的栈指针状态。</li>
+<li>然后，<code>jr</code>指令将跳转到k0寄存器中存储的地址，也就是之前保存的EPC值。这样，程序将继续执行引发异常的指令之后的代码。</li>
+<li>最后，<code>rfe</code>指令用于从异常处理中返回，并恢复处理器的状态。</li>
+</ol>
+<p>可以看到, 其实<code>ret_from_exception</code>做的是一个异常处理后恢复现场的工作, 而主要的异常处理的过程是在<code>do_tlb_mod</code>中完成的</p>
+<p>现在我们来看看<code>do_tlb_refill</code>的内容:</p>
+<div class="code-wrapper"><pre><code class="hljs stylus"><span class="hljs-selector-class">.data</span>
+tlb_refill_ra:
+<span class="hljs-selector-class">.word</span> <span class="hljs-number">0</span>
+<span class="hljs-selector-class">.text</span>
+<span class="hljs-function"><span class="hljs-title">NESTED</span><span class="hljs-params">(do_tlb_refill, <span class="hljs-number">0</span>, zero)</span></span>
+	mfc0    a0, CP0_BADVADDR
+	mfc0    a1, CP0_ENTRYHI
+	srl     a1, a1, <span class="hljs-number">6</span>
+	andi    a1, a1, <span class="hljs-number">0</span>b111111
+	sw      ra, tlb_refill_ra
+	jal     _do_tlb_refill
+	lw      ra, tlb_refill_ra
+	mtc0    v0, CP0_ENTRYLO0
+	<span class="hljs-comment">// See &lt;IDT R30xx Family Software Reference Manual&gt; Chapter 6-8</span>
+	nop
+	<span class="hljs-comment">/* Hint: use &#x27;tlbwr&#x27; to write CP0.EntryHi/Lo into a random tlb entry. */</span>
+	<span class="hljs-comment">/* Exercise 2.10: Your code here. */</span>
+	tlbwr
+	jr      ra
+<span class="hljs-function"><span class="hljs-title">END</span><span class="hljs-params">(do_tlb_refill)</span></span></code></pre></div>
+
+<p><code>do_tlb_refill</code>函数的主要作用是传参并调用了<code>_do_tlb_refill</code>函数，真正的处理在<code>_do_tlb_refill</code>函数中进行。</p>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/* Overview:</span>
+<span class="hljs-comment"> *  Refill TLB.</span>
+<span class="hljs-comment"> */</span>
+Pte _do_tlb_refill(u_long va, u_int asid) &#123;
+	Pte *pte;
+	<span class="hljs-keyword">while</span>(page_lookup(cur_pgdir, va, &amp;pte)==<span class="hljs-literal">NULL</span>)
+	&#123;
+		passive_alloc(va, cur_pgdir, asid);
+	&#125;
+	<span class="hljs-keyword">return</span> *pte;
+&#125;</code></pre></div>
+
+<p>这是真正处理缺页的函数, 可以看到逻辑很简单:</p>
+<ol>
+<li>使用<code>page_lookup(cur_pgdir, va, &amp;pte)</code>函数去查找当前进程的页表,<ol>
+<li>如果存在, 说明已经为这个虚拟页分配了物理页框,进入下一步</li>
+<li>如果不存在, 那么使用<code>passive_alloc(va, cur_pgdir, asid)</code>为这页分配一个页框, 并更改页表</li>
+</ol>
+</li>
+<li>返回对应的页表项</li>
+</ol>
+<h3 id="在此基础上建立快重填"><a href="#在此基础上建立快重填" class="headerlink" title="在此基础上建立快重填"></a>在此基础上建立快重填</h3><p>如果理解了通用处理和快重填的关系，就知道其实我们不是要去重写通用处理，而是相当于去利用CONTEXT寄存器快速完成<code>page_lookup</code>的过程，同时也不需要那么保存那么多寄存器，省去了很多时间和工作。</p>
+<h2 id="汇编程序编写的细节问题"><a href="#汇编程序编写的细节问题" class="headerlink" title="汇编程序编写的细节问题"></a>汇编程序编写的细节问题</h2><p>这部分真是让人非常头疼，我下面列举一些问题，这些问题都可以通过查阅资料，反复尝试和手动调试解决，但是问题多，细节多，而且发生错误后很难定位问题，故让人非常困扰，当然也有笔者是软件学院学生，对汇编理解不够深刻的原因。</p>
+<ul>
+<li>nop问题：汇编程序编写过程中很多时候需要手动添加nop。什么时候添加？</li>
+<li>寄存器问题：每个寄存器应该在何时被保存和恢复，又该如何保存和恢复哪些寄存器？</li>
+<li>汇编函数调用问题：汇编函数之间的调用涉及到栈和sp的问题</li>
+<li>值的保存和传递问题：有些值需要被保存和传递，我该怎样实现？</li>
+<li>指令条数问题：笔者在实现快重填时发生了因为<code>tlb_miss_entry</code>太长和<code>exc_gen_entry</code>发生重叠的问题，怎么解决？</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#操作系统</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="print-no-link">#内存管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OS_挑战性任务-实现TLB快重填</div>
+      <div>http://example.com/2023/06/22/挑战性任务-实现TLB快重填/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/09/19/%E6%80%BB%E4%BD%93%E8%AE%BE%E8%AE%A1/" title="总体设计">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">总体设计</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/05/22/OS-lab5-Summary/" title="OS_lab5_文件系统">
+                        <span class="hidden-mobile">OS_lab5_文件系统</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
