@@ -48,6 +48,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -278,93 +280,126 @@
             
               <div class="markdown-body">
                 
-                <h1 id="数据库基础知识"><a href="#数据库基础知识" class="headerlink" title="数据库基础知识"></a>数据库基础知识</h1><blockquote>
+                <h1>数据库基础知识</h1>
+<blockquote>
 <p>这是当年还没学数据库的时候做项目进行的一个资源整理, 内容比较基础.</p>
 </blockquote>
-<h2 id="一、数据库概述"><a href="#一、数据库概述" class="headerlink" title="一、数据库概述"></a>一、数据库概述</h2><h3 id="1-什么是数据库"><a href="#1-什么是数据库" class="headerlink" title="1.什么是数据库"></a><strong>1.什么是数据库</strong></h3><p>　　数据库就是存储数据的仓库，其本质是一个文件系统，数据按照特定的格式将数据存储起来，用户可以对数据库中的数据进行增加，修改，删除及查询操作。</p>
-<h3 id="2-什么是数据库管理系统"><a href="#2-什么是数据库管理系统" class="headerlink" title="2.什么是数据库管理系统"></a><strong>2.什么是数据库管理系统</strong></h3><p>　　数据库管理系统（DataBase Management System，DBMS）：指一种操作和管理数据库的大型软件，<strong>用于建立、使用和维护数据库</strong>，对数据库进行统一管理和控制，以保证数据库的安全性和完整性。用户通过数据库管理系统访问数据库中表内的数据。</p>
-<h3 id="3-数据库的特点"><a href="#3-数据库的特点" class="headerlink" title="3.数据库的特点"></a>3.数据库的特点</h3><p>数据库的特点是：实现数据共享，减少数据冗余；采用特定的数据类型；具有较高的数据独立性；具有统一的数据控制功能。</p>
-<h3 id="4-常见的数据库管理系统"><a href="#4-常见的数据库管理系统" class="headerlink" title="4.常见的数据库管理系统"></a>4.常见的数据库管理系统</h3><blockquote>
+<h2 id="一、数据库概述">一、数据库概述</h2>
+<h3 id="1-什么是数据库"><strong>1.什么是数据库</strong></h3>
+<p>数据库就是存储数据的仓库，其本质是一个文件系统，数据按照特定的格式将数据存储起来，用户可以对数据库中的数据进行增加，修改，删除及查询操作。</p>
+<h3 id="2-什么是数据库管理系统"><strong>2.什么是数据库管理系统</strong></h3>
+<p>数据库管理系统（DataBase Management System，DBMS）：指一种操作和管理数据库的大型软件，<strong>用于建立、使用和维护数据库</strong>，对数据库进行统一管理和控制，以保证数据库的安全性和完整性。用户通过数据库管理系统访问数据库中表内的数据。</p>
+<h3 id="3-数据库的特点">3.数据库的特点</h3>
+<p>数据库的特点是：实现数据共享，减少数据冗余；采用特定的数据类型；具有较高的数据独立性；具有统一的数据控制功能。</p>
+<h3 id="4-常见的数据库管理系统">4.常见的数据库管理系统</h3>
+<blockquote>
 <p><strong>MYSQL</strong>：开源免费的数据库，小型的数据库.已经被Oracle收购了.MySQL6.x版本也开始收费。</p>
 <p>Oracle：收费的大型数据库，Oracle公司的产品。Oracle收购SUN公司，收购MYSQL。</p>
 <p>SQLite：嵌入式的小型数据库，应用在手机端。</p>
 </blockquote>
 <p>Java相关的数据库：MYSQL，Oracle．本篇博客的主角是MySQL数据库。MySQL中可以有多个数据库，数据库中的<strong>表</strong>是真正存储数据的地方。</p>
-<h2 id="二、数据库原理"><a href="#二、数据库原理" class="headerlink" title="二、数据库原理"></a>二、数据库原理</h2><h3 id="1-数据库中的表是什么"><a href="#1-数据库中的表是什么" class="headerlink" title="1.数据库中的表是什么"></a>1.数据库中的表是什么</h3><p>在关系数据库中，<strong>数据库表是一系列二维数组的集合</strong>，用来存储数据和操作数据的逻辑结构。它由纵向的列和横向的行组成。</p>
+<h2 id="二、数据库原理">二、数据库原理</h2>
+<h3 id="1-数据库中的表是什么">1.数据库中的表是什么</h3>
+<p>在关系数据库中，<strong>数据库表是一系列二维数组的集合</strong>，用来存储数据和操作数据的逻辑结构。它由纵向的列和横向的行组成。</p>
 <p><strong>行被称为记录</strong>，是组织数据的单位；</p>
 <p><strong>列被称为字段</strong>，每一列表示记录的一个属性，有相应的描述信息，如数据类型、数据宽度等。</p>
 <blockquote>
 <p>主键<code>（Primary Key）</code>又称主码，用于唯一的标识表中的每一条记录。可以定义表中的一列或多列为主键，主键列上<strong>既不能有两行相同的值，也不能为空值</strong>。</p>
 </blockquote>
 <img src="https://s3.bmp.ovh/imgs/2022/11/07/5510bd24ae7b4b48.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
-
 <p>这就是一个表，其中ID是主键，用于确定唯一的索引。通过无数索引表和存放信息的表，构成了数据库。</p>
-<h3 id="2-数据库中的数据类型是什么"><a href="#2-数据库中的数据类型是什么" class="headerlink" title="2.数据库中的数据类型是什么"></a>2.数据库中的数据类型是什么</h3><p>数据类型决定了数据在计算机中的存储格式，代表不同的信息类型。常用的数据类型有整数数据类型、浮点数数据类型、精确小数类型、二进制数据类型、日期&#x2F;时间数据类型、字符串数据类型。</p>
-<h3 id="3-数据库的技术组成"><a href="#3-数据库的技术组成" class="headerlink" title="3.数据库的技术组成"></a>3.数据库的技术组成</h3><p>数据库系统由硬件部分和软件部分共同构成。</p>
+<h3 id="2-数据库中的数据类型是什么">2.数据库中的数据类型是什么</h3>
+<p>数据类型决定了数据在计算机中的存储格式，代表不同的信息类型。常用的数据类型有整数数据类型、浮点数数据类型、精确小数类型、二进制数据类型、日期/时间数据类型、字符串数据类型。</p>
+<h3 id="3-数据库的技术组成">3.数据库的技术组成</h3>
+<p>数据库系统由硬件部分和软件部分共同构成。</p>
 <p>硬件主要用于存储数据库中的数据，包括计算机、存储设备等。</p>
 <p>软件部分主要包括DBMS、支持DBMS运行的操作系统，以及支持多种语言进行应用开发的访问技术等。</p>
-<h3 id="4-sql语言"><a href="#4-sql语言" class="headerlink" title="4.sql语言"></a>4.sql语言</h3><p>一种低代码语言</p>
+<h3 id="4-sql语言">4.sql语言</h3>
+<p>一种低代码语言</p>
 <p>（1）数据定义语言<code>（DDL）</code>：<code>DROP</code>、<code>CREATE</code>、<code>ALTER</code>等语句。</p>
 <p>（2）数据操作语言<code>（DML）</code>：<code>INSERT</code>（插入）、<code>UPDATE</code>（修改）、<code>DELETE</code>（删除）语句。</p>
 <p>（3）数据查询语言<code>（DQL）</code>：<code>SELECT</code>语句。</p>
 <p>（4）数据控制语言<code>（DCL）</code>：<code>GRANT</code>、<code>REVOKE</code>、<code>COMMIT</code>、<code>ROLLBACK</code>等语句。</p>
 <p>例如我们使用<code>CREATE</code>来创建一个表；</p>
 <div class="code-wrapper"><pre><code class="hljs text">CREATE TABLE YUNWEIJIA ( ID INT UNSIGNED, NAME VARCHAR ( 30 ), PRIMARY KEY ( ID ) );</code></pre></div>
-
 <p>以上命令的意思是说，创建一个名字叫<code>YUNWEIJIA</code>的表，里面有两个字段，分别是<code>ID </code>和<code>NAME</code>，其中<code>ID</code>是主键，<code>NAME</code>的长度不能超过30；</p>
 <p>下面我们在这个新建的表中插入一条数据；</p>
 <div class="code-wrapper"><pre><code class="hljs text">INSERT INTO YUNWEIJIA ( ID, NAME )
 VALUES
 	( &#x27;1&#x27;, &#x27;weixin&#x27; );</code></pre></div>
-
 <p>然后我们的数据库中就插入了一条数据；</p>
 <p>再用<code>SELECT</code>来查看下这个数据库中的内容；</p>
 <div class="code-wrapper"><pre><code class="hljs text">SELECT ID, NAME FROM YUNWEIJIA WHERE ID = &#x27;1&#x27;;</code></pre></div>
-
-<h3 id="5、数据库访问接口"><a href="#5、数据库访问接口" class="headerlink" title="5、数据库访问接口"></a>5、数据库访问接口</h3><p>不同的程序设计语言会有各自不同的数据库访问接口，程序语言通过这些接口执行<code>SQL</code>语句，进行数据库管理。主要的数据库访问接口有<code>ODBC</code>、<code>JDBC</code>、<code>ADO.NET</code>和<code>PDO</code>。</p>
+<h3 id="5、数据库访问接口">5、数据库访问接口</h3>
+<p>不同的程序设计语言会有各自不同的数据库访问接口，程序语言通过这些接口执行<code>SQL</code>语句，进行数据库管理。主要的数据库访问接口有<code>ODBC</code>、<code>JDBC</code>、<code>ADO.NET</code>和<code>PDO</code>。</p>
 <p><code>JDBC（Java Data Base Connectivity，Java数据库连接）</code>用于Java应用程序连接数据库的标准方法，是一种用于执行SQL语句的Java API，可以为多种关系数据库提供统一访问，由一组用Java语言编写的类和接口组成。</p>
 <blockquote>
 <p>相当于Mysql是一个数据库，用于存放数据，JAVA使用JDBC提供的一系列方法和接口在数据库中存、取和检索数据。</p>
 </blockquote>
-<h3 id="6-数据库系统的组成部分是什么"><a href="#6-数据库系统的组成部分是什么" class="headerlink" title="6.数据库系统的组成部分是什么"></a>6.数据库系统的组成部分是什么</h3><h4 id="数据库——文件"><a href="#数据库——文件" class="headerlink" title="数据库——文件"></a>数据库——文件</h4><p>一个数据库可能包含许多<strong>文件</strong>，一个数据库系统中通常包含许多数据库。</p>
-<h4 id="数据库管理系统（DBMS）——操作系统"><a href="#数据库管理系统（DBMS）——操作系统" class="headerlink" title="数据库管理系统（DBMS）——操作系统"></a>数据库管理系统（DBMS）——操作系统</h4><p>是用户创建、管理和维护数据库时所使用的软件，位于用户与操作系统之间，对数据库进行统一管理。<code>DBMS</code>能定义数据存储结构，提供数据的操作机制，维护数据库的安全性、完整性和可靠性。</p>
-<h4 id="数据库应用程序——提供使用的图形界面"><a href="#数据库应用程序——提供使用的图形界面" class="headerlink" title="数据库应用程序——提供使用的图形界面"></a>数据库应用程序——提供使用的图形界面</h4><p>数据库应用程序的使用可以满足对数据管理的更高要求，还可以使数据管理过程更加直观和友好。数据库应用程序负责与<code>DBMS</code>进行通信，访问和管理<code>DBMS</code>中存储的数据，允许用户插入、修改、删除DB中的数据。</p>
-<h3 id="7-了解mysql"><a href="#7-了解mysql" class="headerlink" title="7.了解mysql"></a>7.了解mysql</h3><p><code>MySQL</code>是一个小型关系数据库管理系统。与其他大型数据库管理系统（例如<code>Oracle</code>、<code>DB2</code>、<code>SQL Server</code>等）相比，<code>MySQL</code>规模小、功能有限，但是它体积小、速度快、成本低，并且提供的功能对稍微复杂的应用来说已经够用，这些特性使得<code>MySQL</code>成为世界上最受欢迎的开放源代码数据库。</p>
-<h2 id="附：阅读资料"><a href="#附：阅读资料" class="headerlink" title="附：阅读资料"></a>附：阅读资料</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/534735100">mysql数据库扫盲，你真的知道什么是数据库嘛</a></p>
+<h3 id="6-数据库系统的组成部分是什么">6.数据库系统的组成部分是什么</h3>
+<h4 id="数据库——文件">数据库——文件</h4>
+<p>一个数据库可能包含许多<strong>文件</strong>，一个数据库系统中通常包含许多数据库。</p>
+<h4 id="数据库管理系统（DBMS）——操作系统">数据库管理系统（DBMS）——操作系统</h4>
+<p>是用户创建、管理和维护数据库时所使用的软件，位于用户与操作系统之间，对数据库进行统一管理。<code>DBMS</code>能定义数据存储结构，提供数据的操作机制，维护数据库的安全性、完整性和可靠性。</p>
+<h4 id="数据库应用程序——提供使用的图形界面">数据库应用程序——提供使用的图形界面</h4>
+<p>数据库应用程序的使用可以满足对数据管理的更高要求，还可以使数据管理过程更加直观和友好。数据库应用程序负责与<code>DBMS</code>进行通信，访问和管理<code>DBMS</code>中存储的数据，允许用户插入、修改、删除DB中的数据。</p>
+<h3 id="7-了解mysql">7.了解mysql</h3>
+<p><code>MySQL</code>是一个小型关系数据库管理系统。与其他大型数据库管理系统（例如<code>Oracle</code>、<code>DB2</code>、<code>SQL Server</code>等）相比，<code>MySQL</code>规模小、功能有限，但是它体积小、速度快、成本低，并且提供的功能对稍微复杂的应用来说已经够用，这些特性使得<code>MySQL</code>成为世界上最受欢迎的开放源代码数据库。</p>
+<h2 id="附：阅读资料">附：阅读资料</h2>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/534735100">mysql数据库扫盲，你真的知道什么是数据库嘛</a></p>
 <p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yinzhengjie/p/11732882.html">MySQL数据库扫盲篇</a></p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_34019144/article/details/94659251">Java基础-MySQL数据库扫盲篇</a></p>
-<h1 id="什么是Lucene"><a href="#什么是Lucene" class="headerlink" title="什么是Lucene"></a>什么是Lucene</h1><h3 id="1-Lucene简介"><a href="#1-Lucene简介" class="headerlink" title="1.Lucene简介"></a>1.Lucene简介</h3><p>Lucene是apache软件基金会发布的一个开放源代码的全文检索引擎工具包，由资深全文检索专家Doug Cutting所撰写,它是一个<strong>全文检索引擎的架构</strong>，提供了完整的创建索引和查询索引，以及部分文本分析的引擎，Lucene的目的是为软件开发人员提供一个简单易用的工具包，以方便在目标系统中实现全文检索的功能，或者是以此为基础建立起完整的全文检索引擎，Lucene在全文检索领域是一个经典的祖先，现在很多检索引擎都是在其基础上创建的，思想是相通的。</p>
-<h3 id="2-Lucene的生态位"><a href="#2-Lucene的生态位" class="headerlink" title="2.Lucene的生态位"></a>2.Lucene的生态位</h3><p>下面的文字画表现了Lucene最基本的原理：</p>
+<h1>什么是Lucene</h1>
+<h3 id="1-Lucene简介">1.Lucene简介</h3>
+<p>Lucene是apache软件基金会发布的一个开放源代码的全文检索引擎工具包，由资深全文检索专家Doug Cutting所撰写,它是一个<strong>全文检索引擎的架构</strong>，提供了完整的创建索引和查询索引，以及部分文本分析的引擎，Lucene的目的是为软件开发人员提供一个简单易用的工具包，以方便在目标系统中实现全文检索的功能，或者是以此为基础建立起完整的全文检索引擎，Lucene在全文检索领域是一个经典的祖先，现在很多检索引擎都是在其基础上创建的，思想是相通的。</p>
+<h3 id="2-Lucene的生态位">2.Lucene的生态位</h3>
+<p>下面的文字画表现了Lucene最基本的原理：</p>
 <p>​      传输       处理       查找</p>
-<p>文本源 –&gt; Lucene –&gt; 索引表 &lt;– 上级</p>
+<p>文本源 --&gt; Lucene --&gt; 索引表 &lt;-- 上级</p>
 <p>因此，既可以只用Lucene，也可以使用数据库，再将数据传送给Lucene进行处理，形成索引，最后提供查询的接口。</p>
-<h3 id="3-Lucene的基本知识"><a href="#3-Lucene的基本知识" class="headerlink" title="3.Lucene的基本知识"></a>3.Lucene的基本知识</h3><h4 id="3-1-Basic-Concepts"><a href="#3-1-Basic-Concepts" class="headerlink" title="3.1 Basic Concepts"></a>3.1 Basic Concepts</h4><p>The content you add to Lucene can be from various sources, like a SQL&#x2F;NoSQL database, a filesystem, or even from websites.</p>
-<h4 id="3-2-Searching-and-Indexing"><a href="#3-2-Searching-and-Indexing" class="headerlink" title="3.2 Searching and Indexing"></a>3.2 Searching and Indexing</h4><p>Lucene is able to achieve fast search responses because, instead of searching the text directly, it searches an index instead. </p>
+<h3 id="3-Lucene的基本知识">3.Lucene的基本知识</h3>
+<h4 id="3-1-Basic-Concepts">3.1 Basic Concepts</h4>
+<p>The content you add to Lucene can be from various sources, like a SQL/NoSQL database, a filesystem, or even from websites.</p>
+<h4 id="3-2-Searching-and-Indexing">3.2 Searching and Indexing</h4>
+<p>Lucene is able to achieve fast search responses because, instead of searching the text directly, it searches an index instead.</p>
 <p>This type of index is called an <strong>inverted index</strong>, because it inverts a page-centric data structure (page-&gt;words) to a keyword-centric data structure (word-&gt;pages).</p>
-<h4 id="3-3-Documents"><a href="#3-3-Documents" class="headerlink" title="3.3 Documents"></a>3.3 Documents</h4><p>In Lucene, a <strong>Document</strong> is the unit of search and index.</p>
+<h4 id="3-3-Documents">3.3 Documents</h4>
+<p>In Lucene, a <strong>Document</strong> is the unit of search and index.</p>
 <p>An index consists of one or more Documents.</p>
 <p><strong>Indexing involves adding Documents to an IndexWriter, and searching involves retrieving Documents from an index via an IndexSearcher.</strong></p>
 <p>A Lucene Document doesn’t necessarily have to be a document in the common English usage of the word.</p>
-<h4 id="3-4-Fields"><a href="#3-4-Fields" class="headerlink" title="3.4 Fields"></a>3.4 Fields</h4><p><strong>A Document consists of one or more Fields.</strong> </p>
+<h4 id="3-4-Fields">3.4 Fields</h4>
+<p><strong>A Document consists of one or more Fields.</strong></p>
 <p>A Field is simply a name-value pair.</p>
 <p>Indexing in Lucene thus involves creating Documents comprising of one or more Fields, and adding these Documents to an IndexWriter.</p>
-<h4 id="3-5-Searching"><a href="#3-5-Searching" class="headerlink" title="3.5 Searching"></a>3.5 Searching</h4><p>Searching requires an index to have already been built. It involves creating a <strong>Query</strong> (usually via a QueryParser) and handing this Query to an <strong>IndexSearcher</strong>, which returns a list of Hits.</p>
-<h4 id="3-5-Queries"><a href="#3-5-Queries" class="headerlink" title="3.5 Queries"></a>3.5 Queries</h4><p>The Lucene query language allows the user to specify which field(s) to search on, which fields to give more weight to (boosting), the ability to perform boolean queries (AND, OR, NOT) and other functionality.</p>
-<h2 id="附：阅读资料-1"><a href="#附：阅读资料-1" class="headerlink" title="附：阅读资料"></a>附：阅读资料</h2><p>最基础👉<a target="_blank" rel="noopener" href="https://www.lucenetutorial.com/">lucenetutorial</a></p>
+<h4 id="3-5-Searching">3.5 Searching</h4>
+<p>Searching requires an index to have already been built. It involves creating a <strong>Query</strong> (usually via a QueryParser) and handing this Query to an <strong>IndexSearcher</strong>, which returns a list of Hits.</p>
+<h4 id="3-5-Queries">3.5 Queries</h4>
+<p>The Lucene query language allows the user to specify which field(s) to search on, which fields to give more weight to (boosting), the ability to perform boolean queries (AND, OR, NOT) and other functionality.</p>
+<h2 id="附：阅读资料-2">附：阅读资料</h2>
+<p>最基础👉<a target="_blank" rel="noopener" href="https://www.lucenetutorial.com/">lucenetutorial</a></p>
 <p>进一步（代码部分已过时）👉<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903577467502606#heading-1">Lucene就是这么简单</a></p>
 <p>进一步👉<a target="_blank" rel="noopener" href="https://www.baeldung.com/lucene">Introduction to Apache Lucene</a></p>
 <p>😮最完美👉<a target="_blank" rel="noopener" href="https://github.com/jiepujiang/LuceneTutorial">LuceneTutorial</a></p>
 <p>有深度👉<a target="_blank" rel="noopener" href="https://juejin.cn/post/6986812836445945864">深度解析 Lucene 轻量级全文索引实现原理</a></p>
 <p>lucene为什么比mysql更适合全文查找👉<a target="_blank" rel="noopener" href="https://www.cnblogs.com/luxiaoxun/p/5452502.html">MySQL和Lucene索引对比分析</a></p>
-<h1 id="JAVA和数据库的连接"><a href="#JAVA和数据库的连接" class="headerlink" title="JAVA和数据库的连接"></a>JAVA和数据库的连接</h1><h3 id="1-基本流程"><a href="#1-基本流程" class="headerlink" title="1.基本流程"></a>1.基本流程</h3><p>上文提到了JDBC，这是一个统一规范的接口，无论使用的是MYSQL、Oracle还是别的什么数据库，都使用JDBC与JAVA传输数据。</p>
+<h1>JAVA和数据库的连接</h1>
+<h3 id="1-基本流程">1.基本流程</h3>
+<p>上文提到了JDBC，这是一个统一规范的接口，无论使用的是MYSQL、Oracle还是别的什么数据库，都使用JDBC与JAVA传输数据。</p>
 <p>通过JDBC可以从数据库中提取出数据，再经过程序员封装，就可以得到可以直接使用的数据接口！</p>
-<h2 id="附：阅读资料-2"><a href="#附：阅读资料-2" class="headerlink" title="附：阅读资料"></a>附：阅读资料</h2><p>最基础👉<a target="_blank" rel="noopener" href="https://www.runoob.com/java/java-mysql-connect.html">Java MySQL 连接</a></p>
+<h2 id="附：阅读资料-3">附：阅读资料</h2>
+<p>最基础👉<a target="_blank" rel="noopener" href="https://www.runoob.com/java/java-mysql-connect.html">Java MySQL 连接</a></p>
 <p>结合MVC架构👉<a target="_blank" rel="noopener" href="https://www.cnblogs.com/Qian123/p/5339164.html">Java数据库连接——JDBC基础知识（操作数据库：增删改查）</a></p>
 <p>DAO层的选择👉<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1822267">盘点 Java 数据库访问框架——究竟哪个更适合你</a></p>
-<h1 id="数据库和Lucene的连接"><a href="#数据库和Lucene的连接" class="headerlink" title="数据库和Lucene的连接"></a>数据库和Lucene的连接</h1><h3 id="1-基本流程-1"><a href="#1-基本流程-1" class="headerlink" title="1.基本流程"></a>1.基本流程</h3><p>上文提到了Lucene可以看作数据库的索引引擎，因此，可以用数据库来存文件，然后用Lucene进行索引；</p>
+<h1>数据库和Lucene的连接</h1>
+<h3 id="1-基本流程-2">1.基本流程</h3>
+<p>上文提到了Lucene可以看作数据库的索引引擎，因此，可以用数据库来存文件，然后用Lucene进行索引；</p>
 <p>同时，如果不需要用数据库进行文档管理，只用本地的文件系统也是可以的。</p>
-<h3 id="2-问题"><a href="#2-问题" class="headerlink" title="2.问题"></a>2.问题</h3><h4 id="存文件的形式"><a href="#存文件的形式" class="headerlink" title="存文件的形式"></a>存文件的形式</h4><p>PDF，文本？怎么提取出内容？</p>
-<h2 id="附：阅读资料-3"><a href="#附：阅读资料-3" class="headerlink" title="附：阅读资料"></a>附：阅读资料</h2><p>有Lucene和数据库结合的部分👉<a target="_blank" rel="noopener" href="https://blog.csdn.net/fun913510024/category_3732945.html">lucene教程</a></p>
+<h3 id="2-问题">2.问题</h3>
+<h4 id="存文件的形式">存文件的形式</h4>
+<p>PDF，文本？怎么提取出内容？</p>
+<h2 id="附：阅读资料-4">附：阅读资料</h2>
+<p>有Lucene和数据库结合的部分👉<a target="_blank" rel="noopener" href="https://blog.csdn.net/fun913510024/category_3732945.html">lucene教程</a></p>
 
                 
               </div>
@@ -536,6 +571,11 @@ VALUES
 
 
   
+
+
+  
+  
+
 
 
 

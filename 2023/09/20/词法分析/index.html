@@ -46,6 +46,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -276,7 +278,9 @@
             
               <div class="markdown-body">
                 
-                <h1 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h1><h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p>在上次的基础上主要新增三个类：<code>Tokens</code>、<code>Tokenizer</code>和<code>Scanner</code>。</p>
+                <h1>词法分析</h1>
+<h2 id="总体结构">总体结构</h2>
+<p>在上次的基础上主要新增三个类：<code>Tokens</code>、<code>Tokenizer</code>和<code>Scanner</code>。</p>
 <p>目前的文件树长这样：</p>
 <div class="code-wrapper"><pre><code class="hljs nestedtext">-MyCompiler
   <span class="hljs-bullet">-</span> <span class="hljs-string">Frontend</span>
@@ -288,8 +292,8 @@
     <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Backend</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span></code></pre></div>
-
-<h3 id="Tokens"><a href="#Tokens" class="headerlink" title="Tokens"></a>Tokens</h3><p>Tokens是一个代表Token的类，有两个内部类，一个是代表Token类型的枚举类TokenKind，另一个是代表一个Token对象的Token类。</p>
+<h3 id="Tokens">Tokens</h3>
+<p>Tokens是一个代表Token的类，有两个内部类，一个是代表Token类型的枚举类TokenKind，另一个是代表一个Token对象的Token类。</p>
 <p>其中：</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Tokens</span> &#123;
 		<span class="hljs-comment">//Tokens类中会声明一些工具方法来辅助词法分析的进行，如：</span>
@@ -314,7 +318,6 @@
         <span class="hljs-comment">//...</span>
     &#125;
 &#125;</code></pre></div>
-
 <p>其中Token类承载了最多的功能：</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Token</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Unit</span>&#123;
         <span class="hljs-keyword">private</span> <span class="hljs-type">TokenKind</span> <span class="hljs-variable">kind</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;
@@ -331,9 +334,9 @@
   			<span class="hljs-comment">//此外还有一些get、set接口提供Token的对外访问</span>
         ...
     &#125;</code></pre></div>
-
 <p>多样化的Token构造方法可以允许我们便捷地识别生成Token，为接下来的词法分析工作提供便利。</p>
-<h3 id="Tokenizer"><a href="#Tokenizer" class="headerlink" title="Tokenizer"></a>Tokenizer</h3><p><code>Tokenizer</code>是进行词法分析的类。结合我们画的状态转移图编写合适的词法分析函数，从而完成词法分析这一过程，并将所有Token存放在Scanner中。</p>
+<h3 id="Tokenizer">Tokenizer</h3>
+<p><code>Tokenizer</code>是进行词法分析的类。结合我们画的状态转移图编写合适的词法分析函数，从而完成词法分析这一过程，并将所有Token存放在Scanner中。</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Tokenizer</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Tokens tokens;<span class="hljs-comment">//tokens定义了Token </span>
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Scanner scanner;<span class="hljs-comment">//词法分析出的tokens会存放在scanner中</span>
@@ -353,8 +356,8 @@
   	...
 
 &#125;</code></pre></div>
-
-<h3 id="Scanner"><a href="#Scanner" class="headerlink" title="Scanner"></a>Scanner</h3><p><code>Scanner</code>是一个辅助类，作用是存放词法分析得到的所有token，并在语法分析中直接使用。</p>
+<h3 id="Scanner">Scanner</h3>
+<p><code>Scanner</code>是一个辅助类，作用是存放词法分析得到的所有token，并在语法分析中直接使用。</p>
 <div class="code-wrapper"><pre><code class="hljs java">
 <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Scanner</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> ArrayList&lt;Tokens.Token&gt; tokens = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(); <span class="hljs-comment">//存放token</span>
@@ -379,10 +382,11 @@
 
 &#125;
 </code></pre></div>
-
-<h2 id="状态转移图"><a href="#状态转移图" class="headerlink" title="状态转移图"></a>状态转移图</h2><p><code>Tokenizer</code>的主函数编写需要借助一个完整的状态转移图。所以词法分析最重要的是画状态图，把状态转移图画出来了，写代码就非常愉快了！😄</p>
-<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20230919213836456.png" srcset="/img/loading.gif" lazyload></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次实验还是比较简单的，但是需要我们一开始把框架搭好！希望之后不会反复重构吧～～</p>
+<h2 id="状态转移图">状态转移图</h2>
+<p><code>Tokenizer</code>的主函数编写需要借助一个完整的状态转移图。所以词法分析最重要的是画状态图，把状态转移图画出来了，写代码就非常愉快了！😄</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20230919213836456.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<h2 id="总结">总结</h2>
+<p>这次实验还是比较简单的，但是需要我们一开始把框架搭好！希望之后不会反复重构吧～～</p>
 
                 
               </div>
@@ -550,6 +554,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

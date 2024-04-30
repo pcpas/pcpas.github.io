@@ -44,6 +44,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -274,10 +276,12 @@
             
               <div class="markdown-body">
                 
-                <h1 id="通过Idea和Github协同Java项目"><a href="#通过Idea和Github协同Java项目" class="headerlink" title="通过Idea和Github协同Java项目"></a>通过Idea和Github协同Java项目</h1><blockquote>
+                <h1>通过Idea和Github协同Java项目</h1>
+<blockquote>
 <p>注：本文链接教程是我觉得说得比较清楚的教程，可以做一个参考，也可以根据关键词自己搜一搜😀</p>
 </blockquote>
-<h2 id="0-基本概念"><a href="#0-基本概念" class="headerlink" title="0.基本概念"></a>0.基本概念</h2><p>本文主要是介绍大体的框架，具体的细节可以在网上自己找教程，我自己也写不好！</p>
+<h2 id="0-基本概念">0.基本概念</h2>
+<p>本文主要是介绍大体的框架，具体的细节可以在网上自己找教程，我自己也写不好！</p>
 <p>下面是一些扫盲，如果了解跳过就可以了！</p>
 <p>👉<a target="_blank" rel="noopener" href="https://www.cnblogs.com/lukelook/p/11220807.html">git与github区别与简介</a></p>
 <p>👉<a target="_blank" rel="noopener" href="https://www.githubs.cn/post/what-is-github">Github是什么，有什么用？</a></p>
@@ -293,54 +297,75 @@
 <p><code>checkout</code>：切换分支</p>
 <p><code>merge</code>：合并代码</p>
 </blockquote>
-<h2 id="1-整体流程："><a href="#1-整体流程：" class="headerlink" title="1.整体流程："></a>1.整体流程：</h2><h3 id="组织人"><a href="#组织人" class="headerlink" title="组织人"></a>组织人</h3><ol>
+<h2 id="1-整体流程：">1.整体流程：</h2>
+<h3 id="组织人">组织人</h3>
+<ol>
 <li>在GitHub上创建<em>组织</em>(github organization)</li>
 <li>在IDEA上创建项目，并上传到Github仓库</li>
 <li>将项目仓库关联组织</li>
 <li>授权组员</li>
 <li>管理项目的迭代和合并</li>
 </ol>
-<h3 id="所有人"><a href="#所有人" class="headerlink" title="所有人"></a>所有人</h3><ol>
-<li><p>注册Github账号</p>
+<h3 id="所有人">所有人</h3>
+<ol>
+<li>
+<p>注册Github账号</p>
 </li>
-<li><p><strong>下载Git，完成Idea，Git，Github之间的配置</strong></p>
+<li>
+<p><strong>下载Git，完成Idea，Git，Github之间的配置</strong></p>
 <blockquote>
 <p>可以跟着教程自己建一个仓库同步一下试试，后面协同新建仓库就是了</p>
 </blockquote>
 <p>👉<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d5366a54a0fd">IntelliJ IDEA连接Github</a></p>
 <p>👉<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2023329">IDEA + Github，打造你的协同开发环境</a></p>
 </li>
-<li><p>加入组织，可以看到组织仓库了🎊</p>
+<li>
+<p>加入组织，可以看到组织仓库了🎊</p>
 </li>
-<li><p>使用组织中的仓库协同开发</p>
+<li>
+<p>使用组织中的仓库协同开发</p>
 </li>
 </ol>
-<h2 id="2-协同开发流程"><a href="#2-协同开发流程" class="headerlink" title="2.协同开发流程"></a>2.协同开发流程</h2><h3 id="分支概念的理解"><a href="#分支概念的理解" class="headerlink" title="分支概念的理解"></a>分支概念的理解</h3><ul>
-<li><p>分支的创建相当于将本地仓库的代码完全复制一份，这时在分支上开发，然后合并到master分支。</p>
+<h2 id="2-协同开发流程">2.协同开发流程</h2>
+<h3 id="分支概念的理解">分支概念的理解</h3>
+<ul>
+<li>
+<p>分支的创建相当于将本地仓库的代码完全复制一份，这时在分支上开发，然后合并到master分支。</p>
 <p>这个时候就有问题了，<strong>分支上开发再合并到主分支和直接在主分支开发有什么区别？</strong></p>
 </li>
-<li><p>这个问题问的好！</p>
+<li>
+<p>这个问题问的好！</p>
 </li>
-<li><p>以本人拙见：<br><strong>有冲突在自己本地就能解决，解决好了再上传到远程仓库。</strong></p>
+<li>
+<p>以本人拙见：<br>
+<strong>有冲突在自己本地就能解决，解决好了再上传到远程仓库。</strong></p>
 </li>
-<li><p>而在本地直接在master分支开发的话，没有合并分支的概念。冲突问题我觉的是一大难题，而且分支可以在任何时候都可以创建，可以随时退回到任何一个版本，很容易回到你想保存的代码版本。</p>
+<li>
+<p>而在本地直接在master分支开发的话，没有合并分支的概念。冲突问题我觉的是一大难题，而且分支可以在任何时候都可以创建，可以随时退回到任何一个版本，很容易回到你想保存的代码版本。</p>
 </li>
-<li><p>所以在组员开发项目的同时，需要遵循一下操作。那么可以避免很多麻烦。</p>
+<li>
+<p>所以在组员开发项目的同时，需要遵循一下操作。那么可以避免很多麻烦。</p>
 </li>
 </ul>
-<h3 id="具体操作"><a href="#具体操作" class="headerlink" title="具体操作"></a>具体操作</h3><ol>
-<li><p>先从远程仓库pull得到<code>master</code>分支；</p>
+<h3 id="具体操作">具体操作</h3>
+<ol>
+<li>
+<p>先从远程仓库pull得到<code>master</code>分支；</p>
 </li>
-<li><p>在本地新建本地分支——这里取名叫<code>branch1</code>分支；</p>
+<li>
+<p>在本地新建本地分支——这里取名叫<code>branch1</code>分支；</p>
 </li>
-<li><p>在<code>branch1</code>分支做开发，commit到本地</p>
+<li>
+<p>在<code>branch1</code>分支做开发，commit到本地</p>
 </li>
-<li><p>开发完切换到<code>master</code>分支，再从远程仓库pull下来新的<code>master</code>分支</p>
+<li>
+<p>开发完切换到<code>master</code>分支，再从远程仓库pull下来新的<code>master</code>分支</p>
 <blockquote>
 <p>此时的<code>master</code>因为其他人的提交已经和你之前下载的不一样了，因此需要重新下载（pull）</p>
 </blockquote>
 </li>
-<li><p>在<code>master</code>分支内<em>合并</em>(merge)你本地写的<code>branch1</code></p>
+<li>
+<p>在<code>master</code>分支内<em>合并</em>(merge)你本地写的<code>branch1</code></p>
 <blockquote>
 <p>此时，<code>master</code>分支有其他人新写的代码，<code>branch1</code>有你新写的代码，因此有可能出现冲突！</p>
 <p>出现冲突时就不能一键merge了，需要你自己选择如何整合冲突的地方！</p>
@@ -348,10 +373,12 @@
 <p>(切换分支前一定要commit已经写好的代码，否则即使Ctrl+S保存过代码也会丢失！！！我丢过一次SCS！！！！)</p>
 </blockquote>
 </li>
-<li><p>确定无误提交到云端的<code>master</code>,进度+1.</p>
+<li>
+<p>确定无误提交到云端的<code>master</code>,进度+1.</p>
 </li>
 </ol>
-<h3 id="原则"><a href="#原则" class="headerlink" title="原则"></a>原则</h3><p>4个人的工作尽量解耦，互不打扰的开发是最好的！最好不要出现一个人的工作必须等另一个人，可以预留接口！</p>
+<h3 id="原则">原则</h3>
+<p>4个人的工作尽量解耦，互不打扰的开发是最好的！最好不要出现一个人的工作必须等另一个人，可以预留接口！</p>
 <p>不过因为工作量小且人数少，我觉得我们倒是可以一定程度上牺牲管理换时间。</p>
 
                 
@@ -520,6 +547,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

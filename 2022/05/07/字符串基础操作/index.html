@@ -46,6 +46,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -276,16 +278,23 @@
             
               <div class="markdown-body">
                 
-                <h1 id="关于"><a href="#关于" class="headerlink" title="关于"></a>关于</h1><p>笔者一直认为，字符串应该是每个刚入门代码的人心里最大的噩梦。不论是一堆莫名其妙的报错，永远都猜不对的+1还是不+1，还是那几个有无数潜规则的字符串函数，没调过大半天都不好意思说掌握了字符串。</p>
+                <h1>关于</h1>
+<p>笔者一直认为，字符串应该是每个刚入门代码的人心里最大的噩梦。不论是一堆莫名其妙的报错，永远都猜不对的+1还是不+1，还是那几个有无数潜规则的字符串函数，没调过大半天都不好意思说掌握了字符串。</p>
 <p>但是！字符串是入门还是很有道理的，因为真的很简单！只要心里逻辑清晰一点！就没问题！</p>
 <p>全文都以C语言为示例，高级语言字符串操作越来越简单。</p>
 <p>下面是笔者总结的一些易错、易混的概念和操作！</p>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="字符串的初始化"><a href="#字符串的初始化" class="headerlink" title="字符串的初始化"></a>字符串的初始化</h2><p>下面能正确进行字符串赋值，并且能确保字符串以’\0’结尾的操作是[ ] 【 正确答案: c】<br>(A)  char s[5] &#x3D; {“ABCDE”};<br>(B)  char s[5] &#x3D; {’A’, ’B’, ’C’, ’D’, ’E’};<br>(C)  char *s; s &#x3D; “ABCDE”;<br>(D)  char *s; scanf(“%s”, s);</p>
+<h1>正文</h1>
+<h2 id="字符串的初始化">字符串的初始化</h2>
+<p>下面能正确进行字符串赋值，并且能确保字符串以’\0’结尾的操作是[ ] 【 正确答案: c】<br>
+(A)  char s[5] = {“ABCDE”};<br>
+(B)  char s[5] = {’A’, ’B’, ’C’, ’D’, ’E’};<br>
+©  char *s; s = “ABCDE”;<br>
+(D)  char *s; scanf(“%s”, s);</p>
 <div class="note note-success">
             <p>解释：A、B 爆数组了 ，但是两种初始化方法都是OK的</p><p>D、<strong>操作野指针</strong></p><p>答应我，记得初始化指针！</p>
           </div>
-
-<h2 id="将字符串s中所有的字符“c”删除"><a href="#将字符串s中所有的字符“c”删除" class="headerlink" title="将字符串s中所有的字符“c”删除"></a>将字符串s中所有的字符“c”删除</h2><p>比较Tricky的小函数吧，好用的</p>
+<h2 id="将字符串s中所有的字符“c”删除">将字符串s中所有的字符“c”删除</h2>
+<p>比较Tricky的小函数吧，好用的</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//下面程序的功能是将字符串s中所有的字符“c”删除。</span>
 <span class="hljs-function"><span class="hljs-type">char</span>* <span class="hljs-title">delete</span><span class="hljs-params">(<span class="hljs-type">char</span> *s)</span></span>
 <span class="hljs-function"></span>&#123;
@@ -297,8 +306,8 @@
 s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
 <span class="hljs-keyword">return</span> s;
 &#125;</code></pre></div>
-
-<h2 id="关于如何理解形参中的指针"><a href="#关于如何理解形参中的指针" class="headerlink" title="关于如何理解形参中的指针"></a>关于如何理解形参中的指针</h2><div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//判断以下程序是否正确-----不正确!</span>
+<h2 id="关于如何理解形参中的指针">关于如何理解形参中的指针</h2>
+<div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-comment">//判断以下程序是否正确-----不正确!</span>
 <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
 <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">char</span> *q)</span></span>
 <span class="hljs-function"></span>&#123;
@@ -312,12 +321,11 @@ s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
            <span class="hljs-built_in">func</span>(p);
            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s\n&quot;</span>,p);
 &#125;</code></pre></div>
-
 <div class="note note-success">
             <p>这里需要大家真的理解指针和数组名的含义才能辨析。</p><p>但其实也不难吧，就是很有迷惑性~</p>
           </div>
-
-<h2 id="手写strcat（闹着玩的）"><a href="#手写strcat（闹着玩的）" class="headerlink" title="手写strcat（闹着玩的）"></a>手写strcat（闹着玩的）</h2><div class="code-wrapper"><pre><code class="hljs pgsql">//函数<span class="hljs-keyword">index</span>(<span class="hljs-type">char</span> s[],<span class="hljs-type">char</span> t[])检查字符串s中是否包含字符串t，若包含，则返回t在s中的开始位置(下标值)，否则返回<span class="hljs-number">-1</span>。
+<h2 id="手写strcat（闹着玩的）">手写strcat（闹着玩的）</h2>
+<div class="code-wrapper"><pre><code class="hljs pgsql">//函数<span class="hljs-keyword">index</span>(<span class="hljs-type">char</span> s[],<span class="hljs-type">char</span> t[])检查字符串s中是否包含字符串t，若包含，则返回t在s中的开始位置(下标值)，否则返回<span class="hljs-number">-1</span>。
 //C 库函数 <span class="hljs-type">char</span> *strstr(const <span class="hljs-type">char</span> *haystack, const <span class="hljs-type">char</span> *needle) 在字符串 haystack 中查找第一次出现字符串 needle 的位置，不包含终止符 <span class="hljs-string">&#x27;\0&#x27;</span>,若不包含,返回<span class="hljs-keyword">null</span>.
 
 <span class="hljs-type">int</span> <span class="hljs-keyword">index</span>(<span class="hljs-type">char</span> s[],<span class="hljs-type">char</span> t[])
@@ -332,12 +340,11 @@ s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
  &#125;
  <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
 &#125;</code></pre></div>
-
 <div class="note note-success">
             <p>同样没什么好说的，理解不了可以放弃了</p><p>进阶： KMP查找（不过想说一句，在考试的时候用就是 “可以但有病”）</p>
           </div>
-
-<h2 id="invert函数"><a href="#invert函数" class="headerlink" title="invert函数"></a>invert函数</h2><div class="code-wrapper"><pre><code class="hljs axapta"><span class="hljs-keyword">void</span> invert (<span class="hljs-built_in">char</span> <span class="hljs-built_in">str</span> [] )
+<h2 id="invert函数">invert函数</h2>
+<div class="code-wrapper"><pre><code class="hljs axapta"><span class="hljs-keyword">void</span> invert (<span class="hljs-built_in">char</span> <span class="hljs-built_in">str</span> [] )
 &#123;
  <span class="hljs-built_in">int</span> i,j,k;
  <span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span>,j=strlen(<span class="hljs-built_in">str</span>)<span class="hljs-number">-1</span>;i&lt;j;i++,j--)
@@ -347,24 +354,25 @@ s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
   <span class="hljs-built_in">str</span>[j]=k;
  &#125;
 &#125;</code></pre></div>
-
 <div class="note note-success">
             <p>Easier than easier</p>
           </div>
-
-<h2 id="算术运算表达式-支持空格、连乘连除"><a href="#算术运算表达式-支持空格、连乘连除" class="headerlink" title="算术运算表达式(支持空格、连乘连除)"></a>算术运算表达式(支持空格、连乘连除)</h2><p>这道题就还是比较有难度了，下面我们来拆分一下本题的需求！</p>
-<h3 id="1-处理数据的范围"><a href="#1-处理数据的范围" class="headerlink" title="1. 处理数据的范围"></a>1. 处理数据的范围</h3><p>支持浮点数吗？支持超大数吗？数组该开多大？该用int、long还是double？</p>
+<h2 id="算术运算表达式-支持空格、连乘连除">算术运算表达式(支持空格、连乘连除)</h2>
+<p>这道题就还是比较有难度了，下面我们来拆分一下本题的需求！</p>
+<h3 id="1-处理数据的范围">1. 处理数据的范围</h3>
+<p>支持浮点数吗？支持超大数吗？数组该开多大？该用int、long还是double？</p>
 <p>浮点数： atoi函数面临失效风险，需要手写转换函数</p>
 <p>高精计算： 这都值得单独开一篇来说了！</p>
 <p>总之！做一道题，特别是这些脑筋急转弯题！非常需要考虑这个问题！</p>
-<h3 id="2-处理表达式"><a href="#2-处理表达式" class="headerlink" title="2.处理表达式"></a>2.处理表达式</h3><p>给你一个充满空格的表达式，你打算如何读入？又该如何储存？</p>
-<p>我认为好的做法应该是getchar读入，顺便消去空格，以&#x3D;为结尾</p>
+<h3 id="2-处理表达式">2.处理表达式</h3>
+<p>给你一个充满空格的表达式，你打算如何读入？又该如何储存？</p>
+<p>我认为好的做法应该是getchar读入，顺便消去空格，以=为结尾</p>
 <p>根据本学期所学的内容，将表达式无脑先转为后缀表达式存起来应该是聪明的做法！（因为有板子呀嘿嘿）</p>
-<h3 id="3-中缀转后缀并计算"><a href="#3-中缀转后缀并计算" class="headerlink" title="3.中缀转后缀并计算"></a>3.中缀转后缀并计算</h3><p>中缀转后缀应该是一个树的问题？idk，但是至少对于表达式而言，我们采用这样的方法：</p>
+<h3 id="3-中缀转后缀并计算">3.中缀转后缀并计算</h3>
+<p>中缀转后缀应该是一个树的问题？idk，但是至少对于表达式而言，我们采用这样的方法：</p>
 <div class="note note-primary">
             <ol><li>从左至右进行遍历。</li><li>遇到运算数直接输出。</li><li>遇到左括号（作为最高优先级符号）直接入栈。</li><li>遇到右括号，弹出一切符号直到遇到左括号，然后把这对括号弹出但是不存。</li><li>遇到普通运算符，不断将其与栈顶元素比较，若高于栈顶则入栈，否则弹出当前栈顶，继续比较，直到高于栈顶或者栈空，入栈。</li><li>对象处理完毕，全部出栈。</li></ol>
           </div>
-
 <p>下面是一个示例（我自己的板子）：</p>
 <div class="code-wrapper"><pre><code class="hljs cpp">
 <span class="hljs-comment">//不支持高精度和浮点数！</span>
@@ -486,8 +494,10 @@ s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
     <span class="hljs-type">int</span> ans = <span class="hljs-built_in">cal</span>(t);
     <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, ans);
 &#125;</code></pre></div>
+<h2 id="高精度计算">高精度计算</h2>
+<h3 id="加法">加法</h3>
+<h3 id="减法">减法</h3>
 
-<h2 id="高精度计算"><a href="#高精度计算" class="headerlink" title="高精度计算"></a>高精度计算</h2><h3 id="加法"><a href="#加法" class="headerlink" title="加法"></a>加法</h3><h3 id="减法"><a href="#减法" class="headerlink" title="减法"></a>减法</h3>
                 
               </div>
             
@@ -658,6 +668,11 @@ s[j] = <span class="hljs-string">&#x27;\0&#x27;</span>;
 
 
   
+
+
+  
+  
+
 
 
 

@@ -44,6 +44,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -221,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.7k 字
+          1.6k 字
         
       </span>
     
@@ -274,9 +276,12 @@
             
               <div class="markdown-body">
                 
-                <h1 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在上一次实验中，我们完成了词法分析，并在Scanner中保存了Token表，这是极好的。</p>
+                <h1>语法分析</h1>
+<h2 id="前言">前言</h2>
+<p>在上一次实验中，我们完成了词法分析，并在Scanner中保存了Token表，这是极好的。</p>
 <p>今天的任务是再次遍历所有token，形成对应的语法树。我使用的分析方法是递归下降子程序法，而需要注意的问题是程序中存在的左递归和回溯。</p>
-<h2 id="分析语法"><a href="#分析语法" class="headerlink" title="分析语法"></a>分析语法</h2><p>要构造对应的语法树，我们首先必须充分了解想要分析的语法规则。</p>
+<h2 id="分析语法">分析语法</h2>
+<p>要构造对应的语法树，我们首先必须充分了解想要分析的语法规则。</p>
 <p>实验中的语法规则如下表所示：</p>
 <table>
 <thead>
@@ -287,7 +292,8 @@
 <th>备注</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>编译单元</td>
 <td>CompUnit</td>
 <td>{Decl} {FuncDef} MainFuncDef</td>
@@ -314,37 +320,37 @@
 <tr>
 <td>常数定义</td>
 <td>ConstDef</td>
-<td>Ident { ‘[‘ ConstExp ‘]’ } ‘&#x3D;’ ConstInitVal</td>
+<td>Ident { ‘[’ ConstExp ‘]’ } ‘=’ ConstInitVal</td>
 <td></td>
 </tr>
 <tr>
 <td>常量初值</td>
 <td>ConstInitVal</td>
-<td>ConstExp<br />‘{‘ [ ConstInitVal { ‘,’ ConstInitVal } ] ‘}’</td>
+<td>ConstExp<br />‘{’ [ ConstInitVal { ‘,’ ConstInitVal } ] ‘}’</td>
 <td></td>
 </tr>
 <tr>
 <td>变量声明</td>
 <td>VarDecl</td>
-<td>BType VarDef { ‘,’ VarDef } ‘;’<br />Ident { ‘[‘ ConstExp ‘]’ } ‘&#x3D;’ InitVal</td>
+<td>BType VarDef { ‘,’ VarDef } ‘;’<br />Ident { ‘[’ ConstExp ‘]’ } ‘=’ InitVal</td>
 <td></td>
 </tr>
 <tr>
 <td>变量初值</td>
 <td>InitVal</td>
-<td>Exp<br />‘{‘ [ InitVal { ‘,’ InitVal } ] ‘}’</td>
+<td>Exp<br />‘{’ [ InitVal { ‘,’ InitVal } ] ‘}’</td>
 <td></td>
 </tr>
 <tr>
 <td>函数定义</td>
 <td>FuncDef</td>
-<td>FuncType Ident ‘(‘ [FuncFParams] ‘)’ Block</td>
+<td>FuncType Ident ‘(’ [FuncFParams] ‘)’ Block</td>
 <td></td>
 </tr>
 <tr>
 <td>主函数定义</td>
 <td>MainFuncDef</td>
-<td>‘int’ ‘main’ ‘(‘ ‘)’ Block</td>
+<td>‘int’ ‘main’ ‘(’ ‘)’ Block</td>
 <td></td>
 </tr>
 <tr>
@@ -362,13 +368,13 @@
 <tr>
 <td>函数形参</td>
 <td>FuncFParam</td>
-<td>BType Ident [‘[‘ ‘]’ { ‘[‘ ConstExp ‘]’ }]</td>
+<td>BType Ident [‘[’ ‘]’ { ‘[’ ConstExp ‘]’ }]</td>
 <td></td>
 </tr>
 <tr>
 <td>语句块</td>
 <td>Block</td>
-<td>‘{‘ { BlockItem } ‘}’</td>
+<td>‘{’ { BlockItem } ‘}’</td>
 <td></td>
 </tr>
 <tr>
@@ -380,13 +386,13 @@
 <tr>
 <td>语句</td>
 <td>Stmt</td>
-<td>LVal ‘&#x3D;’ Exp ‘;’ <br />[Exp]  ‘;’<br />Block<br />‘if’ ‘(‘ Cond ‘)’ Stmt [ ‘else’ Stmt ]<br />‘for’ ‘(‘ [ForStmt] ‘;’ [Cond] ‘;’ [forStmt] ‘)’ Stmt<br />‘break’ ‘;’<br />‘continue’ ‘;’<br />‘return’ [Exp] ‘;’<br />LVal ‘&#x3D;’ ‘getint’’(‘’)’’;’<br />‘printf’’(‘FormatString{‘,’Exp}’)’’;’</td>
+<td>LVal ‘=’ Exp ‘;’ <br />[Exp]  ‘;’<br />Block<br />‘if’ ‘(’ Cond ‘)’ Stmt [ ‘else’ Stmt ]<br />‘for’ ‘(’ [ForStmt] ‘;’ [Cond] ‘;’ [forStmt] ‘)’ Stmt<br />‘break’ ‘;’<br />‘continue’ ‘;’<br />‘return’ [Exp] ‘;’<br />LVal ‘=’ ‘getint’‘(’‘)’‘;’<br />‘printf’‘(‘FormatString{’,‘Exp}’)’‘;’</td>
 <td>左递归</td>
 </tr>
 <tr>
 <td>语句</td>
 <td>ForStmt</td>
-<td>LVal ‘&#x3D;’ Exp</td>
+<td>LVal ‘=’ Exp</td>
 <td></td>
 </tr>
 <tr>
@@ -404,13 +410,13 @@
 <tr>
 <td>左值表达式</td>
 <td>LVal</td>
-<td>Ident {‘[‘ Exp ‘]’}</td>
+<td>Ident {‘[’ Exp ‘]’}</td>
 <td></td>
 </tr>
 <tr>
 <td>基本表达式</td>
 <td>PrimaryExp</td>
-<td>‘(‘ Exp ‘)’<br />LVal<br />Number</td>
+<td>‘(’ Exp ‘)’<br />LVal<br />Number</td>
 <td></td>
 </tr>
 <tr>
@@ -422,14 +428,14 @@
 <tr>
 <td>一元表达式</td>
 <td>UnaryExp</td>
-<td>PrimaryExp<br />Ident ‘(‘ [FuncRParams] ‘)’<br />UnaryOp UnaryExp</td>
+<td>PrimaryExp<br />Ident ‘(’ [FuncRParams] ‘)’<br />UnaryOp UnaryExp</td>
 <td></td>
 </tr>
 <tr>
 <td>单目运算符</td>
 <td>UnaryOp</td>
-<td>‘+’  <br />‘-‘<br />‘!’</td>
-<td>‘!’仅出现在条件表达式中</td>
+<td>‘+’  <br />‘-’<br />‘!’</td>
+<td>'!'仅出现在条件表达式中</td>
 </tr>
 <tr>
 <td>函数实参表</td>
@@ -440,7 +446,7 @@
 <tr>
 <td>乘除模表达式</td>
 <td>MulExp</td>
-<td>UnaryExp<br /> (‘*’ | ‘&#x2F;‘  | ‘%’ ) UnaryExp</td>
+<td>UnaryExp<br /> (‘*’ | ‘/’  | ‘%’ ) UnaryExp</td>
 <td>左递归</td>
 </tr>
 <tr>
@@ -452,13 +458,13 @@
 <tr>
 <td>关系表达式</td>
 <td>RelExp</td>
-<td>AddExp<br />RelExp (‘&lt;’ | ‘&gt;’  | ‘&lt;&#x3D;’ | ‘&gt;&#x3D;’) AddExp</td>
+<td>AddExp<br />RelExp (‘&lt;’ | ‘&gt;’  | ‘&lt;=’ | ‘&gt;=’) AddExp</td>
 <td>左递归</td>
 </tr>
 <tr>
 <td>相等性表达式</td>
 <td>EqExp</td>
-<td>RelExp<br />EqExp (‘&#x3D;&#x3D;’ | ‘!&#x3D;’) RelExp</td>
+<td>RelExp<br />EqExp (‘==’ | ‘!=’) RelExp</td>
 <td>左递归</td>
 </tr>
 <tr>
@@ -479,8 +485,10 @@
 <td>AddExp</td>
 <td>使用的Ident 必须是常量</td>
 </tr>
-</tbody></table>
-<h3 id="左递归问题"><a href="#左递归问题" class="headerlink" title="左递归问题"></a>左递归问题</h3><p>其中我们可以看到表达式的部分出现了很多左递归，这里我们使用改写BNF范式的做法。改写后如下所示：</p>
+</tbody>
+</table>
+<h3 id="左递归问题">左递归问题</h3>
+<p>其中我们可以看到表达式的部分出现了很多左递归，这里我们使用改写BNF范式的做法。改写后如下所示：</p>
 <table>
 <thead>
 <tr>
@@ -489,25 +497,26 @@
 <th>推导结果</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>乘除模表达式</td>
 <td>MulExp</td>
-<td>UnaryExp { (‘*’ |  ‘&#x2F;‘ | ‘%’ ) UnaryExp}</td>
+<td>UnaryExp { (‘*’ |  ‘/’ | ‘%’ ) UnaryExp}</td>
 </tr>
 <tr>
 <td>加减表达式</td>
 <td>AddExp</td>
-<td>MulExp { (‘+’ | ‘-‘) MulExp}</td>
+<td>MulExp { (‘+’ | ‘-’) MulExp}</td>
 </tr>
 <tr>
 <td>关系表达式</td>
 <td>RelExp</td>
-<td>AddExp { (‘&lt;’ | ‘&gt;’ | ‘&lt;&#x3D;’ | ‘&gt;&#x3D;’) AddExp}</td>
+<td>AddExp { (‘&lt;’ | ‘&gt;’ | ‘&lt;=’ | ‘&gt;=’) AddExp}</td>
 </tr>
 <tr>
 <td>相等性表达式</td>
 <td>EqExp</td>
-<td>RelExp { (‘&#x3D;&#x3D;’ | ‘!&#x3D;’) RelExp}</td>
+<td>RelExp { (‘==’ | ‘!=’) RelExp}</td>
 </tr>
 <tr>
 <td>逻辑与表达式</td>
@@ -519,12 +528,14 @@
 <td>LOrExp</td>
 <td>LAndExp { ‘||’ LAndExp}</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>需要注意的是，这样做可能会导致语法树的结构较原来发生变化。输出时必须以原语法树为准!!</p>
 <blockquote>
-<p><strong>以AddExp为例，按照<code>MulExp &#123; (&#39;+&#39; \| &#39;-&#39;) MulExp&#125;</code>这样的产生式进行分析，右边的{ (‘+’ | ‘-‘) MulExp}重复几次，实际上就需要嵌套地生成几个AddExp。因此，我们必须在程序中格外注意这一点。</strong></p>
+<p><strong>以AddExp为例，按照<code>MulExp &#123; ('+' \| '-') MulExp&#125;</code>这样的产生式进行分析，右边的{ (‘+’ | ‘-’) MulExp}重复几次，实际上就需要嵌套地生成几个AddExp。因此，我们必须在程序中格外注意这一点。</strong></p>
 </blockquote>
-<h3 id="回溯问题"><a href="#回溯问题" class="headerlink" title="回溯问题"></a>回溯问题</h3><p>在多产生式的情况下，一个问题是回溯问题。我们可以通过求产生式FIRST集来预测和解决回溯问题，举个例子：</p>
+<h3 id="回溯问题">回溯问题</h3>
+<p>在多产生式的情况下，一个问题是回溯问题。我们可以通过求产生式FIRST集来预测和解决回溯问题，举个例子：</p>
 <table>
 <thead>
 <tr>
@@ -534,7 +545,8 @@
 <th>备注</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>编译单元</td>
 <td>CompUnit</td>
 <td>Decl: {“const”, “int”} FuncDef:{“void”, “int”} MainFuncDef:{“int”}</td>
@@ -543,13 +555,13 @@
 <tr>
 <td>一元表达式</td>
 <td>UnaryExp</td>
-<td>PrimaryExp:{“(“, Ident, “0”,…,”9”}    {Ident}   UnaryOp:{“+”,”-“,”!”}</td>
+<td>PrimaryExp:{“(”, Ident, “0”,…,“9”}    {Ident}   UnaryOp:{“+”,“-”,“!”}</td>
 <td>回溯</td>
 </tr>
 <tr>
 <td>基本表达式</td>
 <td>PrimaryExp</td>
-<td>{‘(‘}  LVal:{Ident} Number:{IntConst}</td>
+<td>{‘(’}  LVal:{Ident} Number:{IntConst}</td>
 <td>回溯</td>
 </tr>
 <tr>
@@ -564,7 +576,8 @@
 <td>略</td>
 <td>回溯</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>这种情况下，应该使用再继续向前看，直到出现不一致时，方可区分到底是哪个产生式。</p>
 <p>另一种方法是通过改写产生式来解决这个问题，但是这样做的问题是会破坏原来的产生式，导致想把输出调成原来的样子还要做一些额外的设计。考虑到我们并不追求性能，那就还是使用粗暴一些的方式来减少编码的难度吧！</p>
 <p>这里值得特别说说的是Stmt，因为它的产生式实在是太复杂！</p>
@@ -572,22 +585,23 @@
 <p>Stmt</p>
 <ul>
 <li>Block</li>
-<li>‘if’ ‘(‘ Cond ‘)’ Stmt [ ‘else’ Stmt ]</li>
-<li>‘for’ ‘(‘ [ForStmt] ‘;’ [Cond] ‘;’ [forStmt] ‘)’ Stmt</li>
+<li>‘if’ ‘(’ Cond ‘)’ Stmt [ ‘else’ Stmt ]</li>
+<li>‘for’ ‘(’ [ForStmt] ‘;’ [Cond] ‘;’ [forStmt] ‘)’ Stmt</li>
 <li>‘break’ ‘;’ | ‘continue’ ‘;’</li>
 <li>‘return’ [Exp] ‘;’</li>
-<li>‘printf’’(‘FormatString{‘,’Exp}’)’’;’</li>
-<li>LVal ‘&#x3D;’ Exp ‘;’</li>
+<li>‘printf’‘(‘FormatString{’,‘Exp}’)’‘;’</li>
+<li>LVal ‘=’ Exp ‘;’</li>
 <li>[Exp] ‘;’</li>
-<li>LVal ‘&#x3D;’ ‘getint’’(‘’)’’;’</li>
+<li>LVal ‘=’ ‘getint’‘(’‘)’‘;’</li>
 </ul>
 <p>在LVal之前的都还比较简单，但是最后三条确实非常难以区分，这里给出我的思路：</p>
 <ol>
-<li>如果当前的token为’;’，那么产生式一定为 ‘;’</li>
-<li>因为Exp可以推导出LVal，因此想直接区分两者会非常困难。但是，考虑到LVal后一定会接’&#x3D;’，而Exp后一定会接’;’，因此可以考虑先把第一个语法成分放着，转而去判断后面的token，从而区分Exp和Val。</li>
+<li>如果当前的token为’;'，那么产生式一定为 ‘;’</li>
+<li>因为Exp可以推导出LVal，因此想直接区分两者会非常困难。但是，考虑到LVal后一定会接’=‘，而Exp后一定会接’;'，因此可以考虑先把第一个语法成分放着，转而去判断后面的token，从而区分Exp和Val。</li>
 <li>怎么才能“把第一个语法成分放着”，毕竟我们也不知道Exp和LVal的长度？一种思路是使用Exp去直接分析，由于LVal可以通过Exp推出，因此两种可能性都不会报错。当确定类型后，我们再改回正确的类型即可。</li>
 </ol>
-<h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p><strong>调整</strong></p>
+<h2 id="总体结构">总体结构</h2>
+<p><strong>调整</strong></p>
 <ol>
 <li>在上次的基础上调整了<code>exception</code>包的位置，感觉应该不止前端会出现异常，所以放在外面了。</li>
 <li><code>Factory</code>类现在保存了<code>Parser</code>类的单例。</li>
@@ -613,8 +627,8 @@
     <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">backend</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span></code></pre></div>
-
-<h3 id="Parser"><a href="#Parser" class="headerlink" title="Parser"></a>Parser</h3><p><code>Pareser</code>类是语法分析的主要执行者，使用了递归下降子程序的方法来进行语法分析。</p>
+<h3 id="Parser">Parser</h3>
+<p><code>Pareser</code>类是语法分析的主要执行者，使用了递归下降子程序的方法来进行语法分析。</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Parser</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Scanner scanner;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> ExceptionHandler exceptionHandler;
@@ -640,8 +654,8 @@
     <span class="hljs-comment">//一些简化代码的工具函数</span>
     ...
 &#125;</code></pre></div>
-
-<h3 id="BasicNode"><a href="#BasicNode" class="headerlink" title="BasicNode"></a>BasicNode</h3><p><code>BasicNode</code>是所有语法树节点的父类，规定了所有节点的共有属性和方法。</p>
+<h3 id="BasicNode">BasicNode</h3>
+<p><code>BasicNode</code>是所有语法树节点的父类，规定了所有节点的共有属性和方法。</p>
 <p>SysY文法中每一个非终结符都对应了一个语法树节点类。</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BasicNode</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Unit</span> &#123;
     <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> String name;	<span class="hljs-comment">//该节点的名字</span>
@@ -669,8 +683,8 @@
     &#125;
 
 &#125;</code></pre></div>
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次实验开始上强度了，完整地构造语法树确实要花不少功夫。一个比较突出的感悟是比较合理的类的设计和工具方法的实现确实能够很大程度上让开发变得更加简单和丝滑。</p>
+<h2 id="总结">总结</h2>
+<p>这次实验开始上强度了，完整地构造语法树确实要花不少功夫。一个比较突出的感悟是比较合理的类的设计和工具方法的实现确实能够很大程度上让开发变得更加简单和丝滑。</p>
 
                 
               </div>
@@ -838,6 +852,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

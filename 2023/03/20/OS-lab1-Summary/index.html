@@ -47,6 +47,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -277,17 +279,28 @@
             
               <div class="markdown-body">
                 
-                <h1 id="多个C文件的连接和编译"><a href="#多个C文件的连接和编译" class="headerlink" title="多个C文件的连接和编译"></a>多个C文件的连接和编译</h1><h2 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h2><p>![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319200455.png)<br> 多个C语言文件编译成为一个可执行文件,首先通过<code>gcc -c &lt;filename&gt;</code>将.c文件编译为.o二进制文件, 再通过链接的方式将多个.o文件链接在一起(此时最后每条指令的地址也因此确定), 生产最后的可执行文件.</p>
-<h2 id="ELF文件-深入探究编译链接"><a href="#ELF文件-深入探究编译链接" class="headerlink" title="ELF文件 - 深入探究编译链接"></a>ELF文件 - 深入探究编译链接</h2><p>链接器通过哪些信息来链接多个目标文件呢？—- 目标文件(比如说: elf文件)</p>
+                <h1>多个C文件的连接和编译</h1>
+<h2 id="基本流程">基本流程</h2>
+<p>![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319200455.png)<br>
+多个C语言文件编译成为一个可执行文件,首先通过<code>gcc -c &lt;filename&gt;</code>将.c文件编译为.o二进制文件, 再通过链接的方式将多个.o文件链接在一起(此时最后每条指令的地址也因此确定), 生产最后的可执行文件.</p>
+<h2 id="ELF文件-深入探究编译链接">ELF文件 - 深入探究编译链接</h2>
+<p>链接器通过哪些信息来链接多个目标文件呢？---- 目标文件(比如说: elf文件)</p>
 <p>在目标文件中，记录了代码各个段的具体信息。链接器通过这些信息来将目标文件链接到一起。而 ELF(Executable and Linkable Format) 正是 Unix 上常用的一种 目标文件格式。其实，不仅仅是目标文件，可执行文件也是使用 ELF 格式记录的。这一点通过 ELF 的全称也可以看出来。</p>
 <p><strong>.o 文件就是 ELF 所包含的三种文件类型中的一种</strong>，称为可重 定位 (relocatable) 文件，其它两种文件类型分别是可执行 (executable) 文件和共享对象 (shared object) 文件，这两种文件都需要链接器对可重定位文件进行处理才能生成。</p>
-<p>ELF文件结构:<br>![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319201114.png)<br>段头表（或程序头表，program header table），主要包含程序中各个段（segment）的信息， <strong>段的信息需要在运行时刻使用</strong>。<br>节头表（section header table），主要包含程序中各个节（section）的信息，<strong>节的信息需要 在程序编译和链接的时候使用</strong>。(因此在这里我们主要关心节头表)<br>段头表和节头表指向了同样的地方，这意味着两者只是程序数据的两种视图:</p>
+<p>ELF文件结构:<br>
+![](<a target="_blank" rel="noopener" href="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted">https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted</a> image 20230319201114.png)<br>
+段头表（或程序头表，program header table），主要包含程序中各个段（segment）的信息， <strong>段的信息需要在运行时刻使用</strong>。<br>
+节头表（section header table），主要包含程序中各个节（section）的信息，<strong>节的信息需要 在程序编译和链接的时候使用</strong>。(因此在这里我们主要关心节头表)<br>
+段头表和节头表指向了同样的地方，这意味着两者只是程序数据的两种视图:</p>
 <ol>
 <li>组成可重定位文件，参与可执行文件和可共享文件的链接。此时使用节头表。</li>
 <li>组成可执行文件或者可共享文件，在运行时为加载器提供信息。此时使用段头表。</li>
 </ol>
 <p>现在来逐一分析ELF文件内容:</p>
-<h3 id="ELF文件头"><a href="#ELF文件头" class="headerlink" title="ELF文件头"></a>ELF文件头</h3><p>ELF 的文件头，就是一个存了关于 ELF 文件信息的结构体。 首先，结构体中存储了 ELF 的魔数，以验证这是一个有效的 ELF。当我们验证了这是个 ELF 文件之后，便可以通过 ELF 头中提供的信息，进一步地解析 ELF 文件了。<br>存放了<code>Elf32_Ehdr</code>, <code>Elf32_Shdr</code>和<code>Elf32_Phdr</code>三种数据结构.<br>Ehdr : elf文件结构 ; <strong>Shdr: 节头表结构</strong> ; Phdr: 段头表结构</p>
+<h3 id="ELF文件头">ELF文件头</h3>
+<p>ELF 的文件头，就是一个存了关于 ELF 文件信息的结构体。 首先，结构体中存储了 ELF 的魔数，以验证这是一个有效的 ELF。当我们验证了这是个 ELF 文件之后，便可以通过 ELF 头中提供的信息，进一步地解析 ELF 文件了。<br>
+存放了<code>Elf32_Ehdr</code>, <code>Elf32_Shdr</code>和<code>Elf32_Phdr</code>三种数据结构.<br>
+Ehdr : elf文件结构 ; <strong>Shdr: 节头表结构</strong> ; Phdr: 段头表结构</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span>
     <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> e_ident[EI_NIDENT]; <span class="hljs-comment">/* Magic number and other info */</span>
     Elf32_Half e_type;        <span class="hljs-comment">/* Object file type */</span>
@@ -304,10 +317,11 @@
     Elf32_Half e_shnum;       <span class="hljs-comment">/* Section header table entry count */</span>
     Elf32_Half e_shstrndx;        <span class="hljs-comment">/* Section header string table index */</span>
 &#125; Elf32_Ehdr;</code></pre></div>
-<p>可以看到, ehdr中包含了很多关键信息,如<code>e_phoff</code>, <code>e_shoff</code>. </p>
+<p>可以看到, ehdr中包含了很多关键信息,如<code>e_phoff</code>, <code>e_shoff</code>.</p>
 <div class="code-wrapper"><pre><code class="hljs c">Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;</code></pre></div>
 <p>我们在读取elf文件一开始将ELF文件的入口作为一个<code>Elf32_Ehdr *</code>类型的指针, 这样做的好处是在地址空间自动的划出一个<code>sizeof(Elf32_Ehdr)</code>大小的区域, 这片区域自然就是ELF文件头.</p>
-<h3 id="读取ELF文件"><a href="#读取ELF文件" class="headerlink" title="读取ELF文件"></a>读取ELF文件</h3><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">readelf</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *binary, <span class="hljs-type">size_t</span> size)</span> &#123;
+<h3 id="读取ELF文件">读取ELF文件</h3>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">readelf</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *binary, <span class="hljs-type">size_t</span> size)</span> &#123;
     Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
     <span class="hljs-comment">// Check whether `binary` is a ELF file.</span>
     <span class="hljs-keyword">if</span> (!is_elf_format(binary, size)) &#123;
@@ -335,8 +349,11 @@
     &#125;
     <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
 &#125;</code></pre></div>
-
-<h2 id="关于ELF32和ELF64文件"><a href="#关于ELF32和ELF64文件" class="headerlink" title="关于ELF32和ELF64文件"></a>关于ELF32和ELF64文件</h2><p>我们编写的 readelf 程序是不能解析 readelf 文件本身的，而我们刚才介绍的系统工具 readelf 则可以解析，这是为什么呢？<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319210414.png" srcset="/img/loading.gif" lazyload><br>可以发现, readelf文件是一个ELF64类型的文件, 而我们编写的<code>readelf.c</code>只能读取elf32类型的文件.<br>对比官方<code>elf.h</code>和MOS的<code>elf.h</code></p>
+<h2 id="关于ELF32和ELF64文件">关于ELF32和ELF64文件</h2>
+<p>我们编写的 readelf 程序是不能解析 readelf 文件本身的，而我们刚才介绍的系统工具 readelf 则可以解析，这是为什么呢？<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319210414.png" srcset="/img/loading.gif" lazyload alt=""><br>
+可以发现, readelf文件是一个ELF64类型的文件, 而我们编写的<code>readelf.c</code>只能读取elf32类型的文件.<br>
+对比官方<code>elf.h</code>和MOS的<code>elf.h</code></p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//linux elf.h</span>
 <span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">elf64_hdr</span> &#123;</span>
   <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>	e_ident[EI_NIDENT];	 <span class="hljs-comment">//魔数 7F+’E’+’L’+’F’</span>
@@ -409,12 +426,16 @@
 
 <span class="hljs-comment">//余下相似,不在复制</span></code></pre></div>
 <p>但是因为readelf.c源代码几乎全部使用宏, 感觉如果想写一个解析elf64的readelf.c几乎不需要什么改动, 很疑惑(感觉会在这里出题呀)?</p>
-<h2 id="可执行文件的运行"><a href="#可执行文件的运行" class="headerlink" title="可执行文件的运行"></a>可执行文件的运行</h2><h3 id="内核在哪里-内存布局"><a href="#内核在哪里-内存布局" class="headerlink" title="内核在哪里:内存布局"></a>内核在哪里:内存布局</h3><p>只要我们能够将内核加载到正确的位置上，我们的内核就应该 可以运行起来。<br>思考到这里，我们又发现了几个重要的问题。 </p>
+<h2 id="可执行文件的运行">可执行文件的运行</h2>
+<h3 id="内核在哪里-内存布局">内核在哪里:内存布局</h3>
+<p>只要我们能够将内核加载到正确的位置上，我们的内核就应该 可以运行起来。<br>
+思考到这里，我们又发现了几个重要的问题。</p>
 <ol>
-<li>什么叫做正确的位置？到底放在哪里才叫正确。 </li>
+<li>什么叫做正确的位置？到底放在哪里才叫正确。</li>
 <li>哪个段被加载到哪里是记录在编译器编译出来的 ELF 文件里的，我们怎么才能修改它呢？</li>
 </ol>
-<p>关于内核应该被加载到哪里: kseg0<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png" srcset="/img/loading.gif" lazyload></p>
+<p>关于内核应该被加载到哪里: kseg0<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319211651.png" srcset="/img/loading.gif" lazyload alt=""></p>
 <div class="code-wrapper"><pre><code class="hljs gherkin">/<span class="hljs-symbol">*</span>
  o     4G -----------&gt;  +----------------------------+------------0x100000000
  o                      |<span class="hljs-string">       ...                  </span>|<span class="hljs-string">  kseg2</span>
@@ -459,9 +480,17 @@
 <span class="hljs-string"> a     0 ------------&gt;  +----------------------------+ ----------------------------</span>
 <span class="hljs-string"> o</span>
 <span class="hljs-string">*/</span></code></pre></div>
-
-<p>在发现了内核的正确位置后，我们只需要想办法让内核被加载到那里就可以了。<br>编译器在生成 ELF 文件时就已经记录了各节所需要被加载到的位置。最终的可执行文件实际上是由链接器产生的（它将多个目标文件链接 产生最终可执行文件）。因此，我们所需要做的，就是控制链接器的链接过程。</p>
-<h3 id="Linker-Script"><a href="#Linker-Script" class="headerlink" title="Linker Script"></a>Linker Script</h3><p>Linker Script 中记录了各个节应该如何映射到段，以及各个段应该被加载到的位置.<br>在链接过程中，目标文件被 看成节的集合，并使用节头表来描述各个节的组织。<br>换句话说，节记录了在链接过程中所需要的必要信息。<br>其中最为重要的三个节为.text、.data、.bss。<br>这三个节的意义是必须要掌握的：<br>.text 保存可执行文件的操作指令。<br>.data 保存已初始化的全局变量和静态变量。<br>.bss 保存未初始化的全局变量和静态变量。</p>
+<p>在发现了内核的正确位置后，我们只需要想办法让内核被加载到那里就可以了。<br>
+编译器在生成 ELF 文件时就已经记录了各节所需要被加载到的位置。最终的可执行文件实际上是由链接器产生的（它将多个目标文件链接 产生最终可执行文件）。因此，我们所需要做的，就是控制链接器的链接过程。</p>
+<h3 id="Linker-Script">Linker Script</h3>
+<p>Linker Script 中记录了各个节应该如何映射到段，以及各个段应该被加载到的位置.<br>
+在链接过程中，目标文件被 看成节的集合，并使用节头表来描述各个节的组织。<br>
+换句话说，节记录了在链接过程中所需要的必要信息。<br>
+其中最为重要的三个节为.text、.data、.bss。<br>
+这三个节的意义是必须要掌握的：<br>
+.text 保存可执行文件的操作指令。<br>
+.data 保存已初始化的全局变量和静态变量。<br>
+.bss 保存未初始化的全局变量和静态变量。</p>
 <p>这里比较简单,略过~</p>
 <p>自此, 内核就成功被装在内存中了.</p>
 
@@ -631,6 +660,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

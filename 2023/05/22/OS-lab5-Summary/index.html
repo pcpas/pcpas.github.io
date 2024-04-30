@@ -51,6 +51,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -281,14 +283,21 @@
             
               <div class="markdown-body">
                 
-                <h1 id="文件系统概述"><a href="#文件系统概述" class="headerlink" title="文件系统概述"></a>文件系统概述</h1><p>广义上，一切带标识的、在逻辑上有完整意义的字节序列都可以称为“文件”。文件系统将外部设备中的资源抽象为文件，从而可以统一管理外部设备，实现对数据的存储、组织、访问和修改等操作。在本实验中，我们拟实现一个精简的文件系统，其中需要对<strong>三种设备</strong>进行统一管理， 即文件设备（file，即狭义的“文件”）、控制台（console）和管道（pipe）。其中，后两者将在下一个实验“管道与 Shell”中进行使用。</p>
-<p>下图为我们文件系统的总览：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141829.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+                <h1>文件系统概述</h1>
+<p>广义上，一切带标识的、在逻辑上有完整意义的字节序列都可以称为“文件”。文件系统将外部设备中的资源抽象为文件，从而可以统一管理外部设备，实现对数据的存储、组织、访问和修改等操作。在本实验中，我们拟实现一个精简的文件系统，其中需要对<strong>三种设备</strong>进行统一管理， 即文件设备（file，即狭义的“文件”）、控制台（console）和管道（pipe）。其中，后两者将在下一个实验“管道与 Shell”中进行使用。</p>
+<p>下图为我们文件系统的总览：<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141829.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
 <p>还有一张图很好的展示了不同层级的抽象函数调用关系。</p>
 <p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230522152337.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
-<h1 id="外部存储设备驱动"><a href="#外部存储设备驱动" class="headerlink" title="外部存储设备驱动"></a>外部存储设备驱动</h1><p>通常，我们需要按一定顺序读写设备寄存器，来实现对外部设备的操作。为了将这种操作转化为具有通用、明确语义的接口，必须实现相应的驱动程序。在本部分，我们将实现 IDE 磁盘的用户态驱动程序，该驱动程序将通过系统调用的方式陷入内核，对磁盘镜像进行读写操作。<br>MOS已经在<code>kern/console.c</code>中使用MMIO技术为我们实现了简单的console驱动程序, 我们的实验里需要我们实现IDE 磁盘驱动，也就是下图的部分：<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141939.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h1>外部存储设备驱动</h1>
+<p>通常，我们需要按一定顺序读写设备寄存器，来实现对外部设备的操作。为了将这种操作转化为具有通用、明确语义的接口，必须实现相应的驱动程序。在本部分，我们将实现 IDE 磁盘的用户态驱动程序，该驱动程序将通过系统调用的方式陷入内核，对磁盘镜像进行读写操作。<br>
+MOS已经在<code>kern/console.c</code>中使用MMIO技术为我们实现了简单的console驱动程序, 我们的实验里需要我们实现IDE 磁盘驱动，也就是下图的部分：<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515141939.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
 <p>相比于console驱动程序, IDE的驱动程序更加复杂, 并且本次要编写的驱动程序完全运行在用户空间。</p>
-<h2 id="内存映射-I-O-MMIO"><a href="#内存映射-I-O-MMIO" class="headerlink" title="内存映射 I&#x2F;O (MMIO)"></a>内存映射 I&#x2F;O (MMIO)</h2><p>几乎每一种 外设都是通过读写设备上的寄存器来进行数据通信，外设寄存器也称为 I&#x2F;O 端口，主要用来访问 I&#x2F;O 设备。外设寄存器通常包括控制寄存器、状态寄存器和数据寄存器，这些寄存器被映射到<strong>指定的物理地址空间</strong>。</p>
-<p>IDE 磁盘驱动程序位于用户空间，用户态进程若是直接 读写内核虚拟地址将会由处理器引发一个地址错误（ADEL&#x2F;S）。所以对于设备的读写必须通过 系统调用来实现。<br>因此我们引入<code>sys_write_dev</code> 和 <code>sys_read_dev</code> 两个系统调用:</p>
+<h2 id="内存映射-I-O-MMIO">内存映射 I/O (MMIO)</h2>
+<p>几乎每一种 外设都是通过读写设备上的寄存器来进行数据通信，外设寄存器也称为 I/O 端口，主要用来访问 I/O 设备。外设寄存器通常包括控制寄存器、状态寄存器和数据寄存器，这些寄存器被映射到<strong>指定的物理地址空间</strong>。</p>
+<p>IDE 磁盘驱动程序位于用户空间，用户态进程若是直接 读写内核虚拟地址将会由处理器引发一个地址错误（ADEL/S）。所以对于设备的读写必须通过 系统调用来实现。<br>
+因此我们引入<code>sys_write_dev</code> 和 <code>sys_read_dev</code> 两个系统调用:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//这里使用定义的宏也许会更好? </span>
 <span class="hljs-comment">//但是因为没有引用头文件并不能使用...</span>
 <span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title function_">is_illegal_pa_range</span><span class="hljs-params">(u_int pa, u_int len)</span> &#123;
@@ -324,27 +333,36 @@
 	<span class="hljs-built_in">memcpy</span>(va, pa+KSEG1, len);
 	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
 &#125;</code></pre></div>
-<p>通过这两个系统调用，我们就可以对IDE磁盘映射到内核空间的I&#x2F;O寄存器进行读写了。</p>
-<h2 id="IDE磁盘"><a href="#IDE磁盘" class="headerlink" title="IDE磁盘"></a>IDE磁盘</h2><blockquote>
-<p>下面简单介绍与磁盘相关的基本知识，首先是几个基本概念： </p>
+<p>通过这两个系统调用，我们就可以对IDE磁盘映射到内核空间的I/O寄存器进行读写了。</p>
+<h2 id="IDE磁盘">IDE磁盘</h2>
+<blockquote>
+<p>下面简单介绍与磁盘相关的基本知识，首先是几个基本概念：</p>
 <ol>
-<li>扇区 (sector): 磁盘盘片被划分成很多扇形的区域，这些区域叫做扇区。<strong>扇区是磁盘执行读写操作的单位</strong>，一般是 <strong>512 字节</strong>。扇区的大小是一个磁盘的硬件属性。 </li>
-<li>磁道 (track): 盘片上以盘片中心为圆心，不同半径的同心圆。 </li>
-<li>柱面 (cylinder): 硬盘中，不同盘片相同半径的磁道所组成的圆柱面。 </li>
+<li>扇区 (sector): 磁盘盘片被划分成很多扇形的区域，这些区域叫做扇区。<strong>扇区是磁盘执行读写操作的单位</strong>，一般是 <strong>512 字节</strong>。扇区的大小是一个磁盘的硬件属性。</li>
+<li>磁道 (track): 盘片上以盘片中心为圆心，不同半径的同心圆。</li>
+<li>柱面 (cylinder): 硬盘中，不同盘片相同半径的磁道所组成的圆柱面。</li>
 <li>磁头 (head): 每个磁盘有两个面，每个面都有一个磁头。当对磁盘进行读写操作时，磁头在盘片上快速移动。</li>
 </ol>
 </blockquote>
-<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144052.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>接下来我们看看IDE内核的I&#x2F;O寄存器映射:<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144340.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>通过系统调用<code>sys_write_dev</code> 和 <code>sys_read_dev</code>,我们可以读写寄存器的值,从而实现对IDE磁盘的读写。</p>
-<h1 id="文件系统结构"><a href="#文件系统结构" class="headerlink" title="文件系统结构"></a>文件系统结构</h1><h2 id="磁盘空间的基本布局"><a href="#磁盘空间的基本布局" class="headerlink" title="磁盘空间的基本布局"></a>磁盘空间的基本布局</h2><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230519145425.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>不同于扇区，磁盘块是一个<strong>虚拟概念</strong>，是操作系统与磁盘交互的最小单位；操作系统将相邻的扇区组合在一起，形成磁盘块进行整体操作。<br>磁盘块的大小由操作系统决定，一般由 2 的 n 次方个扇区构成。</p>
-<p>MOS 操作系统把磁盘最开始的一个磁盘块 (4096 字节) 当作<strong>引导扇区和分区表</strong>使用。接下来的一个磁盘块作为**超级块 (Super Block)**，用来描述文件系统的基本信息。</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144052.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+接下来我们看看IDE内核的I/O寄存器映射:<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230515144340.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+通过系统调用<code>sys_write_dev</code> 和 <code>sys_read_dev</code>,我们可以读写寄存器的值,从而实现对IDE磁盘的读写。</p>
+<h1>文件系统结构</h1>
+<h2 id="磁盘空间的基本布局">磁盘空间的基本布局</h2>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230519145425.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+不同于扇区，磁盘块是一个<strong>虚拟概念</strong>，是操作系统与磁盘交互的最小单位；操作系统将相邻的扇区组合在一起，形成磁盘块进行整体操作。<br>
+磁盘块的大小由操作系统决定，一般由 2 的 n 次方个扇区构成。</p>
+<p>MOS 操作系统把磁盘最开始的一个磁盘块 (4096 字节) 当作<strong>引导扇区和分区表</strong>使用。接下来的一个磁盘块作为<strong>超级块 (Super Block)</strong>，用来描述文件系统的基本信息。</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Super</span> </span>
 <span class="hljs-class">&#123;</span> 
 	u_int s_magic; <span class="hljs-comment">// Magic number: FS_MAGIC </span>
 	u_int s_nblocks; <span class="hljs-comment">// Total number of blocks on disk</span>
 	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> <span class="hljs-title">s_root</span>;</span> <span class="hljs-comment">// Root directory node </span>
 &#125;;</code></pre></div>
-
-<h2 id="磁盘资源管理"><a href="#磁盘资源管理" class="headerlink" title="磁盘资源管理"></a>磁盘资源管理</h2><p>在文件系统中，我们使用<strong>位图 (Bitmap) 法</strong>来管理空闲的磁盘资源，用一个二进制位 bit 标识磁盘中的一个磁盘块的使用情况（1 表示空闲，0 表示占用）。<br>首先来梳理一下定义:</p>
+<h2 id="磁盘资源管理">磁盘资源管理</h2>
+<p>在文件系统中，我们使用<strong>位图 (Bitmap) 法</strong>来管理空闲的磁盘资源，用一个二进制位 bit 标识磁盘中的一个磁盘块的使用情况（1 表示空闲，0 表示占用）。<br>
+首先来梳理一下定义:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//disk-&gt;以磁盘块为单位</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Block</span> &#123;</span>
     <span class="hljs-type">uint8_t</span> data[BY2BLK];
@@ -356,14 +374,14 @@ nbitblock = (NBLOCK + BIT2BLK - <span class="hljs-number">1</span>) / BIT2BLK;
 <span class="hljs-built_in">memset</span>(disk[<span class="hljs-number">2</span> + i].data, <span class="hljs-number">0xff</span>, BY2BLK);
 <span class="hljs-comment">//但是如果最后有一些多余的bit,全部标记为占用</span>
 <span class="hljs-built_in">memset</span>(disk[<span class="hljs-number">2</span> + (nbitblock - <span class="hljs-number">1</span>)].data + diff, <span class="hljs-number">0x00</span>, BY2BLK - diff);</code></pre></div>
-
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//bitmap-&gt;将磁盘中的位图读入文件系统(通过read_bitmap)</span>
 <span class="hljs-comment">//bitmap数组的一个成员可以存放32位</span>
 <span class="hljs-type">uint32_t</span> *bitmap;
 <span class="hljs-comment">//Mark a block as free in the bitmap</span>
 bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-number">1</span> &lt;&lt; (blockno % <span class="hljs-number">32</span>));</code></pre></div>
-
-<h2 id="文件的描述和管理"><a href="#文件的描述和管理" class="headerlink" title="文件的描述和管理"></a>文件的描述和管理</h2><p>操作系统要想管理一类资源，就得有相应的数据结构。对于描述和管理文件来说，一般使用 文件控制块（File 结构体）。<br>此处需要注意, 不论是f_direct数组的内容, 还是f_indirect, 都是uint32_t, 即这不是传统意义上的指针, 而是指disk数组使用的bno.</p>
+<h2 id="文件的描述和管理">文件的描述和管理</h2>
+<p>操作系统要想管理一类资源，就得有相应的数据结构。对于描述和管理文件来说，一般使用 文件控制块（File 结构体）。<br>
+此处需要注意, 不论是f_direct数组的内容, 还是f_indirect, 都是uint32_t, 即这不是传统意义上的指针, 而是指disk数组使用的bno.</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//size为256B</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> &#123;</span>
     <span class="hljs-type">char</span> f_name[MAXNAMELEN]; <span class="hljs-comment">// filename</span>
@@ -374,12 +392,19 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
     <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">f_dir</span>;</span> <span class="hljs-comment">// the pointer to the dir where this file is in, valid only in memory.</span>
     <span class="hljs-type">char</span> f_pad[BY2FILE - MAXNAMELEN - (<span class="hljs-number">3</span> + NDIRECT) * <span class="hljs-number">4</span> - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">void</span> *)];
 &#125; __attribute__((aligned(<span class="hljs-number">4</span>), packed));</code></pre></div>
-
-<h2 id="块缓存"><a href="#块缓存" class="headerlink" title="块缓存"></a>块缓存</h2><p>我理解的块缓存: 因为文件进程的需要, 我们希望能使用虚拟地址直接实现对磁盘的读写, 但是实际上我们只能调用磁盘驱动非常复杂地进行操作.<br>解决办法就是将磁盘直接全部映射到文件服务进程虚拟空间的某处, 如果读取就可以直接读取, 如果发生了修改就将缓存写回磁盘, 从而提高了效率.</p>
-<h1 id="梳理调用关系"><a href="#梳理调用关系" class="headerlink" title="梳理调用关系"></a>梳理调用关系</h1><h2 id="ide磁盘"><a href="#ide磁盘" class="headerlink" title="ide磁盘"></a>ide磁盘</h2><p>ide磁盘中的寄存器会映射在内核空间中, 允许我们在此基础上建立驱动读写ide.</p>
-<h2 id="内核"><a href="#内核" class="headerlink" title="内核"></a>内核</h2><p>内核通过接受来自驱动程序的<code>sys_read_dev</code>和<code>sys_write_dev</code>来读写寄存器</p>
-<h2 id="磁盘驱动–ide-c"><a href="#磁盘驱动–ide-c" class="headerlink" title="磁盘驱动–ide.c"></a>磁盘驱动–ide.c</h2><p>在驱动层次, 我们封装了<code>ide_write</code>和<code>ide_read</code>来读写磁盘, 驱动属于文件进程的一部分, 为文件提供操作磁盘的方法.</p>
-<h2 id="文件系统底层部分–fs-c"><a href="#文件系统底层部分–fs-c" class="headerlink" title="文件系统底层部分–fs.c"></a>文件系统底层部分–fs.c</h2><p>此时, 大多数操作是对进程的块缓存进行操作, 最后再调用驱动对磁盘修改.<br>下面是fs.c中提供的对缓存区的一些操作函数, 借助这些函数, 我们可以比较轻松地操作缓存区了,此时的操作主要以block为单位:</p>
+<h2 id="块缓存">块缓存</h2>
+<p>我理解的块缓存: 因为文件进程的需要, 我们希望能使用虚拟地址直接实现对磁盘的读写, 但是实际上我们只能调用磁盘驱动非常复杂地进行操作.<br>
+解决办法就是将磁盘直接全部映射到文件服务进程虚拟空间的某处, 如果读取就可以直接读取, 如果发生了修改就将缓存写回磁盘, 从而提高了效率.</p>
+<h1>梳理调用关系</h1>
+<h2 id="ide磁盘">ide磁盘</h2>
+<p>ide磁盘中的寄存器会映射在内核空间中, 允许我们在此基础上建立驱动读写ide.</p>
+<h2 id="内核">内核</h2>
+<p>内核通过接受来自驱动程序的<code>sys_read_dev</code>和<code>sys_write_dev</code>来读写寄存器</p>
+<h2 id="磁盘驱动–ide-c">磁盘驱动–ide.c</h2>
+<p>在驱动层次, 我们封装了<code>ide_write</code>和<code>ide_read</code>来读写磁盘, 驱动属于文件进程的一部分, 为文件提供操作磁盘的方法.</p>
+<h2 id="文件系统底层部分–fs-c">文件系统底层部分–fs.c</h2>
+<p>此时, 大多数操作是对进程的块缓存进行操作, 最后再调用驱动对磁盘修改.<br>
+下面是fs.c中提供的对缓存区的一些操作函数, 借助这些函数, 我们可以比较轻松地操作缓存区了,此时的操作主要以block为单位:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> *<span class="hljs-title function_">diskaddr</span><span class="hljs-params">(u_int blockno)</span><span class="hljs-comment">//查块对应的虚拟地址</span>
 
 <span class="hljs-type">int</span> <span class="hljs-title function_">va_is_mapped</span><span class="hljs-params">(<span class="hljs-type">void</span> *va)</span>
@@ -434,7 +459,6 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 <span class="hljs-type">int</span> <span class="hljs-title function_">dir_alloc_file</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *dir, <span class="hljs-keyword">struct</span> File **file)</span>
 <span class="hljs-comment">//用path找到对应的File结构体,用pfile返回</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">walk_path</span><span class="hljs-params">(<span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> File **pdir, <span class="hljs-keyword">struct</span> File **pfile, <span class="hljs-type">char</span> *lastelem)</span></code></pre></div>
-
 <p>在此基础上, 还有几个最能代表这一层次的函数:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//用path找到对应的File结构体,用file返回</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">file_open</span><span class="hljs-params">(<span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> File **file)</span>
@@ -452,8 +476,9 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 <span class="hljs-type">void</span> <span class="hljs-title function_">file_close</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> File *f)</span>
 <span class="hljs-comment">//删除文件:名字清空/磁盘块全部释放</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">file_remove</span><span class="hljs-params">(<span class="hljs-type">char</span> *path)</span></code></pre></div>
-
-<h2 id="文件系统服务层–serv-c"><a href="#文件系统服务层–serv-c" class="headerlink" title="文件系统服务层–serv.c"></a>文件系统服务层–serv.c</h2><p>这一层次的函数主要是对来自其他进程的ipc请求进行处理.<br>本层次有一个结构体, 用来记录一个打开的文件的基本信息.</p>
+<h2 id="文件系统服务层–serv-c">文件系统服务层–serv.c</h2>
+<p>这一层次的函数主要是对来自其他进程的ipc请求进行处理.<br>
+本层次有一个结构体, 用来记录一个打开的文件的基本信息.</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Open</span> &#123;</span>
     <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">o_file</span>;</span> <span class="hljs-comment">// mapped descriptor for open file</span>
     u_int o_fileid;      <span class="hljs-comment">// file id</span>
@@ -469,7 +494,6 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 
 <span class="hljs-comment">// Virtual address at which to receive page mappings containing client requests.</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> REQVA 0x0ffff000</span></code></pre></div>
-
 <p>接下来是一些函数:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//Initialize file system server process.</span>
 <span class="hljs-comment">//值得注意的是每个Open结构体是在初始化的时候确定序号和FileFd的地址</span>
@@ -531,7 +555,6 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 		syscall_mem_unmap(<span class="hljs-number">0</span>, (<span class="hljs-type">void</span> *)REQVA);
 	&#125;
 &#125;</code></pre></div>
-
 <p>定义的请求结构体</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//保存在fsreq.h文件中</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> FSREQ_OPEN 1</span>
@@ -569,9 +592,11 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Fsreq_remove</span> &#123;</span>
 	<span class="hljs-type">char</span> req_path[MAXPATHLEN];
 &#125;;</code></pre></div>
-
 <p>至此, 文件系统的部分就基本结束了, 文件系统使用<code>ipc_recv</code>来接受其他进程的请求.</p>
-<h2 id="用户服务的提供者–fd-c"><a href="#用户服务的提供者–fd-c" class="headerlink" title="用户服务的提供者–fd.c"></a>用户服务的提供者–fd.c</h2><p>在用户的视角看, 对文件的一切操作其实都是通过文件描述符fd实现的.<br>因此我们从高到低, 从fd.c来分析MOS是怎么为用户进程提供服务的:<br>首先是一些值得注意的定义:</p>
+<h2 id="用户服务的提供者–fd-c">用户服务的提供者–fd.c</h2>
+<p>在用户的视角看, 对文件的一切操作其实都是通过文件描述符fd实现的.<br>
+因此我们从高到低, 从fd.c来分析MOS是怎么为用户进程提供服务的:<br>
+首先是一些值得注意的定义:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/*</span>
 <span class="hljs-comment">内存空间中有专门的地址存放文件描述符，也就是FDTABLE，这里可以看成一个数组，每个Fd占一个Page大小，可以直接用fdnum作为下标获得；此外，文件的具体数据存在FILEBASE部分的内存空间，每个文件的数据最多占PDMAP大小，也可以实现fdnum到文件数据的一一映射（FILEBASE + PDMAP * fdnum）</span>
 <span class="hljs-comment">*/</span>
@@ -658,8 +683,8 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 <span class="hljs-comment">//应该是初始化相关的, 目前不太清楚</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">fstat</span><span class="hljs-params">(<span class="hljs-type">int</span> fdnum, <span class="hljs-keyword">struct</span> Stat *stat)</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">stat</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, <span class="hljs-keyword">struct</span> Stat *stat)</span></code></pre></div>
-
-<h2 id="用户空间的二级抽象–file-c"><a href="#用户空间的二级抽象–file-c" class="headerlink" title="用户空间的二级抽象–file.c"></a>用户空间的二级抽象–file.c</h2><p>以上的fd.c我们都是对dev进行的操作, 但是具体到我们目前的文件系统, 我们实际上需要指定我们的dev是file</p>
+<h2 id="用户空间的二级抽象–file-c">用户空间的二级抽象–file.c</h2>
+<p>以上的fd.c我们都是对dev进行的操作, 但是具体到我们目前的文件系统, 我们实际上需要指定我们的dev是file</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//声明了devfile这个dev</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Dev</span> <span class="hljs-title">devfile</span> =</span> &#123;
     .dev_id = <span class="hljs-string">&#x27;f&#x27;</span>,
@@ -669,7 +694,6 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
     .dev_close = file_close,
     .dev_stat = file_stat,
 &#125;;</code></pre></div>
-
 <p>下面是file的方法:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">// Open a file (or directory).</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">open</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, <span class="hljs-type">int</span> mode)</span>
@@ -689,8 +713,8 @@ bitmap[blockno / <span class="hljs-number">32</span>] |= (<span class="hljs-numb
 <span class="hljs-type">int</span> <span class="hljs-title function_">remove</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path)</span>
 <span class="hljs-comment">//  Synchronize disk with buffer cache</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">sync</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></code></pre></div>
-
-<h2 id="用户进程与文件管理进程的通讯–fsipc-c"><a href="#用户进程与文件管理进程的通讯–fsipc-c" class="headerlink" title="用户进程与文件管理进程的通讯–fsipc.c"></a>用户进程与文件管理进程的通讯–fsipc.c</h2><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//首先是定义的缓存区</span>
+<h2 id="用户进程与文件管理进程的通讯–fsipc-c">用户进程与文件管理进程的通讯–fsipc.c</h2>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//首先是定义的缓存区</span>
 u_char fsipcbuf[BY2PG] __attribute__((aligned(BY2PG)));
 
 <span class="hljs-comment">//Send an IPC request to the file server, and wait for a reply.</span>
@@ -706,9 +730,10 @@ the server sends
 <span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_dirty</span><span class="hljs-params">(u_int fileid, u_int offset)</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_remove</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path)</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">fsipc_sync</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></code></pre></div>
-
 <p>至此, 这个关系算是捋清楚了!</p>
-<h1 id="速记"><a href="#速记" class="headerlink" title="速记"></a>速记</h1><h2 id="设备映射的物理地址"><a href="#设备映射的物理地址" class="headerlink" title="设备映射的物理地址"></a>设备映射的物理地址</h2><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//console</span>
+<h1>速记</h1>
+<h2 id="设备映射的物理地址">设备映射的物理地址</h2>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//console</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_ADDRESS 0x10000000</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_LENGTH 0x00000020</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_CONS_PUTGETCHAR 0x0000</span>
@@ -738,11 +763,11 @@ the server sends
 
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_HZ 0x0100</span>
 <span class="hljs-meta">#<span class="hljs-keyword">define</span> DEV_RTC_INTERRUPT_ACK 0x0110</span></code></pre></div>
-<h2 id="几个结构体"><a href="#几个结构体" class="headerlink" title="几个结构体"></a>几个结构体</h2><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Block</span> &#123;</span>
+<h2 id="几个结构体">几个结构体</h2>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Block</span> &#123;</span>
     <span class="hljs-type">uint8_t</span> data[BY2BLK];
     <span class="hljs-type">uint32_t</span> type;
 &#125; disk[NBLOCK];</code></pre></div>
-
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> &#123;</span>
     <span class="hljs-type">char</span> f_name[MAXNAMELEN]; <span class="hljs-comment">// filename</span>
     <span class="hljs-type">uint32_t</span> f_size;     <span class="hljs-comment">// file size in bytes</span>
@@ -752,10 +777,14 @@ the server sends
     <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">File</span> *<span class="hljs-title">f_dir</span>;</span> <span class="hljs-comment">// the pointer to the dir where this file is in, valid only in memory.</span>
     <span class="hljs-type">char</span> f_pad[BY2FILE - MAXNAMELEN - (<span class="hljs-number">3</span> + NDIRECT) * <span class="hljs-number">4</span> - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">void</span> *)];
 &#125; __attribute__((aligned(<span class="hljs-number">4</span>), packed));</code></pre></div>
-
-<h1 id="Debug"><a href="#Debug" class="headerlink" title="Debug"></a>Debug</h1><p>这次debug的时间比较短, 但是错的地方都挺隐蔽+脑残的…<br>总结几点:</p>
-<h2 id="for循环"><a href="#for循环" class="headerlink" title="for循环"></a>for循环</h2><p>首先要对自己写的代码有一个基础的理解: 为什么要用for循环<br>接着, for循环里面的变量是什么—-老是忘记在for循环里面使用变量导致错误!</p>
-<h2 id="根据测试寻找bug"><a href="#根据测试寻找bug" class="headerlink" title="根据测试寻找bug"></a>根据测试寻找bug</h2><ol>
+<h1>Debug</h1>
+<p>这次debug的时间比较短, 但是错的地方都挺隐蔽+脑残的…<br>
+总结几点:</p>
+<h2 id="for循环">for循环</h2>
+<p>首先要对自己写的代码有一个基础的理解: 为什么要用for循环<br>
+接着, for循环里面的变量是什么----老是忘记在for循环里面使用变量导致错误!</p>
+<h2 id="根据测试寻找bug">根据测试寻找bug</h2>
+<ol>
 <li>总体理解测试的过程, 了解有哪些测试点</li>
 <li>卡在哪个点, 就一层层梳理函数的调用关系, 看看能不能直接找到错误函数</li>
 <li>如果找不到或者不知道错在哪, 通过改变测试函数(特别是结合测试点)来尝试理解错误的原因</li>
@@ -927,6 +956,11 @@ the server sends
 
 
   
+
+
+  
+  
+
 
 
 

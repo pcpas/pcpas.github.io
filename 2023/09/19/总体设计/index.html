@@ -44,6 +44,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -274,14 +276,17 @@
             
               <div class="markdown-body">
                 
-                <h1 id="总体设计"><a href="#总体设计" class="headerlink" title="总体设计"></a>总体设计</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本次的编译器实现我准备采用<code>Java</code>语言来写，主要有三个方面的考虑：</p>
+                <h1>总体设计</h1>
+<h2 id="前言">前言</h2>
+<p>本次的编译器实现我准备采用<code>Java</code>语言来写，主要有三个方面的考虑：</p>
 <ol>
 <li>之前上过JAVA-OOP，对java的语法和面向对象编程的机制都更加熟悉。</li>
 <li>因为我是Mac和Win双持用户，再加上考试的时候的评测机的C艹编译器也捉摸不定，想统一环境实在有些困难，此时Java虚拟机的优势就显现的非常明显了。</li>
 <li>小伙伴们都用的Java，方便交流讨论。</li>
 </ol>
-<p>确定了语言之后，就可以<del>快乐的</del>开始写代码了！</p>
-<h2 id="Javac介绍"><a href="#Javac介绍" class="headerlink" title="Javac介绍"></a>Javac介绍</h2><p>考虑到之后还会有很多新需求，无论如何可能都没有办法避免重构，所以其实一开始也不用设计的太好啦！</p>
+<p>确定了语言之后，就可以<s>快乐的</s>开始写代码了！</p>
+<h2 id="Javac介绍">Javac介绍</h2>
+<p>考虑到之后还会有很多新需求，无论如何可能都没有办法避免重构，所以其实一开始也不用设计的太好啦！</p>
 <p>但是为了能减少以后的工作量，一定程度的设计也是要有的。我没有按照课程组的推荐去参考pascals和pl0的编译器——太古老了。这从1989流传至今，甚至是用word文档保存的代码，看得人头疼。</p>
 <p>因此，我挑挑选选，决定参考<code>javac</code>的源代码。</p>
 <p>主要有两个优势：</p>
@@ -289,12 +294,14 @@
 <li>GitHub上有现成的源码，查看非常方便。</li>
 <li>javac的源码是用Java语言写的，非常适合我学习借鉴；同时Java语言本身与C也比较相似，没有很大的迁移成本。</li>
 </ol>
-<h3 id="Javac结构初探"><a href="#Javac结构初探" class="headerlink" title="Javac结构初探"></a>Javac结构初探</h3><p>源码在这里可以找到：<a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk/tree/master/src/jdk.compiler/share/classes/com/sun/tools/javac">https://github.com/openjdk/jdk/tree/master/src/jdk.compiler/share/classes/com/sun/tools/javac</a></p>
+<h3 id="Javac结构初探">Javac结构初探</h3>
+<p>源码在这里可以找到：<a target="_blank" rel="noopener" href="https://github.com/openjdk/jdk/tree/master/src/jdk.compiler/share/classes/com/sun/tools/javac">https://github.com/openjdk/jdk/tree/master/src/jdk.compiler/share/classes/com/sun/tools/javac</a></p>
 <p>这里是一篇有用的笔记：<a target="_blank" rel="noopener" href="http://47.100.139.123/blog/article/26">http://47.100.139.123/blog/article/26</a></p>
 <p>由于Java本身的复杂性，可想而知Javac也一定是一个非常非常复杂的系统。因此在看代码的过程中，我们必须化繁为简，只去看有用的和大致的骨架，方可不迷失在巨大的代码仓库中～</p>
 <p>因此，我选择先通过编译的几个阶段划分+参考一些博客，大致确定每个阶段都有哪些部分在发挥作用，然后再去针对性地阅读对应的代码，以给我自己的编译器设计一些insights。</p>
 <p>具体来说，在进行词法分析时，我针对性地寻找Tokenizer类，发现Tokenizer类中使用了Scanner类，又再去理解Scanner的作用和结构……</p>
-<h2 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h2><p>稍微阅读了一些源码，再结合一些前辈的经验，我写的简化版架构如下：</p>
+<h2 id="总体结构">总体结构</h2>
+<p>稍微阅读了一些源码，再结合一些前辈的经验，我写的简化版架构如下：</p>
 <div class="code-wrapper"><pre><code class="hljs nestedtext">-MyCompiler
   <span class="hljs-bullet">-</span> <span class="hljs-string">Frontend</span>
     <span class="hljs-bullet">-</span> <span class="hljs-string">exception</span>
@@ -305,11 +312,11 @@
     <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Backend</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span></code></pre></div>
-
 <p>其中：</p>
 <ul>
 <li><code>Compiler.java</code> 负责编译器的主体任务，包括初始化，启动和销毁。</li>
-<li><code>Frontend</code>包负责前端工作，当然就包括本次的词法分析。<ul>
+<li><code>Frontend</code>包负责前端工作，当然就包括本次的词法分析。
+<ul>
 <li><code>Tokens.java</code>负责声明所有的Token。</li>
 <li><code>Tokenizer.java</code>负责做词法分析。</li>
 <li><code>Scanner.java</code>是为以后预留的类，方便后续的工作。</li>
@@ -320,8 +327,10 @@
 <li><code>Backend</code>包负责后端工作，目前是个摆设。</li>
 </ul>
 <p>以后如果需要的话，还可以加入<code>Midend</code>中端来进行桥接。</p>
-<h2 id="接口设计"><a href="#接口设计" class="headerlink" title="接口设计"></a>接口设计</h2><p>因为这里还是初步设计架构，因此目前需要实现的只有<code>Compiler</code>和<code>Factory</code>两个类。</p>
-<h3 id="Compiler"><a href="#Compiler" class="headerlink" title="Compiler"></a>Compiler</h3><p><code>Compiler.java</code> 是程序的入口，在这里设置输出文件，并安排编译器整体的运行情况。</p>
+<h2 id="接口设计">接口设计</h2>
+<p>因为这里还是初步设计架构，因此目前需要实现的只有<code>Compiler</code>和<code>Factory</code>两个类。</p>
+<h3 id="Compiler">Compiler</h3>
+<p><code>Compiler.java</code> 是程序的入口，在这里设置输出文件，并安排编译器整体的运行情况。</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Compiler</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">input</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;testfile.txt&quot;</span>;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">output</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;error.txt&quot;</span>;
@@ -335,8 +344,8 @@
 
     &#125;
 &#125;</code></pre></div>
-
-<h3 id="Factory"><a href="#Factory" class="headerlink" title="Factory"></a>Factory</h3><p>Factory是工厂类，作用是初始化并产生单例实体以供其他类调用。</p>
+<h3 id="Factory">Factory</h3>
+<p>Factory是工厂类，作用是初始化并产生单例实体以供其他类调用。</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Factory</span> &#123;
   	<span class="hljs-keyword">private</span> Tokens tokens;
     <span class="hljs-keyword">private</span> Tokenizer tokenizer;
@@ -368,7 +377,6 @@
   	<span class="hljs-comment">//...</span>
 &#125;
 </code></pre></div>
-
 
                 
               </div>
@@ -536,6 +544,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

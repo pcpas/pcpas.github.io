@@ -46,6 +46,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -223,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2k 字
+          1.9k 字
         
       </span>
     
@@ -276,10 +278,13 @@
             
               <div class="markdown-body">
                 
-                <h1 id="错误处理和符号表"><a href="#错误处理和符号表" class="headerlink" title="错误处理和符号表"></a>错误处理和符号表</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>之前的部分一直都没管错误处理和符号表，其实这也是不太对的，因为这两个部分会贯穿我们编译的全过程。</p>
+                <h1>错误处理和符号表</h1>
+<h2 id="前言">前言</h2>
+<p>之前的部分一直都没管错误处理和符号表，其实这也是不太对的，因为这两个部分会贯穿我们编译的全过程。</p>
 <p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Image/image-20231010104043778.png" srcset="/img/loading.gif" lazyload alt="image-20231010104043778"></p>
 <p>本次实验的目的就是去补充错误处理和符号表这两个之前未曾完善的部分。</p>
-<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><table>
+<h2 id="错误处理">错误处理</h2>
+<table>
 <thead>
 <tr>
 <th>错误类型</th>
@@ -288,7 +293,8 @@
 <th>对应文法及出错符号 ( … 表示省略该条规则后续部分)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>非法符号</td>
 <td>a</td>
 <td>格式字符串中出现非法字符报错行号为 <strong><FormatString></strong> 所在行数。</td>
@@ -334,7 +340,7 @@
 <td>不能改变常量的值</td>
 <td>h</td>
 <td><LVal>为常量时，不能对其修改。报错行号为 <strong><LVal></strong> 所在行号。</td>
-<td><Stmt>→<LVal>‘&#x3D;’ <Exp>‘;’ <Stmt>→<LVal>‘&#x3D;’ ‘getint’ ‘(’ ‘)’ ‘;’</td>
+<td><Stmt>→<LVal>‘=’ <Exp>‘;’ <Stmt>→<LVal>‘=’ ‘getint’ ‘(’ ‘)’ ‘;’</td>
 </tr>
 <tr>
 <td>缺少分号</td>
@@ -366,15 +372,18 @@
 <td>报错行号为 <strong>‘break’</strong> 与 <strong>’continue’</strong> 所在行号。</td>
 <td><Stmt>→‘break’‘;’ <Stmt>→‘continue’‘;’</td>
 </tr>
-</tbody></table>
-<h3 id="错误的分类"><a href="#错误的分类" class="headerlink" title="错误的分类"></a>错误的分类</h3><p>根据以上的错误规则，我们可以将错误分为三类：</p>
+</tbody>
+</table>
+<h3 id="错误的分类">错误的分类</h3>
+<p>根据以上的错误规则，我们可以将错误分为三类：</p>
 <ol>
 <li>在词法分析阶段可以检查的错误：a</li>
 <li>在语法分析阶段可以检查的错误：i、j、k</li>
 <li>需要借助符号表进行检查的错误：其他错误</li>
 </ol>
 <p>其中第一类和第三类错误我们可以在语义分析中一边建立符号表，一边进行检测；而第二类错误我们必须要在语法分析阶段就识别并局部化，否则会影响到后续的工作。</p>
-<h3 id="错误的局部化"><a href="#错误的局部化" class="headerlink" title="错误的局部化"></a>错误的局部化</h3><p>在正确构建语法树的前提下，第一类和第三类错误的局部化是自动的。唯有第二类错误可能严重破坏语法树的构建，导致程序RE或者构建出完全错误的语法树，所以我们这里需要着重分析一下<strong>第二类错误</strong>。</p>
+<h3 id="错误的局部化">错误的局部化</h3>
+<p>在正确构建语法树的前提下，第一类和第三类错误的局部化是自动的。唯有第二类错误可能严重破坏语法树的构建，导致程序RE或者构建出完全错误的语法树，所以我们这里需要着重分析一下<strong>第二类错误</strong>。</p>
 <p>在之前的代码中，我有不少地方的判断都是依赖于<code>;])</code>这三个符号，如果这三个符号发生缺失，程序有时会RE，有时会导致语法树完全畸形。</p>
 <p>此外，如果缺少这三个符号，语法树会不完整，导致在错误处理时取对应位置的结点时会取到错误的结点。</p>
 <p>这里我采取的措施是：</p>
@@ -382,8 +391,10 @@
 <li>在语法分析时，遇到要处理回溯的问题时，<strong>不要使用</strong><code>;])</code>这三个符号做判断。（尽管这样会变得更简单）</li>
 <li>如果发现了这三个符号缺失，添加错误后在语法树中<strong>手动补充这个缺失</strong>。（因为这三个符号的有无并不影响实际的分析，补充后后期工作会变得更加简洁）</li>
 </ol>
-<h3 id="函数内部的错误检查"><a href="#函数内部的错误检查" class="headerlink" title="函数内部的错误检查"></a>函数内部的错误检查</h3><p>虽然说正统的栈式符号表中，函数被调用时才开始建符号表。但是在我们的SysY语言中，在函数的定义处直接建表检查也是可以的，甚至会简化一些流程，因此这里我就偷懒直接检查了。</p>
-<h2 id="总体设计"><a href="#总体设计" class="headerlink" title="总体设计"></a>总体设计</h2><p>因为此处的错误处理需要处理的错误较少，仅需要粗粒度的判断即可。如果在之前递归下降子程序的类中进行设计，不仅工作量巨大，并且由于并不知道遍历抽象语法树时的最终要求，在之后生成中间代码的步骤中还可能面临多处重构的风险，故我单独将这部分抽出来，单独遍历一遍来找错误，以减少编码量和重构风险。</p>
+<h3 id="函数内部的错误检查">函数内部的错误检查</h3>
+<p>虽然说正统的栈式符号表中，函数被调用时才开始建符号表。但是在我们的SysY语言中，在函数的定义处直接建表检查也是可以的，甚至会简化一些流程，因此这里我就偷懒直接检查了。</p>
+<h2 id="总体设计">总体设计</h2>
+<p>因为此处的错误处理需要处理的错误较少，仅需要粗粒度的判断即可。如果在之前递归下降子程序的类中进行设计，不仅工作量巨大，并且由于并不知道遍历抽象语法树时的最终要求，在之后生成中间代码的步骤中还可能面临多处重构的风险，故我单独将这部分抽出来，单独遍历一遍来找错误，以减少编码量和重构风险。</p>
 <p>注意，这样的设计在总体来看不是最优的，而且会导致结构性地对错误的遗漏和性能的下降（Maybe），但是从完成任务的角度，我认为这样的设计是蛮不错的。</p>
 <p>具体来说，我建立了两个类：</p>
 <p><code>SysYException</code>和<code>ExceptionHandler</code>，显然地，<code>SysYException</code>是错误类，而对语法树遍历找错误、错误的添加和输出等任务主要在<code>ExceptionHandler</code>类中完成。</p>
@@ -411,8 +422,8 @@
     <span class="hljs-bullet">-</span> <span class="hljs-string">Scanner.java</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">backend</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">Compiler.java</span></code></pre></div>
-
-<h3 id="SymbolTable"><a href="#SymbolTable" class="headerlink" title="SymbolTable"></a>SymbolTable</h3><div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SymbolTable</span> &#123;
+<h3 id="SymbolTable">SymbolTable</h3>
+<div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SymbolTable</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Map&lt;String, Symbol&gt; symbolMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;(); <span class="hljs-comment">//符号表主体</span>
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> SymbolTable parent; <span class="hljs-comment">//指向父节点</span>
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> inLoop;	<span class="hljs-comment">//是否在循环中</span>
@@ -432,8 +443,8 @@
     <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addSymbol</span><span class="hljs-params">(Symbol symbol)</span>&#123;...&#125;
 
 &#125;</code></pre></div>
-
-<h3 id="Symbol"><a href="#Symbol" class="headerlink" title="Symbol"></a>Symbol</h3><div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Symbol</span> &#123;
+<h3 id="Symbol">Symbol</h3>
+<div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Symbol</span> &#123;
 
     <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> String name;
   
@@ -465,8 +476,8 @@
     &#125;
 
 &#125;</code></pre></div>
-
-<h3 id="ExceptionHandler"><a href="#ExceptionHandler" class="headerlink" title="ExceptionHandler"></a>ExceptionHandler</h3><div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ExceptionHandler</span> &#123;
+<h3 id="ExceptionHandler">ExceptionHandler</h3>
+<div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ExceptionHandler</span> &#123;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> BufferedWriter bufferedWriter;
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> List&lt;SysYException&gt; errors = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(); <span class="hljs-comment">//存放所有的错误</span>
     <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">SymbolTable</span> <span class="hljs-variable">rootTable</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SymbolTable</span>(<span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>); <span class="hljs-comment">//全局符号表</span>
@@ -498,8 +509,8 @@
     <span class="hljs-comment">//一些重要的工具函数，用于简化代码</span>
     ...
 &#125;</code></pre></div>
-
-<h3 id="SysYException"><a href="#SysYException" class="headerlink" title="SysYException"></a>SysYException</h3><div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SysYException</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Exception</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Comparable</span>&lt;SysYException&gt;&#123;
+<h3 id="SysYException">SysYException</h3>
+<div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SysYException</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Exception</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Comparable</span>&lt;SysYException&gt;&#123;
     <span class="hljs-keyword">public</span> ExceptionKind kind;
     <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> line;
 
@@ -533,8 +544,8 @@
     &#125;
 &#125;
 </code></pre></div>
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次实验比语法分析感觉有又困难了一些，而且想通过测试的调试难度也明显增加，太可怕了。。。</p>
+<h2 id="总结">总结</h2>
+<p>这次实验比语法分析感觉有又困难了一些，而且想通过测试的调试难度也明显增加，太可怕了。。。</p>
 <p>这更突出一开始构思好架构，增加代码的完善性和稳健性的重要性。</p>
 
                 
@@ -703,6 +714,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

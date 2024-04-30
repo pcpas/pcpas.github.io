@@ -45,6 +45,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -222,7 +224,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.6k 字
+          3.5k 字
         
       </span>
     
@@ -275,10 +277,14 @@
             
               <div class="markdown-body">
                 
-                <h1 id="CacheLab（附Excellent优化思路）"><a href="#CacheLab（附Excellent优化思路）" class="headerlink" title="CacheLab（附Excellent优化思路）"></a>CacheLab（附Excellent优化思路）</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>因为这部分我感觉我学起来确实困难想不清楚，遂决定做个笔记整理一下。写着写着想到“干脆就发个博客和同学们交流一下吧”，因此这篇博客就产生了！没有放出所有的源代码，仅仅是提供一些思路上的梳理和帮助😀！</p>
+                <h1>CacheLab（附Excellent优化思路）</h1>
+<h2 id="前言">前言</h2>
+<p>因为这部分我感觉我学起来确实困难想不清楚，遂决定做个笔记整理一下。写着写着想到“干脆就发个博客和同学们交流一下吧”，因此这篇博客就产生了！没有放出所有的源代码，仅仅是提供一些思路上的梳理和帮助😀！</p>
 <p>作者才疏学浅，若内容有误，还请多多批评指正！</p>
-<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><h3 id="主存"><a href="#主存" class="headerlink" title="主存"></a>主存</h3><p>考虑主存地址为n位的计算机系统，主存大小即2<sup>n</sup>字节。</p>
-<p>以B &#x3D; 2<sup>b</sup>作为一个块的大小来和cache进行数据传输。</p>
+<h2 id="基础概念">基础概念</h2>
+<h3 id="主存">主存</h3>
+<p>考虑主存地址为n位的计算机系统，主存大小即2<sup>n</sup>字节。</p>
+<p>以B = 2<sup>b</sup>作为一个块的大小来和cache进行数据传输。</p>
 <p>此时任一地址可以表示为：</p>
 <table>
 <thead>
@@ -294,13 +300,14 @@
 <p>这里为了方便，我们把a，b十六进制的最后一位展开为二进制，其余位均为0，暂时忽略。</p>
 <p><code>a：0000 -&gt; 0011</code></p>
 <p><code>b：0100 -&gt; 0111</code></p>
-<p>不难想到，为了正确的储存和传输a，b，这里的块的大小应该为4个字节（b&#x3D;2），下同。</p>
+<p>不难想到，为了正确的储存和传输a，b，这里的块的大小应该为4个字节（b=2），下同。</p>
 <blockquote>
-<p>值得注意的是b的大小是可以自己定的，因为取数就是地址+偏移，怎么都能取到！也可以让b&#x3D;3把a，b放在一个块里传输，但是这样就避开了我想讲的东西了！</p>
+<p>值得注意的是b的大小是可以自己定的，因为取数就是地址+偏移，怎么都能取到！也可以让b=3把a，b放在一个块里传输，但是这样就避开了我想讲的东西了！</p>
 </blockquote>
 <p>此时，剩下的62位自然成为a，b的Block Number，a的Block Number为0，b的为1。</p>
-<h3 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h3><p>这时，我们引入一个Cache结构，包含S&#x3D;2<sup>s</sup>个高速缓存组（set），每个组包含E个高速缓存行（line）。</p>
-<p>特别地，这里我们考虑一个s&#x3D;1，e&#x3D;1的cache结构，包含2个组，每组一行。</p>
+<h3 id="Cache">Cache</h3>
+<p>这时，我们引入一个Cache结构，包含S=2<sup>s</sup>个高速缓存组（set），每个组包含E个高速缓存行（line）。</p>
+<p>特别地，这里我们考虑一个s=1，e=1的cache结构，包含2个组，每组一行。</p>
 <p>我们希望达到两个效果：</p>
 <p><strong>1.主存中同组的那些块仅能映射到Cache中对应组的那些行中</strong></p>
 <p><strong>2.相邻的块能被分到不同的组</strong></p>
@@ -326,7 +333,8 @@
 <th>Offset（2位）</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>a</td>
 <td>000…00</td>
 <td>0</td>
@@ -344,31 +352,40 @@
 <td>0</td>
 <td>00 -&gt; 11</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>可以看到，相邻的a，b不在同一组，而a，c在同一组，利用Tag来区分同一组内的不同块。</p>
 <p>实际上，对于任意的一对（s，b）的地址划分都具备这样的性质。这样划分非常巧妙，我们不用引入任何新的变量来储存信息，只需要单纯地根据地址就可以完成信息的分组和编号。</p>
 <p>而E代表cache内每一组能存放多少个block。主存中每两个block就有一个block属于第0组，这显然很多！属于同一组的block最多在cache中同时存在e个，否则就需要替换。</p>
-<h3 id="替换策略"><a href="#替换策略" class="headerlink" title="替换策略"></a>替换策略</h3><p>策略有很多，这里实现一个简单但是有效的。</p>
+<h3 id="替换策略">替换策略</h3>
+<p>策略有很多，这里实现一个简单但是有效的。</p>
 <p>LRU策略的实现：</p>
 <ul>
 <li>缓存的每一块都设置一个计数器，初始时均为0。</li>
 <li>访问命中时，所有块的计数值与命中块的计数值进行比较，如果某块计数值小于命中块的计数值， 则该块的计数值加 1；如果该块的计数值大于命中块的计数值，则数值不变；最后将命中块的计数器清为0。</li>
-<li>访问未命中，需要替换&#x2F;装入时，则选择计数值最大的块被替换&#x2F;装入，其计数器清为0，而其它的计数器则加1（除了初始装入之外，计数值是不会出现相等情况的，可以思考一下为什么）。</li>
+<li>访问未命中，需要替换/装入时，则选择计数值最大的块被替换/装入，其计数器清为0，而其它的计数器则加1（除了初始装入之外，计数值是不会出现相等情况的，可以思考一下为什么）。</li>
 <li>（照抄的指导书）</li>
 </ul>
-<h2 id="Part1-Cache模拟器"><a href="#Part1-Cache模拟器" class="headerlink" title="Part1-Cache模拟器"></a>Part1-Cache模拟器</h2><p>实现一个Cache模拟器</p>
+<h2 id="Part1-Cache模拟器">Part1-Cache模拟器</h2>
+<p>实现一个Cache模拟器</p>
 <p>这应该是一个较简单的部分，只要理解Cache的原理和构成就不难模拟。</p>
-<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p>-S&#x3D;2<sup>s</sup>个组</p>
+<h3 id="结构">结构</h3>
+<p>-S=2<sup>s</sup>个组</p>
 <p>​	-每个组包含e列</p>
 <p>​		-每一列能够储存valid,Tag和Block信息</p>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>1.初始化</p>
+<h3 id="方法">方法</h3>
+<p>1.初始化</p>
 <p>2.根据传入地址解析出必要信息，存取block</p>
 <p>3.实现LRU替换策略</p>
-<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>此外，解析指令也非常重要，推荐使用<code>getopt</code>来解析命令行参数，使用<code>fscanf(reader, &quot;%llx,%d&quot;, &amp;address, &amp;size)</code>来解析文件内指令！</p>
-<h2 id="Part2-Cache友好的矩阵转置"><a href="#Part2-Cache友好的矩阵转置" class="headerlink" title="Part2-Cache友好的矩阵转置"></a>Part2-Cache友好的矩阵转置</h2><h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><blockquote>
+<h3 id="解析">解析</h3>
+<p>此外，解析指令也非常重要，推荐使用<code>getopt</code>来解析命令行参数，使用<code>fscanf(reader, &quot;%llx,%d&quot;, &amp;address, &amp;size)</code>来解析文件内指令！</p>
+<h2 id="Part2-Cache友好的矩阵转置">Part2-Cache友好的矩阵转置</h2>
+<h3 id="例子">例子</h3>
+<blockquote>
 <p>给定Cache结构<code>s=5,E=1,b=5</code>，编写一个实现32x32矩阵转置的C语言程序，使得miss数尽可能小。</p>
 </blockquote>
-<h4 id="1-首先理解矩阵在内存中怎么储存"><a href="#1-首先理解矩阵在内存中怎么储存" class="headerlink" title="1.首先理解矩阵在内存中怎么储存"></a>1.首先理解矩阵在内存中怎么储存</h4><p>在b等于5的情况下，矩阵A[32][32]：</p>
+<h4 id="1-首先理解矩阵在内存中怎么储存">1.首先理解矩阵在内存中怎么储存</h4>
+<p>在b等于5的情况下，矩阵A[32][32]：</p>
 <table>
 <thead>
 <tr>
@@ -378,7 +395,8 @@
 <th>Set4</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block0</td>
 <td>Block1</td>
 <td>Block2</td>
@@ -390,7 +408,8 @@
 <td>A[0][16]-A[0][23]</td>
 <td>A[0][24]-A[0][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -400,7 +419,8 @@
 <th>Set7</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block4</td>
 <td>Block5</td>
 <td>Block6</td>
@@ -412,7 +432,8 @@
 <td>A[1][16]-A[1][23]</td>
 <td>A[1][24]-A[1][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -422,7 +443,8 @@
 <th>Set11</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block8</td>
 <td>Block9</td>
 <td>Block10</td>
@@ -434,7 +456,8 @@
 <td>A[2][16]-A[2][23]</td>
 <td>A[2][24]-A[2][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -444,7 +467,8 @@
 <th>Set15</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block12</td>
 <td>Block13</td>
 <td>Block14</td>
@@ -456,7 +480,8 @@
 <td>A[3][16]-A[3][23]</td>
 <td>A[3][24]-A[3][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -466,7 +491,8 @@
 <th>Set19</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block16</td>
 <td>Block17</td>
 <td>Block18</td>
@@ -478,7 +504,8 @@
 <td>A[4][16]-A[4][23]</td>
 <td>A[4][24]-A[4][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -488,7 +515,8 @@
 <th>Set23</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block20</td>
 <td>Block21</td>
 <td>Block22</td>
@@ -500,7 +528,8 @@
 <td>A[5][16]-A[5][23]</td>
 <td>A[5][24]-A[5][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -510,7 +539,8 @@
 <th>Set27</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block24</td>
 <td>Block25</td>
 <td>Block26</td>
@@ -522,7 +552,8 @@
 <td>A[6][16]-A[6][23]</td>
 <td>A[6][24]-A[6][31]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -532,7 +563,8 @@
 <th>Set31</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block28</td>
 <td>Block29</td>
 <td>Block30</td>
@@ -544,16 +576,19 @@
 <td>A[7][16]-A[7][23]</td>
 <td>A[7][24]-A[7][31]</td>
 </tr>
-</tbody></table>
-<p>这里我只列出来了A[0][0] - A[7][31]这8*32个矩阵元素，之后还有3组这样的元素没有列出。s&#x3D;5，cache中一共只有32个set，因此以后的3组元素的Set编号将会与以上相同，即Set0-31，因此，例如说，A[0][0]和A[8][0]两个数在Cache中将会因为相同的组编号而发生冲突（e&#x3D;1）. 此外，如果要访问B的元素B[i][j]，因为题目中强调A和B的起始地址间隔保证了是Cache容量的整倍数，B[i][j]和A[i][j]也会发生冲突，即属于同一个组（Set）。</p>
-<h4 id="2-优化原理"><a href="#2-优化原理" class="headerlink" title="2.优化原理"></a>2.优化原理</h4><p>下面给出一个简单分析：</p>
+</tbody>
+</table>
+<p>这里我只列出来了A[0][0] - A[7][31]这8*32个矩阵元素，之后还有3组这样的元素没有列出。s=5，cache中一共只有32个set，因此以后的3组元素的Set编号将会与以上相同，即Set0-31，因此，例如说，A[0][0]和A[8][0]两个数在Cache中将会因为相同的组编号而发生冲突（e=1）. 此外，如果要访问B的元素B[i][j]，因为题目中强调A和B的起始地址间隔保证了是Cache容量的整倍数，B[i][j]和A[i][j]也会发生冲突，即属于同一个组（Set）。</p>
+<h4 id="2-优化原理">2.优化原理</h4>
+<p>下面给出一个简单分析：</p>
 <p>实现一个32x32的矩阵转置至少要两步：</p>
 <p>1.将所有数从矩阵A里读出来</p>
 <p>2.将所有取出来的数写进矩阵B</p>
 <p>读和写都记一次内存访问，一个块可以存8个数，要获取一个块至少要miss一次（miss或者miss+eviction）</p>
-<p>因此，最少的miss次数也要有 32x32x2&#x2F;8 &#x3D; 256次</p>
+<p>因此，最少的miss次数也要有 32x32x2/8 = 256次</p>
 <p>为了实现这个miss次数，我们必须保证对于每个块都只访问一次！换言之，我们优化的任务也就是尽量减少对同一个块的反复访问！</p>
-<h4 id="3-分块优化"><a href="#3-分块优化" class="headerlink" title="3.分块优化"></a>3.分块优化</h4><p>考虑一个普通的矩阵转置函数：</p>
+<h4 id="3-分块优化">3.分块优化</h4>
+<p>考虑一个普通的矩阵转置函数：</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//M=32 N=32</span>
 <span class="hljs-type">void</span> <span class="hljs-title function_">trans</span><span class="hljs-params">(<span class="hljs-type">int</span> M, <span class="hljs-type">int</span> N, <span class="hljs-type">int</span> A[N][M], <span class="hljs-type">int</span> B[M][N])</span>
 &#123;
@@ -564,7 +599,6 @@
         &#125;
     &#125;
 &#125;</code></pre></div>
-
 <p>这样的访问不具有良好的空间局部性。</p>
 <p>为什么？就只看程序开始的一小部分：</p>
 <div class="code-wrapper"><pre><code class="hljs c">   i = <span class="hljs-number">0</span>: &#123;
@@ -573,10 +607,11 @@
       <span class="hljs-keyword">for</span> (j = <span class="hljs-number">8</span>; j &lt; <span class="hljs-number">16</span>; j++) <span class="hljs-comment">//loop2</span>
           B[j][i] = A[i][j];
 &#125;</code></pre></div>
-
-<p>loop1中B[0-7][0]分别存放在8个块里，因此取这8个块分别访问，产生8个miss，紧接着loop2中的B[8-15][0]和B[0-7][0]组号相同，会把B[0-7][0]全部替换掉！loop1将这八个块都访问了，但是却都只利用了1&#x2F;8！</p>
+<p>loop1中B[0-7][0]分别存放在8个块里，因此取这8个块分别访问，产生8个miss，紧接着loop2中的B[8-15][0]和B[0-7][0]组号相同，会把B[0-7][0]全部替换掉！loop1将这八个块都访问了，但是却都只利用了1/8！</p>
 <p>不难想到一种分块方法，将32x32的矩阵分成16个8x8的子矩阵，把loop1访问的8个块充分利用了再替换成下8个块，从而减少miss数。下面实战一下！</p>
-<h3 id="16X16矩阵"><a href="#16X16矩阵" class="headerlink" title="16X16矩阵"></a>16X16矩阵</h3><h4 id="1-题目分析"><a href="#1-题目分析" class="headerlink" title="1.题目分析"></a>1.题目分析</h4><p>题目中给的Cache结构是<code>s=4,E=1,b=5</code>，这和上面例子是不一样的！请注意。</p>
+<h3 id="16X16矩阵">16X16矩阵</h3>
+<h4 id="1-题目分析">1.题目分析</h4>
+<p>题目中给的Cache结构是<code>s=4,E=1,b=5</code>，这和上面例子是不一样的！请注意。</p>
 <p>同理，分析一下矩阵在内存中的排布。</p>
 <table>
 <thead>
@@ -585,7 +620,8 @@
 <th>Set1</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block0</td>
 <td>Block1</td>
 </tr>
@@ -593,7 +629,8 @@
 <td>A[0][0]-A[0][7]</td>
 <td>A[0][8]-A[0][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -601,7 +638,8 @@
 <th>Set3</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block2</td>
 <td>Block3</td>
 </tr>
@@ -609,7 +647,8 @@
 <td>A[1][0]-A[1][7]</td>
 <td>A[1][8]-A[1][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -617,7 +656,8 @@
 <th>Set5</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block4</td>
 <td>Block5</td>
 </tr>
@@ -625,7 +665,8 @@
 <td>A[2][0]-A[2][7]</td>
 <td>A[2][8]-A[2][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -633,7 +674,8 @@
 <th>Set7</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block6</td>
 <td>Block7</td>
 </tr>
@@ -641,7 +683,8 @@
 <td>A[3][0]-A[3][7]</td>
 <td>A[3][8]-A[3][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -649,7 +692,8 @@
 <th>Set9</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block8</td>
 <td>Block9</td>
 </tr>
@@ -657,7 +701,8 @@
 <td>A[4][0]-A[4][7]</td>
 <td>A[4][8]-A[4][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -665,7 +710,8 @@
 <th>Set11</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block10</td>
 <td>Block11</td>
 </tr>
@@ -673,7 +719,8 @@
 <td>A[5][0]-A[5][7]</td>
 <td>A[5][8]-A[5][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -681,7 +728,8 @@
 <th>Set13</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block12</td>
 <td>Block13</td>
 </tr>
@@ -689,7 +737,8 @@
 <td>A[6][0]-A[6][7]</td>
 <td>A[6][8]-A[6][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -697,7 +746,8 @@
 <th>Set15</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Block14</td>
 <td>Block15</td>
 </tr>
@@ -705,12 +755,14 @@
 <td>A[7][0]-A[7][7]</td>
 <td>A[7][8]-A[7][15]</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>同样的，我只列出来了A[0-7][0-15]的这部分，剩下一半的组编号与这一半完全相同。</p>
 <p><strong>对于16x16矩阵我们该怎么分块？32x32是8x8，那么16x16是不是该分成4x4？什么是我们选择分块策略的决定性因素？</strong></p>
-<p>如果你不知道这个问题的答案，那么我也没办法，<del>因为我也不知道</del>，但是我们可以从下面的做法中得到启发。</p>
+<p>如果你不知道这个问题的答案，那么我也没办法，<s>因为我也不知道</s>，但是我们可以从下面的做法中得到启发。</p>
 <p>（如果有人研究出了公式请务必教教我，我感觉是可以推导的，但是我不会。。。）</p>
-<h4 id="2-解法"><a href="#2-解法" class="headerlink" title="2.解法"></a>2.解法</h4><p>首先确定目标： 16x16x2&#x2F;8 &#x3D; 64次，外加额外的3次miss（教程有说明），我们优化的极限是67次。</p>
+<h4 id="2-解法">2.解法</h4>
+<p>首先确定目标： 16x16x2/8 = 64次，外加额外的3次miss（教程有说明），我们优化的极限是67次。</p>
 <p>我们选取8x8的分块策略。</p>
 <p>下面展示其中的一块：位置代表元素的位置，值代表元素所在组</p>
 <table>
@@ -721,7 +773,8 @@
 <th>[j]</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>0</td>
 <td>0</td>
 <td>0-7</td>
@@ -761,7 +814,8 @@
 <td>7</td>
 <td>0-7</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>对这一块进行充分利用：</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (k = <span class="hljs-number">0</span>; k &lt; <span class="hljs-number">8</span>; k++)<span class="hljs-comment">//8x8的分块,k代表一个块的开始位置</span>
 &#123;
@@ -784,10 +838,9 @@
     B[<span class="hljs-number">6</span>][k] = tmp6;
     B[<span class="hljs-number">7</span>][k] = tmp7;
 &#125;</code></pre></div>
-
-<p>分析：对于每一个k，读取A造成一次miss。k&#x3D;0时，读取B造成8次miss，k&gt;0时，由于读取A会挤占掉一个B的block，因此每个k会导致B重读一次，造成1次miss。</p>
-<p>如果不算A,B相互替换而造成的miss数，A,B的block利用率均为100%，而相互排挤导致了8次额外的miss。这个块一共产生了8+7+8&#x3D;23次miss。</p>
-<p>那我们这样优化的结果是不是 24*4+3 &#x3D; 99次呢？</p>
+<p>分析：对于每一个k，读取A造成一次miss。k=0时，读取B造成8次miss，k&gt;0时，由于读取A会挤占掉一个B的block，因此每个k会导致B重读一次，造成1次miss。</p>
+<p>如果不算A,B相互替换而造成的miss数，A,B的block利用率均为100%，而相互排挤导致了8次额外的miss。这个块一共产生了8+7+8=23次miss。</p>
+<p>那我们这样优化的结果是不是 24*4+3 = 99次呢？</p>
 <p>还真不是，考虑以下情景：</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (k = <span class="hljs-number">8</span>; k &lt; <span class="hljs-number">15</span>; k++)<span class="hljs-comment">//8x8的分块,k代表一个块的开始位置</span>
 &#123;
@@ -810,12 +863,12 @@
     B[<span class="hljs-number">6</span>][k] = tmp6;
     B[<span class="hljs-number">7</span>][k] = tmp7;
 &#125;</code></pre></div>
-
 <p>我们发现，这一块居然没有冲突！这一块只产生16个miss。</p>
 <p>事实上，只有对角线上的块才会产生冲突，而别的块都没有这样的冲突！</p>
-<p>因此，最后的miss数是： 23*2 + 16*2 +3 &#x3D; 81！</p>
+<p>因此，最后的miss数是： 23*2 + 16*2 +3 = 81！</p>
 <p>这不就过了吗！</p>
-<h4 id="3-Excellent优化思路"><a href="#3-Excellent优化思路" class="headerlink" title="3.Excellent优化思路"></a>3.Excellent优化思路</h4><p>聪明如你一定已经知道怎么优化了！</p>
+<h4 id="3-Excellent优化思路">3.Excellent优化思路</h4>
+<p>聪明如你一定已经知道怎么优化了！</p>
 <p>不知道的话还是要自己多思考一下哦~</p>
 <p>没错，对角线上的块会产生14次额外的miss，这是我们不能忍受的。</p>
 <p>怎么才能避免A和B的冲突？一个解决方案是开64个临时变量，将A的数据全部读取暂存，再全部放入B中。</p>
@@ -823,7 +876,9 @@
 <p>没错，用B来暂存一下。寄存器有限，但是B我们可以随意更改呀~</p>
 <p>核心思想是先暂存在B里，等A的下一行的元素访问完了再转置。</p>
 <p>愿意写的自己写写吧,可以达到理论最优67个。</p>
-<h3 id="32X32矩阵"><a href="#32X32矩阵" class="headerlink" title="32X32矩阵"></a>32X32矩阵</h3><h4 id="1-解法"><a href="#1-解法" class="headerlink" title="1.解法"></a>1.解法</h4><p>都写到这里了，我也懒得再画一遍内存图了，大家自己画一画就好了。基本的思想和之前还是一模一样的！</p>
+<h3 id="32X32矩阵">32X32矩阵</h3>
+<h4 id="1-解法">1.解法</h4>
+<p>都写到这里了，我也懒得再画一遍内存图了，大家自己画一画就好了。基本的思想和之前还是一模一样的！</p>
 <p>唯一不同于16x16的是，我们发现如果8x8分块的话，不仅A,B之间有冲突，甚至就连A,B内部上四行和下四行都有冲突！</p>
 <p>难道要用4x4？不行，4x4引入新问题：一个block有8个数，你都只用4个，那miss率不得上天去了！</p>
 <p>因此我们想要结合两者的优点：使用8x8的分块，但是在内部以4x4为单位操作，先完全操作上半4x8，再操作下半。</p>
@@ -839,31 +894,38 @@
 <th><strong>A2</strong></th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>A3</strong></td>
 <td><strong>A4</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>块内的操作可以分成以下步骤:</p>
 <ul>
-<li>步骤一<ul>
+<li>步骤一
+<ul>
 <li>将A1, A2数据复制给B1, B2</li>
 </ul>
 </li>
-<li>步骤二<ul>
+<li>步骤二
+<ul>
 <li>将A3的数据传给B2，同时，B2的数据传给B3（这里注意如何利用8个临时变量来保证不会产生额外的miss，这个比较tricky）</li>
 </ul>
 </li>
-<li>步骤三<ul>
+<li>步骤三
+<ul>
 <li>将A4复制给B4</li>
 </ul>
 </li>
 </ul>
 <p>代码就自己写啦~</p>
-<h4 id="2-miss分析"><a href="#2-miss分析" class="headerlink" title="2.miss分析"></a>2.miss分析</h4><p>非对角线块只有上下冲突，我们已经解决了，因此只有16个miss！还是很牛的！</p>
+<h4 id="2-miss分析">2.miss分析</h4>
+<p>非对角线块只有上下冲突，我们已经解决了，因此只有16个miss！还是很牛的！</p>
 <p>但是还有4大个对角线块，我们没有做任何优化，因此每个对角线块都会额外产生19个miss！恁多！</p>
 <p>幸运的是，即便如此，总miss仍然小于400！过了！！那要不然就不优化了吧。</p>
-<h4 id="3-Excellent优化思路-1"><a href="#3-Excellent优化思路-1" class="headerlink" title="3.Excellent优化思路"></a><strong>3.Excellent优化思路</strong></h4><p>不行，就是要优化！</p>
+<h4 id="3-Excellent优化思路-2"><strong>3.Excellent优化思路</strong></h4>
+<p>不行，就是要优化！</p>
 <p>同样的，优化的思路就是去尝试解决对角线块的冲突问题。</p>
 <p>我的想法很简单，块内有3个操作步骤，每一步都可以当做独立的一部分进行优化（就像16x16矩阵中的那样）</p>
 <p>但是我没办法优化优化到理论最优解，作业太多，遂放弃。</p>
@@ -1040,6 +1102,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

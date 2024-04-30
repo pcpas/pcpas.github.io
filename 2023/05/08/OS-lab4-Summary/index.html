@@ -46,6 +46,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -276,9 +278,14 @@
             
               <div class="markdown-body">
                 
-                <p>本次实验实现了用户态的系统调用, 进程间通信和fork.<br>这是在Lab3创建了一个用户进程之后, 对用户态功能的进一步完善.</p>
-<h1 id="系统调用-syscall"><a href="#系统调用-syscall" class="headerlink" title="系统调用(syscall)"></a>系统调用(syscall)</h1><p>在用户态下，用户进程不能访问系统的内核空间，也就是说它一般不能存取内核使用的内 存数据，也不能调用内核函数，这一点是由体系结构保证的。然而，用户进程在特定的场景下往 往需要执行一些只能由内核完成的操作，如操作硬件、动态分配内存，以及与其他进程进行通信 等。允许在内核态执行用户程序提供的代码显然是不安全的，因此操作系统设计了一系列内核空 间中的函数，当用户进程需要进行这些操作时，会引发特定的异常以陷入内核态，由内核调用对 应的函数，从而安全地为用户进程提供受限的系统级操作，我们把这种机制称为<strong>系统调用</strong>。<br>因此, 为了深入的理解系统调用的作用, 我们必须首先理解用户态和内核态的含义和区别.</p>
-<h1 id="用户态和内核态"><a href="#用户态和内核态" class="headerlink" title="用户态和内核态"></a>用户态和内核态</h1><h2 id="页与页表的问题"><a href="#页与页表的问题" class="headerlink" title="页与页表的问题"></a>页与页表的问题</h2><p>首先我们从一个简单的问题讲起:</p>
+                <p>本次实验实现了用户态的系统调用, 进程间通信和fork.<br>
+这是在Lab3创建了一个用户进程之后, 对用户态功能的进一步完善.</p>
+<h1>系统调用(syscall)</h1>
+<p>在用户态下，用户进程不能访问系统的内核空间，也就是说它一般不能存取内核使用的内 存数据，也不能调用内核函数，这一点是由体系结构保证的。然而，用户进程在特定的场景下往 往需要执行一些只能由内核完成的操作，如操作硬件、动态分配内存，以及与其他进程进行通信 等。允许在内核态执行用户程序提供的代码显然是不安全的，因此操作系统设计了一系列内核空 间中的函数，当用户进程需要进行这些操作时，会引发特定的异常以陷入内核态，由内核调用对 应的函数，从而安全地为用户进程提供受限的系统级操作，我们把这种机制称为<strong>系统调用</strong>。<br>
+因此, 为了深入的理解系统调用的作用, 我们必须首先理解用户态和内核态的含义和区别.</p>
+<h1>用户态和内核态</h1>
+<h2 id="页与页表的问题">页与页表的问题</h2>
+<p>首先我们从一个简单的问题讲起:</p>
 <div class="code-wrapper"><pre><code class="hljs markdown">下列六项分别存放在内存的哪里?
 <span class="hljs-bullet">1.</span> p
 <span class="hljs-bullet">2.</span> page2pa(p)
@@ -306,8 +313,11 @@
 <li>页的存放位置：对于某个进程的kuseg虚拟内存，如果存在一个虚拟地址 <code>va</code> 能够映射到该页，那么该进程就可以通过 <code>va</code> 来访问这个物理页。否则不能访问。</li>
 </ol>
 <p>用户态有自己独立的地址空间(但是每个地址空间都共享一部分内核空间暴露出来的部分), 但是无法直接访问和操作内核态的大部分内容, 如果想要做这件事情, 就必须通过系统调用.</p>
-<h1 id="Fork"><a href="#Fork" class="headerlink" title="Fork"></a>Fork</h1><p>Fork整体的实现比较自然, 但是其中有一个地方比较难以理解, 下面仔细讲讲:</p>
-<h2 id="页写入异常"><a href="#页写入异常" class="headerlink" title="页写入异常"></a>页写入异常</h2><p>我们使用了写时复制（COW）特性，这种特性也是依赖于异常处理的。<br>当用户程序写入一个在 TLB 中被标记为不可写入（无 PTE_D）的页面时，MIPS 会陷入页写入异常（TLB Mod）， 我们在异常向量组中为其注册了一个处理函数 <code>handle_mod</code>，这一函数会跳转到 <code>kern/tlbex.c</code>中的<code>do_tlb_mod</code> 函数中，这个函数正是处理页写入异常的内核函数。对于需要写时复制（COW） 的页面，我们只需取消其 PTE_D 标记，即可在它们被写入时触发 <code>do_tlb_mod</code> 中的处理逻辑。</p>
+<h1>Fork</h1>
+<p>Fork整体的实现比较自然, 但是其中有一个地方比较难以理解, 下面仔细讲讲:</p>
+<h2 id="页写入异常">页写入异常</h2>
+<p>我们使用了写时复制（COW）特性，这种特性也是依赖于异常处理的。<br>
+当用户程序写入一个在 TLB 中被标记为不可写入（无 PTE_D）的页面时，MIPS 会陷入页写入异常（TLB Mod）， 我们在异常向量组中为其注册了一个处理函数 <code>handle_mod</code>，这一函数会跳转到 <code>kern/tlbex.c</code>中的<code>do_tlb_mod</code> 函数中，这个函数正是处理页写入异常的内核函数。对于需要写时复制（COW） 的页面，我们只需取消其 PTE_D 标记，即可在它们被写入时触发 <code>do_tlb_mod</code> 中的处理逻辑。</p>
 <p>我们来分析一下<code>do_tlb_mod</code>的具体实现:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">do_tlb_mod</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Trapframe *tf)</span> &#123;
 	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trapframe</span> <span class="hljs-title">tmp_tf</span> =</span> *tf;
@@ -332,10 +342,11 @@
 		panic(<span class="hljs-string">&quot;TLB Mod but no user handler registered&quot;</span>);
 	&#125;
 &#125;</code></pre></div>
-
 <p>看mips的内容真的有点头疼, 因为基础不好, 对于mips的栈的内容理解并不是很好.</p>
-<h2 id="页写入异常全过程"><a href="#页写入异常全过程" class="headerlink" title="页写入异常全过程"></a>页写入异常全过程</h2><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230507195606.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
-<h3 id="tlb-mod处理函数的注册"><a href="#tlb-mod处理函数的注册" class="headerlink" title="tlb_mod处理函数的注册"></a>tlb_mod处理函数的注册</h3><p>首先, 只有fork产生的函数(及父函数)需要用到COW机制, 所以我们在fork时对<code>env_user_tlb_mod_entry</code>进行注册.</p>
+<h2 id="页写入异常全过程">页写入异常全过程</h2>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230507195606.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h3 id="tlb-mod处理函数的注册">tlb_mod处理函数的注册</h3>
+<p>首先, 只有fork产生的函数(及父函数)需要用到COW机制, 所以我们在fork时对<code>env_user_tlb_mod_entry</code>进行注册.</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//fork.c</span>
 <span class="hljs-type">int</span> <span class="hljs-title function_">fork</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> &#123;
 	u_int child;
@@ -360,12 +371,14 @@
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
 	<span class="hljs-keyword">return</span> child;
 &#125;</code></pre></div>
-
-<h3 id="env-user-tlb-mod-entry在何时被使用"><a href="#env-user-tlb-mod-entry在何时被使用" class="headerlink" title="env_user_tlb_mod_entry在何时被使用"></a>env_user_tlb_mod_entry在何时被使用</h3><p>当查到某页的标志位COW为真而不可写的时候会触发tlb_mod异常.</p>
+<h3 id="env-user-tlb-mod-entry在何时被使用">env_user_tlb_mod_entry在何时被使用</h3>
+<p>当查到某页的标志位COW为真而不可写的时候会触发tlb_mod异常.</p>
 <ol>
 <li>触发异常后我们将直接进入<code>exc_gen_entry</code></li>
 <li><code>exc_gen_entry</code>将我们带去在<code>kern/genex.S</code>中注册的<code>handle_mod</code>中</li>
-<li>在<code>handle_mod</code>中, 我们申请TF_SIZE+8大小的栈帧,将此时的sp赋给$a0寄存器传入<code>do_tlb_mod</code> , 并将sp-8回到TF_SIZE的位置, 接着进入函数<code>do_tlb_mod</code>处理异常<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//handle_mod</span>
+<li>在<code>handle_mod</code>中, 我们申请TF_SIZE+8大小的栈帧,将此时的sp赋给$a0寄存器传入<code>do_tlb_mod</code> , 并将sp-8回到TF_SIZE的位置, 接着进入函数<code>do_tlb_mod</code>处理异常</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//handle_mod</span>
 NESTED(handle_\exception, TF_SIZE + <span class="hljs-number">8</span>, zero)
     move    a0, sp
     addiu   sp, sp, <span class="hljs-number">-8</span>
@@ -373,8 +386,11 @@ NESTED(handle_\exception, TF_SIZE + <span class="hljs-number">8</span>, zero)
     addiu   sp, sp, <span class="hljs-number">8</span>
     j       ret_from_exception
 <span class="hljs-title function_">END</span><span class="hljs-params">(handle_\exception)</span>
-.endm</code></pre></div></li>
-<li>让我们仔细看看<code>do_tlb_mod</code>函数:<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">do_tlb_mod</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Trapframe *tf)</span> &#123;
+.endm</code></pre></div>
+<ol start="4">
+<li>让我们仔细看看<code>do_tlb_mod</code>函数:</li>
+</ol>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">do_tlb_mod</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Trapframe *tf)</span> &#123;
 	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trapframe</span> <span class="hljs-title">tmp_tf</span> =</span> *tf;
 	<span class="hljs-comment">//此时我们在内核态, 按理来说是不会在用户态的栈空间里的</span>
 	<span class="hljs-comment">//如果我们在的话, 说明发生了嵌套异常, 那么不用覆盖之前的异常栈</span>
@@ -399,9 +415,11 @@ NESTED(handle_\exception, TF_SIZE + <span class="hljs-number">8</span>, zero)
 		panic(<span class="hljs-string">&quot;TLB Mod but no user handler registered&quot;</span>);
 	&#125;
 &#125;
-</code></pre></div></li>
-</ol>
-<h3 id="研究cow-entry"><a href="#研究cow-entry" class="headerlink" title="研究cow_entry"></a>研究cow_entry</h3><p>进入了cow_entry后又发生了什么呢?<br>这里比较简单, 就是复制出了新页赋给子进程, 并取消了标记.<br>最后保存了现场, 返回.</p>
+</code></pre></div>
+<h3 id="研究cow-entry">研究cow_entry</h3>
+<p>进入了cow_entry后又发生了什么呢?<br>
+这里比较简单, 就是复制出了新页赋给子进程, 并取消了标记.<br>
+最后保存了现场, 返回.</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> __attribute__((<span class="hljs-keyword">noreturn</span>)) cow_entry(<span class="hljs-keyword">struct</span> Trapframe *tf) &#123;
 	u_int va = tf-&gt;cp0_badvaddr;
 	u_int perm;
@@ -425,9 +443,9 @@ NESTED(handle_\exception, TF_SIZE + <span class="hljs-number">8</span>, zero)
 	<span class="hljs-type">int</span> r = syscall_set_trapframe(<span class="hljs-number">0</span>, tf);
 	user_panic(<span class="hljs-string">&quot;syscall_set_trapframe returned %d&quot;</span>, r);
 &#125;</code></pre></div>
-
-
-<h1 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h1><h2 id="如何注册一个系统调用"><a href="#如何注册一个系统调用" class="headerlink" title="如何注册一个系统调用"></a>如何注册一个系统调用</h2><p>我们首先跟踪一个系统调用函数运行的路径:</p>
+<h1>补充</h1>
+<h2 id="如何注册一个系统调用">如何注册一个系统调用</h2>
+<p>我们首先跟踪一个系统调用函数运行的路径:</p>
 <ol>
 <li>用户进程的某个函数调用了用户空间的<code>syscall_*</code>函数</li>
 <li><code>syscall_*</code>函数调用了msyscall函数, 系统陷入内核态</li>
@@ -610,6 +628,11 @@ NESTED(handle_\exception, TF_SIZE + <span class="hljs-number">8</span>, zero)
 
 
   
+
+
+  
+  
+
 
 
 

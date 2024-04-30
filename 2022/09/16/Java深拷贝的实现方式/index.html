@@ -47,6 +47,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -224,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          891 字
+          889 字
         
       </span>
     
@@ -277,24 +279,34 @@
             
               <div class="markdown-body">
                 
-                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>​	阅读本文前，首先要清楚地了解JAVA深浅拷贝的含义以及区别，如果没有这个基础的话，还是先了解一下比较好，本文不再赘述。</p>
-<p><img src="https://s3.bmp.ovh/imgs/2022/09/16/31c1977863592194.png" srcset="/img/loading.gif" lazyload></p>
+                <h1>前言</h1>
+<p>​	阅读本文前，首先要清楚地了解JAVA深浅拷贝的含义以及区别，如果没有这个基础的话，还是先了解一下比较好，本文不再赘述。</p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/09/16/31c1977863592194.png" srcset="/img/loading.gif" lazyload alt=""></p>
 <p>（在CSDN上找到的网图）</p>
-<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><p>为什么我要写这篇博客呢？因为网上的博客实在是太参差不齐了，里面用到了很多我根本不知道的语法知识，所以在这里先科普一下！</p>
-<h2 id="注解（Annotation）"><a href="#注解（Annotation）" class="headerlink" title="注解（Annotation）"></a>注解（Annotation）</h2><p>举个例子吧：<code>@Data</code>就是一个注解。</p>
+<h1>前置知识</h1>
+<p>为什么我要写这篇博客呢？因为网上的博客实在是太参差不齐了，里面用到了很多我根本不知道的语法知识，所以在这里先科普一下！</p>
+<h2 id="注解（Annotation）">注解（Annotation）</h2>
+<p>举个例子吧：<code>@Data</code>就是一个注解。</p>
 <p>想知道注解是干什么的吗？移步我另一个博客——&gt;<a target="_blank" rel="noopener" href="https://pcpas.github.io/2022/09/16/Java%E8%AF%AD%E6%B3%95%E4%B9%8B%E6%B3%A8%E8%A7%A3/">点这儿</a>。</p>
-<h2 id="接口（interface）和实现（implement）"><a href="#接口（interface）和实现（implement）" class="headerlink" title="接口（interface）和实现（implement）"></a>接口（interface）和实现（implement）</h2><p>移步我另一个博客——&gt;<a target="_blank" rel="noopener" href="https://pcpas.github.io/2022/09/16/Java%E8%AF%AD%E6%B3%95%E4%B9%8B%E6%8E%A5%E5%8F%A3/">点这儿</a>。</p>
-<h2 id="接口：Cloneable"><a href="#接口：Cloneable" class="headerlink" title="接口：Cloneable"></a>接口：Cloneable</h2><p>Cloneable是标记型的接口，它们内部都没有方法和属性，实现 Cloneable来表示该对象能被克隆，能使用Object.clone()方法。如果没有实现 Cloneable的类对象调用clone()就会抛出CloneNotSupportedException。</p>
+<h2 id="接口（interface）和实现（implement）">接口（interface）和实现（implement）</h2>
+<p>移步我另一个博客——&gt;<a target="_blank" rel="noopener" href="https://pcpas.github.io/2022/09/16/Java%E8%AF%AD%E6%B3%95%E4%B9%8B%E6%8E%A5%E5%8F%A3/">点这儿</a>。</p>
+<h2 id="接口：Cloneable">接口：Cloneable</h2>
+<p>Cloneable是标记型的接口，它们内部都没有方法和属性，实现 Cloneable来表示该对象能被克隆，能使用Object.clone()方法。如果没有实现 Cloneable的类对象调用clone()就会抛出CloneNotSupportedException。</p>
 <p>要让对象可以被克隆，应具备以下2个条件：</p>
 <ul>
-<li><p>让该类实现java.lang.Cloneable接口；</p>
+<li>
+<p>让该类实现java.lang.Cloneable接口；</p>
 </li>
-<li><p>重写（Override）Object的clone()方法；（如果不重写的话就默认使用最基础的）</p>
+<li>
+<p>重写（Override）Object的clone()方法；（如果不重写的话就默认使用最基础的）</p>
 <p>关于为什么一定要重写：在Java中，深拷贝和浅拷贝是一件很重要的事，即使你想要使用浅拷贝，你也必须重写，因为这让别人（和你自己）了解你的真实意图。</p>
 </li>
 </ul>
-<h2 id="接口：Serializable"><a href="#接口：Serializable" class="headerlink" title="接口：Serializable"></a>接口：Serializable</h2><p>Serializable接口位于java.io.Serializable包中，一般在创建实体类的时候会去实现这个接口，目的是为了序列化。</p>
-<h2 id="指针：Super"><a href="#指针：Super" class="headerlink" title="指针：Super"></a>指针：Super</h2><h1 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h1><p>先看一段代码：</p>
+<h2 id="接口：Serializable">接口：Serializable</h2>
+<p>Serializable接口位于java.io.Serializable包中，一般在创建实体类的时候会去实现这个接口，目的是为了序列化。</p>
+<h2 id="指针：Super">指针：Super</h2>
+<h1>具体实现</h1>
+<p>先看一段代码：</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-meta">@Data</span>
 <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Worker</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Cloneable</span> &#123;
 
@@ -320,7 +332,6 @@
         &#125;
     &#125;
 &#125;</code></pre></div>
-
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-meta">@Data</span>
 <span class="hljs-meta">@AllArgsConstructor</span>
 <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">EducationInfo</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Cloneable</span>*/&#123;
@@ -334,12 +345,11 @@
         <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>.clone();
     &#125;
 &#125;</code></pre></div>
-
 <p>此时，我们实现的是浅拷贝。</p>
 <p>实现深拷贝的三种方式：</p>
 <p>第一种方式：直接通过 new 对象创建新的对象，通过 new 出来的对象肯定是在内存中重新开辟一块空间存储所以可以实现深拷贝；</p>
 <p>第二种方式：通过调用父类clone再进行重新复制，虽然调用父类 Native 修饰的 clone 方法比第一种方式速度快，此步骤如果继承类中有多个引用类型克隆相对麻烦；</p>
-<p>&#x2F;&#x2F;笔者完全不理解第二种方法的原理，但是时间不够了，以后再看。</p>
+<p>//笔者完全不理解第二种方法的原理，但是时间不够了，以后再看。</p>
 <p>第三种方式：通过序列化和反序列化使用流进行深拷贝（注意类都要实现 Serializable 接口），因为保存在流中的数据相当于新的，若要实现对象深拷贝，推荐使用此方式。</p>
 <p>我们对前面的Worker进行一些改造:</p>
 <div class="code-wrapper"><pre><code class="hljs java"><span class="hljs-meta">@Data</span>
@@ -399,9 +409,6 @@
     &#125;
 &#125;
 </code></pre></div>
-
-
-
 <p>指路：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_19244927/article/details/115422770">理解Java对象浅拷贝和深拷贝以及实现深拷贝的三种方式</a></p>
 
                 
@@ -572,6 +579,11 @@
 
 
   
+
+
+  
+  
+
 
 
 

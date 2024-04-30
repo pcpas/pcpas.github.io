@@ -52,6 +52,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -282,12 +284,15 @@
             
               <div class="markdown-body">
                 
-                <h1 id="实验目的"><a href="#实验目的" class="headerlink" title="实验目的"></a>实验目的</h1><ol>
+                <h1>实验目的</h1>
+<ol>
 <li>创建进程并运行</li>
 <li>实现时钟中断</li>
 <li>实现进程调度</li>
 </ol>
-<h1 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h1><h2 id="PCB进程控制块"><a href="#PCB进程控制块" class="headerlink" title="PCB进程控制块"></a>PCB进程控制块</h2><blockquote>
+<h1>进程</h1>
+<h2 id="PCB进程控制块">PCB进程控制块</h2>
+<blockquote>
 <p>PCB 是系统感知进程存在的唯一标志。进程与 PCB 是一一对应的.</p>
 </blockquote>
 <p>在MOS中PCB使用一个<code>env</code>结构体实现, 主要包含以下信息:</p>
@@ -327,10 +332,13 @@
 	<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> cp0_cause;
 	<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> cp0_epc;
 &#125;;</code></pre></div>
-
 <p><code>struct Env</code> 中的链表项共涉及调度队列 <code>env_sched_list</code> (LIST结构)和空闲队列 <code>env_free_list</code> (TAILQ结构)两个队列, TAILQ的好处是可以在头部和尾部插入取出.</p>
-<h2 id="实现进程控制的流程"><a href="#实现进程控制的流程" class="headerlink" title="实现进程控制的流程"></a>实现进程控制的流程</h2><p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Drawing%202023-04-16%2016.19.53.excalidraw.svg" srcset="/img/loading.gif" lazyload alt="Drawing 2023-04-16 16.19.53.excalidraw"></p>
-<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><h3 id="env-init"><a href="#env-init" class="headerlink" title="env_init"></a>env_init</h3><p><code>env_init</code>实现了Env 控制块的空闲队列和调度队列的初始化功能, 同时还实现了一个模板页目录的映射.<br>映射部分如下: </p>
+<h2 id="实现进程控制的流程">实现进程控制的流程</h2>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Drawing%202023-04-16%2016.19.53.excalidraw.svg" srcset="/img/loading.gif" lazyload alt="Drawing 2023-04-16 16.19.53.excalidraw"></p>
+<h2 id="初始化">初始化</h2>
+<h3 id="env-init">env_init</h3>
+<p><code>env_init</code>实现了Env 控制块的空闲队列和调度队列的初始化功能, 同时还实现了一个模板页目录的映射.<br>
+映射部分如下:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">//申请一个物理页面</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Page</span> *<span class="hljs-title">p</span>;</span>
 panic_on(page_alloc(&amp;p));
@@ -341,35 +349,42 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(pages), UPAGES
 		PTE_G);
 map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, ROUND(NENV * <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> Env), BY2PG),
 		    PTE_G);</code></pre></div>
-<h3 id="map-segment"><a href="#map-segment" class="headerlink" title="map_segment"></a>map_segment</h3><p><code>void map_segment(Pde *pgdir, u_long pa, u_long va, u_long size, u_int perm)</code><br>功能是在一级页表基地址 <code>pgdir</code> 对应的两级页表结构中做段地址映射，将虚拟地址段 <code>[va,va+size) </code>映射到物理地址段<code>[pa,pa+size)</code>，因为是按页映射，要求 size 必须是页 面大小的整数倍。同时为相关页表项的权限为设置为 perm。它在这里的作用是<strong>将内核中的 <code>Page</code> 和<code>Env</code>数据结构映射到用户地址</strong>，以供用户程序读取。</p>
+<h3 id="map-segment">map_segment</h3>
+<p><code>void map_segment(Pde *pgdir, u_long pa, u_long va, u_long size, u_int perm)</code><br>
+功能是在一级页表基地址 <code>pgdir</code> 对应的两级页表结构中做段地址映射，将虚拟地址段 <code>[va,va+size) </code>映射到物理地址段<code>[pa,pa+size)</code>，因为是按页映射，要求 size 必须是页 面大小的整数倍。同时为相关页表项的权限为设置为 perm。它在这里的作用是<strong>将内核中的 <code>Page</code> 和<code>Env</code>数据结构映射到用户地址</strong>，以供用户程序读取。</p>
 <blockquote>
 <p>注意: 虽然每个进程都具有自己独立的虚拟地址空间,但是这些虚拟地址空间中的内核空间,其实关联的都是同一块物理内存, 因此在初始化进程的时候, 应该将这个映射完成, 以便于用户程序读取内核中的 <code>Page</code> 和<code>Env</code>数据.</p>
 </blockquote>
-<p>要搞懂这个函数, 首先要理解什么叫做 <code>Map [va, va+size) of virtual address space to physical [pa, pa+size) in the &#39;pgdir&#39;.</code><br>即理解此处MAP的含义: 使用<strong>页表</strong>为虚拟地址和物理地址建立映射关系, 使得可以通过页表找到虚拟地址对应的物理地址.<br>那么, 我们使用什么函数来映射物理地址和虚拟地址呢? </p>
+<p>要搞懂这个函数, 首先要理解什么叫做 <code>Map [va, va+size) of virtual address space to physical [pa, pa+size) in the 'pgdir'.</code><br>
+即理解此处MAP的含义: 使用<strong>页表</strong>为虚拟地址和物理地址建立映射关系, 使得可以通过页表找到虚拟地址对应的物理地址.<br>
+那么, 我们使用什么函数来映射物理地址和虚拟地址呢?</p>
 <blockquote>
 <p><code> int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm)</code></p>
 <ul>
 <li>Map the physical page ‘pp’ at virtual address ‘va’. The permission (the low 12 bits) of the page table entry should be set to ‘perm|PTE_V’.</li>
 </ul>
 </blockquote>
-<h2 id="申请新进程"><a href="#申请新进程" class="headerlink" title="申请新进程"></a>申请新进程</h2><h3 id="env-alloc"><a href="#env-alloc" class="headerlink" title="env_alloc"></a>env_alloc</h3><p>两个进程管理链表初始化结束之后, 就可以开始创建进程了</p>
+<h2 id="申请新进程">申请新进程</h2>
+<h3 id="env-alloc">env_alloc</h3>
+<p>两个进程管理链表初始化结束之后, 就可以开始创建进程了</p>
 <ol>
 <li>申请空闲的PCB(从 env_free_list里, 因为进程的最大数量是有限制的, 如果没有空闲的PCB块的话, 说明不能再申请新的进程)</li>
 <li>手动初始化进程</li>
 <li>为进程初始化页目录(每个进程有独立的地址空间, 体现为有独立的页目录*)(<code>env_setup_vm</code>函数来做这件事)</li>
-<li>将PCB块从空闲链表里面取出<blockquote>
-<p>此处比较迷惑的一点是独立的地址空间为什么只需要独立的页目录就能实现:<br>因为地址空间只是虚拟的, 实际体现出来的就是va到pa的转换, 而页目录和页表实际上就记录了这个映射关系, 所以并不需要一个数据结构之类的专门存储一个”地址空间”.</p>
-</blockquote>
-</li>
+<li>将PCB块从空闲链表里面取出</li>
 </ol>
+<blockquote>
+<p>此处比较迷惑的一点是独立的地址空间为什么只需要独立的页目录就能实现:<br>
+因为地址空间只是虚拟的, 实际体现出来的就是va到pa的转换, 而页目录和页表实际上就记录了这个映射关系, 所以并不需要一个数据结构之类的专门存储一个&quot;地址空间&quot;.</p>
+</blockquote>
 <p>其中这段代码的含义要懂:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/* Step 4: Initialize the sp and &#x27;cp0_status&#x27; in &#x27;e-&gt;env_tf&#x27;. */</span>
 	<span class="hljs-comment">// Timer interrupt (STATUS_IM4) will be enabled.</span>
 	e-&gt;env_tf.cp0_status = STATUS_IM4 | STATUS_KUp | STATUS_IEp;
 	<span class="hljs-comment">// Keep space for &#x27;argc&#x27; and &#x27;argv&#x27;.</span>
 	e-&gt;env_tf.regs[<span class="hljs-number">29</span>] = USTACKTOP - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">int</span>) - <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">char</span> **);</code></pre></div>
-
-<h3 id="env-setup-vm"><a href="#env-setup-vm" class="headerlink" title="env_setup_vm"></a>env_setup_vm</h3><div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/* Overview:</span>
+<h3 id="env-setup-vm">env_setup_vm</h3>
+<div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/* Overview:</span>
 <span class="hljs-comment"> *   Initialize the user address space for &#x27;e&#x27;.</span>
 <span class="hljs-comment"> */</span>
 <span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">env_setup_vm</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Env *e)</span> &#123;
@@ -396,17 +411,22 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 <p>这里说三点:</p>
 <ol>
 <li>怎么申请一个新的pgdir: 其实就是申请一个新的页面, 因为一个页目录其实就存放在一个物理页里面.</li>
-<li>使用<code>void *_memcpy_(void *destin, void *source, unsigned n)；</code>来进行内存的拷贝<ul>
+<li>使用<code>void *_memcpy_(void *destin, void *source, unsigned n)；</code>来进行内存的拷贝
+<ul>
 <li>所有系统函数使用的都是虚拟地址</li>
 <li>如果只复制其中一段的话要注意地址是怎么算的</li>
 </ul>
 </li>
-<li>关于最后一行代码的理解<blockquote>
+<li>关于最后一行代码的理解</li>
+</ol>
+<blockquote>
 <p><code>e-&gt;env_pgdir</code>本身是页目录的指针, 因为MOS 中，将页表和页目录映射到了用户空间中的 0x7fc00000-0x80000000区域(即UVPT所指的4M空间), 因而, 根据自映射的原理, 页目录中的第PDX(UVPT)项就应该映射的是页目录本身. 因此, <code>e-&gt;env_pgdir[PDX(UVPT)]</code>这一个PDE的值就应该是<code>PADDR(e-&gt;env_pgdir)+perm</code>.</p>
 </blockquote>
-</li>
-</ol>
-<h2 id="将程序加载进进程"><a href="#将程序加载进进程" class="headerlink" title="将程序加载进进程"></a>将程序加载进进程</h2><p>前面我们完成了一个进程的申请和初始化, 那么问题来了, 这进程是用来干嘛的?<br>每个进程一开始都是一样的, 只有加载了不同的程序代码段后, 才会发挥不一样的功能.<br>即我们需要将程序加载到新进程的地址空间中(程序是指elf文件中的的可执行文件).<br>要想正确加载一个 ELF 文件到内存，只需将 ELF 文件中所有需要加载的程序段（program segment）加载到对应的虚拟地址上即可。</p>
+<h2 id="将程序加载进进程">将程序加载进进程</h2>
+<p>前面我们完成了一个进程的申请和初始化, 那么问题来了, 这进程是用来干嘛的?<br>
+每个进程一开始都是一样的, 只有加载了不同的程序代码段后, 才会发挥不一样的功能.<br>
+即我们需要将程序加载到新进程的地址空间中(程序是指elf文件中的的可执行文件).<br>
+要想正确加载一个 ELF 文件到内存，只需将 ELF 文件中所有需要加载的程序段（program segment）加载到对应的虚拟地址上即可。</p>
 <blockquote>
 <p>我们已经写好了用于解析 ELF 文件的代码中的大部 分内容，你可以直接调用相应函数获取 ELF 文件的各项信息，并完成加载过程。</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">// lib/elfloader.c</span>
@@ -419,7 +439,9 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 <span class="hljs-params">	<span class="hljs-type">const</span> <span class="hljs-type">void</span> *src, <span class="hljs-type">size_t</span> len)</span>;</code></pre></div>
 </blockquote>
 <p>这部分的问题其实不是很大</p>
-<h2 id="创建进程"><a href="#创建进程" class="headerlink" title="创建进程"></a>创建进程</h2><p>创建进程包括了申请新进程和加载程序, 且是指在操作系统内核初始化时直接创建进程.<br>使用的是<code>struct Env *env_create(const void *binary, size_t size, int priority)</code></p>
+<h2 id="创建进程">创建进程</h2>
+<p>创建进程包括了申请新进程和加载程序, 且是指在操作系统内核初始化时直接创建进程.<br>
+使用的是<code>struct Env *env_create(const void *binary, size_t size, int priority)</code></p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> Env *<span class="hljs-title function_">env_create</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *binary, <span class="hljs-type">size_t</span> size, <span class="hljs-type">int</span> priority)</span> &#123;
 	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Env</span> *<span class="hljs-title">e</span>;</span>
 	<span class="hljs-comment">/* Step 1: Use &#x27;env_alloc&#x27; to alloc a new env. */</span>
@@ -433,43 +455,57 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 	TAILQ_INSERT_HEAD(&amp;env_sched_list, e, env_sched_link);
 	<span class="hljs-keyword">return</span> e;
 &#125;</code></pre></div>
-
-<h2 id="进程运行和切换"><a href="#进程运行和切换" class="headerlink" title="进程运行和切换"></a>进程运行和切换</h2><p><code>env_run</code> 是进程运行使用的基本函数，它包括两部分： </p>
+<h2 id="进程运行和切换">进程运行和切换</h2>
+<p><code>env_run</code> 是进程运行使用的基本函数，它包括两部分：</p>
 <ul>
-<li>保存当前进程上下文 (如果当前没有运行的进程就跳过这一步) </li>
-<li>恢复要启动的进程的<strong>上下文</strong>(其实就是Trapframe, 即进程执行时所有寄存器的状态)，然后运行该进程。<blockquote>
-<p><strong>Overview:</strong><br>    Switch CPU context to the specified env ‘e’<br><strong>Post-Condition:</strong><br>    Set ‘e’ as the current running env ‘curenv’.</p>
-</blockquote>
-</li>
+<li>保存当前进程上下文 (如果当前没有运行的进程就跳过这一步)</li>
+<li>恢复要启动的进程的<strong>上下文</strong>(其实就是Trapframe, 即进程执行时所有寄存器的状态)，然后运行该进程。</li>
 </ul>
 <blockquote>
-<p>运行一个新进程往往意味着是进程切换，而不是单纯的进程运行.<br>要理解进程切换，我们 就要知道进程切换时系统需要做些什么。实际上进程切换的时候，为了保证下一次进入这个进程 的时候我们不会再“从头来过”，而是有记忆地从离开的地方继续往后走，我们要保存一些信息， 那么，需要保存什么信息呢？<br>事实上，我们只需要保存进程的上下文信息，包括通用寄存器、HI、 LO 和 CP0 中的 SR，EPC，Cause 和 BadVAddr 寄存器。进程控制块除了 env_tf 其他的字段在 进程切换后还保留在原本的进程控制块中，并不会改变，因此不需要保存。<br>在 Lab3 中，我们在本实验里的寄存器状态保存的地方是 <code>KSTACKTOP</code> 以下的一个 <code>sizeof(TrapFrame)</code> 大小的区域中。(<code>curenv-&gt;env_tf = *((struct Trapframe *)KSTACKTOP - 1)</code>)</p>
+<p><strong>Overview:</strong><br>
+Switch CPU context to the specified env ‘e’<br>
+<strong>Post-Condition:</strong><br>
+Set ‘e’ as the current running env ‘curenv’.</p>
+</blockquote>
+<blockquote>
+<p>运行一个新进程往往意味着是进程切换，而不是单纯的进程运行.<br>
+要理解进程切换，我们 就要知道进程切换时系统需要做些什么。实际上进程切换的时候，为了保证下一次进入这个进程 的时候我们不会再“从头来过”，而是有记忆地从离开的地方继续往后走，我们要保存一些信息， 那么，需要保存什么信息呢？<br>
+事实上，我们只需要保存进程的上下文信息，包括通用寄存器、HI、 LO 和 CP0 中的 SR，EPC，Cause 和 BadVAddr 寄存器。进程控制块除了 env_tf 其他的字段在 进程切换后还保留在原本的进程控制块中，并不会改变，因此不需要保存。<br>
+在 Lab3 中，我们在本实验里的寄存器状态保存的地方是 <code>KSTACKTOP</code> 以下的一个 <code>sizeof(TrapFrame)</code> 大小的区域中。(<code>curenv-&gt;env_tf = *((struct Trapframe *)KSTACKTOP - 1)</code>)</p>
 </blockquote>
 <p>总结以上说明，我们不难看出 env_run 的执行流程：</p>
 <ol>
-<li>保存当前进程的上下文信息。 </li>
-<li>切换 curenv 为即将运行的进程。 </li>
-<li>设置全局变量 cur_pgdir 为当前进程页目录地址，在 TLB 重填时将用到该全局变量。 </li>
+<li>保存当前进程的上下文信息。</li>
+<li>切换 curenv 为即将运行的进程。</li>
+<li>设置全局变量 cur_pgdir 为当前进程页目录地址，在 TLB 重填时将用到该全局变量。</li>
 <li>调用 env_pop_tf 函数，恢复现场、异常返回。</li>
 </ol>
-<h1 id="中断与异常"><a href="#中断与异常" class="headerlink" title="中断与异常"></a>中断与异常</h1><blockquote>
+<h1>中断与异常</h1>
+<blockquote>
 <p>我们实验里认为中断是异常的一种，并且是仅有的一种异步异常。</p>
 </blockquote>
-<p>CPU 不仅仅有我们常见的 32 个通用寄存器，还有 功能广泛的协处理器，而中断&#x2F;异常部分就用到了其中的协处理器 CP0.<br>下面的表格介绍了编号 为 12，13，14 的三个 CP0 寄存器的具体功能。<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210751.png" srcset="/img/loading.gif" lazyload alt="image.png"><br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210853.png" srcset="/img/loading.gif" lazyload alt="image.png"><br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210904.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>CPU 不仅仅有我们常见的 32 个通用寄存器，还有 功能广泛的协处理器，而中断/异常部分就用到了其中的协处理器 CP0.<br>
+下面的表格介绍了编号 为 12，13，14 的三个 CP0 寄存器的具体功能。<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210751.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210853.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416210904.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
 <blockquote>
 <ul>
-<li><strong>SR 寄存器</strong>：图3.1(在设置进程控制块部分给出) 是 MIPS R3000 中 Status Register 寄存器， 15-8 位为中断屏蔽位，每一位代表一个不同的中断活动，其中 15-10 位使能外部中断源，9-8 位 是 Cause 寄存器软件可写的中断位。 </li>
+<li><strong>SR 寄存器</strong>：图3.1(在设置进程控制块部分给出) 是 MIPS R3000 中 Status Register 寄存器， 15-8 位为中断屏蔽位，每一位代表一个不同的中断活动，其中 15-10 位使能外部中断源，9-8 位 是 Cause 寄存器软件可写的中断位。</li>
 <li><strong>Cause 寄存器</strong>：图3.3是 MIPS R3000 中 Cause 寄存器。其中保存着 CPU 中哪一些中断或 者异常已经发生。15-8 位保存着哪一些中断发生了，其中 15-10 位来自硬件，9-8 位可以由软件 写入，当 SR 寄存器中相同位允许中断（为 1）时，Cause 寄存器这一位活动就会导致中断。6-2 位（ExcCode），记录发生了什么异常。</li>
 </ul>
 </blockquote>
-<p>MIPS CPU 处理一个异常时大致要完成四项工作： </p>
+<p>MIPS CPU 处理一个异常时大致要完成四项工作：</p>
 <ol>
-<li>设置 EPC 指向从异常返回的地址。 </li>
-<li>设置 SR 位，强制 CPU 进入内核态（行使更高级的特权）并禁止中断。 </li>
-<li>设置 Cause 寄存器，用于记录异常发生的原因。 </li>
-<li>CPU 开始从异常入口位置取指，此后<strong>一切交给软件处理</strong>。<br>而这句“一切交给软件处理”，就是我们当前任务的开始。<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416211423.png" srcset="/img/loading.gif" lazyload alt="image.png"></li>
+<li>设置 EPC 指向从异常返回的地址。</li>
+<li>设置 SR 位，强制 CPU 进入内核态（行使更高级的特权）并禁止中断。</li>
+<li>设置 Cause 寄存器，用于记录异常发生的原因。</li>
+<li>CPU 开始从异常入口位置取指，此后<strong>一切交给软件处理</strong>。<br>
+而这句“一切交给软件处理”，就是我们当前任务的开始。<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416211423.png" srcset="/img/loading.gif" lazyload alt="image.png"></li>
 </ol>
-<h2 id="异常的分发"><a href="#异常的分发" class="headerlink" title="异常的分发"></a>异常的分发</h2><p>当发生异常时，处理器会进入一个用于<strong>分发异常</strong>的程序，这个程序的作用就是检测发生了哪 种异常，并调用相应的异常处理程序。</p>
+<h2 id="异常的分发">异常的分发</h2>
+<p>当发生异常时，处理器会进入一个用于<strong>分发异常</strong>的程序，这个程序的作用就是检测发生了哪 种异常，并调用相应的异常处理程序。</p>
 <div class="code-wrapper"><pre><code class="hljs armasm"><span class="hljs-symbol">.section</span> <span class="hljs-meta">.text</span>.exc_gen_entry
 <span class="hljs-symbol">exc_gen_entry:</span>
 	SAVE_ALL
@@ -477,8 +513,8 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 	andi t0, <span class="hljs-number">0x7c</span> #取得 Cause 寄存器中的 <span class="hljs-number">2</span>~<span class="hljs-number">6</span> 位，也就是对应的异常码，这是区别不同异常的重要标志
 	lw t0, exception_handlers(t0) #以得到的异常码作为索引在 exception_handlers 数组中找到对应的中断处理函数
 	jr t0 #跳转到对应的异常处理函数中，从而响应了异常</code></pre></div>
-
-<p>在我们的系统中，CPU 发生异常（除了用户态地址的 TLB Miss 异常）后，就会自动跳转到地址 0x80000080 处；发生用户态地址的 TLB Miss 异常时，会自动跳转到地址 0x80000000 处。<br>因此, 在<code>kernel.lds</code>中添加代码, 以保证异常被响应:</p>
+<p>在我们的系统中，CPU 发生异常（除了用户态地址的 TLB Miss 异常）后，就会自动跳转到地址 0x80000080 处；发生用户态地址的 TLB Miss 异常时，会自动跳转到地址 0x80000000 处。<br>
+因此, 在<code>kernel.lds</code>中添加代码, 以保证异常被响应:</p>
 <div class="code-wrapper"><pre><code class="hljs ada">. = <span class="hljs-number">0</span>x80000000;
 	.tlb_miss_entry : &#123;
 		*(.text.tlb_miss_entry)
@@ -487,8 +523,8 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 	.exc_gen_entry : &#123;
 		*(.text.exc_gen_entry)
 	&#125;</code></pre></div>
-
-<h2 id="中断的处理"><a href="#中断的处理" class="headerlink" title="中断的处理"></a>中断的处理</h2><p>接上文, 跳转到对应的异常处理函数中, 那么异常处理函数有哪些呢?</p>
+<h2 id="中断的处理">中断的处理</h2>
+<p>接上文, 跳转到对应的异常处理函数中, 那么异常处理函数有哪些呢?</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-type">void</span> (*exception_handlers[<span class="hljs-number">32</span>])(<span class="hljs-type">void</span>) = &#123;
     [<span class="hljs-number">0</span> ... <span class="hljs-number">31</span>] = handle_reserved,
     [<span class="hljs-number">0</span>] = handle_int,
@@ -498,25 +534,36 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 &#125;;</code></pre></div>
 <blockquote>
 <ul>
-<li><strong>0 号异常</strong> 的处理函数为 handle_int，表示<strong>中断</strong>，由时钟中断、控制台中断等中断造成 </li>
-<li><strong>1 号异常</strong> 的处理函数为 handle_mod，表示存储异常，进行存储操作时该页被标记为只读 </li>
-<li><strong>2 号异常</strong> 的处理函数为 handle_tlb，表示 TLB load 异常 </li>
-<li><strong>3 号异常</strong> 的处理函数为 handle_tlb，表示 TLB store 异常 </li>
+<li><strong>0 号异常</strong> 的处理函数为 handle_int，表示<strong>中断</strong>，由时钟中断、控制台中断等中断造成</li>
+<li><strong>1 号异常</strong> 的处理函数为 handle_mod，表示存储异常，进行存储操作时该页被标记为只读</li>
+<li><strong>2 号异常</strong> 的处理函数为 handle_tlb，表示 TLB load 异常</li>
+<li><strong>3 号异常</strong> 的处理函数为 handle_tlb，表示 TLB store 异常</li>
 <li><strong>8 号异常</strong> 的处理函数为 handle_sys，表示系统调用，用户进程通过执行 syscall 指令陷 入内核</li>
 </ul>
 </blockquote>
-<p>这里先谈<strong>中断</strong>.<br>Cause 寄存器中有 8 个独立的中断位。<br>其中 6 位是硬件中断，另外 2 位是软件中断，且不同中断处理起来也会有差异。<br>我们首先来介绍一下中断处理的流程:</p>
+<p>这里先谈<strong>中断</strong>.<br>
+Cause 寄存器中有 8 个独立的中断位。<br>
+其中 6 位是硬件中断，另外 2 位是软件中断，且不同中断处理起来也会有差异。<br>
+我们首先来介绍一下中断处理的流程:</p>
 <ol>
-<li>通过异常分发，判断出当前异常为<strong>中断异常</strong>，随后进入相应的中断处理程序。在 MOS 中即对应 handle_int 函数。 </li>
-<li>在中断处理程序中进一步判断 Cause 寄存器中是由<strong>几号中断</strong>位引发的中断，然后进入不同中断对应的中断服务函数。 </li>
+<li>通过异常分发，判断出当前异常为<strong>中断异常</strong>，随后进入相应的中断处理程序。在 MOS 中即对应 handle_int 函数。</li>
+<li>在中断处理程序中进一步判断 Cause 寄存器中是由<strong>几号中断</strong>位引发的中断，然后进入不同中断对应的中断服务函数。</li>
 <li>中断处理完成，通过 ret_from_exception 函数恢复现场，继续执行。</li>
 </ol>
 <p>我们只需要完成1,2步, 并且只需要完成时钟中断(<strong>4 号中断</strong>)的部分就可以了.</p>
 <blockquote>
-<p>时钟中断和操作系统的时间片轮转算法是紧密相关的。<br>时间片轮转调度是一种进程调度算法，每个进程被分配一个时间段，称作它的时间片，即该进程允许运行的时间。如果在时间片结束时进程还在运行，则该进程将挂起，切换到另一个进程运行。<br>那么 CPU 是如何知晓一个进程的时间片结束的呢？<br>通过定时器产生的时钟中断。当时钟中断产生时，当前运行的进程被挂起，我们需要在调度队列中选取一个合适的进程运行。<br>如何“选取”，就要涉及到<strong>进程的调度</strong>了。</p>
+<p>时钟中断和操作系统的时间片轮转算法是紧密相关的。<br>
+时间片轮转调度是一种进程调度算法，每个进程被分配一个时间段，称作它的时间片，即该进程允许运行的时间。如果在时间片结束时进程还在运行，则该进程将挂起，切换到另一个进程运行。<br>
+那么 CPU 是如何知晓一个进程的时间片结束的呢？<br>
+通过定时器产生的时钟中断。当时钟中断产生时，当前运行的进程被挂起，我们需要在调度队列中选取一个合适的进程运行。<br>
+如何“选取”，就要涉及到<strong>进程的调度</strong>了。</p>
 </blockquote>
-<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Drawing%202023-04-16%2021.47.50.excalidraw.svg" srcset="/img/loading.gif" lazyload alt="Drawing 2023-04-16 21.47.50.excalidraw"><br>调度函数的实现比较简单, 就不细讲了.</p>
-<h2 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h2><h3 id="轮询调度"><a href="#轮询调度" class="headerlink" title="轮询调度"></a>轮询调度</h3><p>今天课上提到晚上要考进程调度, 这样的话还是看看吧!<br>先来看看最初始版本的进程调度是怎么实现的:</p>
+<p><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Drawing%202023-04-16%2021.47.50.excalidraw.svg" srcset="/img/loading.gif" lazyload alt="Drawing 2023-04-16 21.47.50.excalidraw"><br>
+调度函数的实现比较简单, 就不细讲了.</p>
+<h2 id="进程调度">进程调度</h2>
+<h3 id="轮询调度">轮询调度</h3>
+<p>今天课上提到晚上要考进程调度, 这样的话还是看看吧!<br>
+先来看看最初始版本的进程调度是怎么实现的:</p>
 <div class="code-wrapper"><pre><code class="hljs c"><span class="hljs-comment">/* Overview:</span>
 <span class="hljs-comment"> *   Implement a round-robin scheduling(轮询调度算法) to select a runnable env and schedule it using &#x27;env_run&#x27;.</span>
 <span class="hljs-comment">*/</span>*
@@ -541,7 +588,8 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 <p>这个调度算法是最简单的<strong>轮询调度</strong>, 并使用时间片判断, 逻辑如下:</p>
 <ul>
 <li>此时有两种情况: 需要切换进程和不需要切换进程</li>
-<li>如果当前没有进程&#x2F;进程时间片用光&#x2F;进程不再可运行&#x2F;yield指定切换, 那么<strong>切换进程</strong><ul>
+<li>如果当前没有进程/进程时间片用光/进程不再可运行/yield指定切换, 那么<strong>切换进程</strong>
+<ul>
 <li>(如果当前进程不是空进程且仍然处在<code>ENV_RUNNABLE</code>状态的话) 将当前进程移动到调度队列尾部</li>
 <li><strong>从进程调度队列<code>env_sched_list</code>取出一个新进程(不要把他从调度队列里删掉)(没有可用时panic)</strong></li>
 <li>设定count为进程优先级<code>e-&gt;env_pri</code></li>
@@ -549,19 +597,25 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 <li>运行该进程</li>
 </ul>
 </li>
-<li>否则<strong>继续运行进程</strong><ul>
+<li>否则<strong>继续运行进程</strong>
+<ul>
 <li>count–</li>
 <li>运行该进程</li>
 </ul>
 </li>
 </ul>
-<p>其中调度算法即实现中间这一步: </p>
+<p>其中调度算法即实现中间这一步:</p>
 <blockquote>
 <p><strong>从进程调度队列<code>env_sched_list</code>取出一个新进程(没有可用时panic)</strong></p>
 </blockquote>
 <p>在课下实验我们并没有按照优先级来实现算法, 而是简单的插入尾部和取头部.</p>
-<h3 id="其他可能的调度方法"><a href="#其他可能的调度方法" class="headerlink" title="其他可能的调度方法"></a>其他可能的调度方法</h3><p>（待补充）</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此，我们的 Lab3 就算是圆满完成了。<br>中断部分我们只学习了时钟中断, 其实TLB_miss的处理也是一个值得学习的地方.<br>指导书中简单介绍了系统如何响应TLB_miss.<br><img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416215810.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h3 id="其他可能的调度方法">其他可能的调度方法</h3>
+<p>（待补充）</p>
+<h1>总结</h1>
+<p>至此，我们的 Lab3 就算是圆满完成了。<br>
+中断部分我们只学习了时钟中断, 其实TLB_miss的处理也是一个值得学习的地方.<br>
+指导书中简单介绍了系统如何响应TLB_miss.<br>
+<img src="https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/20230416215810.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
 
                 
               </div>
@@ -729,6 +783,11 @@ map_segment(base_pgdir, <span class="hljs-number">0</span>, PADDR(envs), UENVS, 
 
 
   
+
+
+  
+  
+
 
 
 

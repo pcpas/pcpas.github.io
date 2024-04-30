@@ -50,6 +50,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -280,7 +282,9 @@
             
               <div class="markdown-body">
                 
-                <h1 id="Lesson-2-Triangle-rasterization-and-back-face-culling"><a href="#Lesson-2-Triangle-rasterization-and-back-face-culling" class="headerlink" title="Lesson 2: Triangle rasterization and back face culling"></a>Lesson 2: Triangle rasterization and back face culling</h1><h2 id="1-尝试画一个三角形-old-school"><a href="#1-尝试画一个三角形-old-school" class="headerlink" title="1.尝试画一个三角形(old-school)"></a>1.尝试画一个三角形(old-school)</h2><p>画一个三角形看似简单,但是又很难!</p>
+                <h1>Lesson 2: Triangle rasterization and back face culling</h1>
+<h2 id="1-尝试画一个三角形-old-school">1.尝试画一个三角形(old-school)</h2>
+<p>画一个三角形看似简单,但是又很难!</p>
 <p>先想想如何画一个三角形(不要忘了光栅化的前提:像素的概念)</p>
 <p>首先, 画一个三角形框吧!</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">triangle</span><span class="hljs-params">(Vec2i v0, Vec2i v1, Vec2i v2, TGAImage &amp;image, TGAColor color)</span></span>
@@ -289,7 +293,6 @@
 	<span class="hljs-built_in">line</span>(v1.x, v1.y, v2.x, v2.y, image, color);
 	<span class="hljs-built_in">line</span>(v0.x, v0.y, v2.x, v2.y, image, color);
 &#125;</code></pre></div>
-
 <p>很简单!</p>
 <p>在主函数里调用此方法:</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> </span>&#123;
@@ -304,15 +307,13 @@
     image.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;output.tga&quot;</span>);
 	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
 &#125;</code></pre></div>
-
 <p>我们得到想要的图形:</p>
-<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/d4f5acfb711300b2.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/d4f5acfb711300b2.png" srcset="/img/loading.gif" lazyload alt=""></p>
 <p>接着,想办法填充吧!</p>
 <p>提醒:将三角形水平分割.</p>
 <div class="note note-primary">
             <p>无论是原作者还是笔者, 都强烈建议您在接着往下看之前先自己尝试实现此功能! 自己实在写不出来或者写出来了再往下看!</p>
           </div>
-
 <p>贴一份我自己的代码吧(比较稚嫩)</p>
 <div class="code-wrapper"><pre><code class="hljs cpp">/
 /<span class="hljs-function">draw a triangle use line the function</span>
@@ -370,7 +371,6 @@
         xright -= dx1;
     &#125;
 &#125;</code></pre></div>
-
 <p>再贴一份大神的研读一下,我自己写了一些注释</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">triangle</span><span class="hljs-params">(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &amp;image, TGAColor color)</span> </span>&#123; 
     <span class="hljs-keyword">if</span> (t0.y==t1.y &amp;&amp; t0.y==t2.y) <span class="hljs-keyword">return</span>; <span class="hljs-comment">// I dont care about degenerate triangles </span>
@@ -396,8 +396,8 @@
         &#125; 
     &#125; 
 &#125;</code></pre></div>
-
-<h2 id="2-新潮一些的方法"><a href="#2-新潮一些的方法" class="headerlink" title="2.新潮一些的方法"></a>2.新潮一些的方法</h2><p>上面介绍的方法是一种非常传统和老旧的方法(当时是在单线程电脑上运行),其实随着电脑硬件的发展,目前即使是民用PC也支持超多线程的运算了.这样写代码,效率是低下的.不如我们来想想怎么写效率才高?</p>
+<h2 id="2-新潮一些的方法">2.新潮一些的方法</h2>
+<p>上面介绍的方法是一种非常传统和老旧的方法(当时是在单线程电脑上运行),其实随着电脑硬件的发展,目前即使是民用PC也支持超多线程的运算了.这样写代码,效率是低下的.不如我们来想想怎么写效率才高?</p>
 <p>至少对于笔者而言,我也不知道怎么才能针对多线程进行优化, 代码运行的底层原理知识笔者严重缺失,因此直接贴出来:</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-built_in">triangle</span>(vec2 points[<span class="hljs-number">3</span>]) &#123; 
     vec2 bbox[<span class="hljs-number">2</span>] = <span class="hljs-built_in">find_bounding_box</span>(points); 
@@ -407,7 +407,6 @@
         &#125; 
     &#125; 
 &#125;</code></pre></div>
-
 <p>在笔者熟悉的算法竞赛和课程中,这样写的效率是非常低的.</p>
 <p>但是大神说这是一种针对多线程更优的写法,那笔者就先记住吧,等以后再来想为什么.</p>
 <p>其实这个伪代码对于上过games101的人来说应该在熟悉不过了.</p>
@@ -415,7 +414,7 @@
 <p>首先,我们找到三角形的包围盒(这是很简单的)</p>
 <p>然后,我们对于盒内每个点判断其是否在三角形内</p>
 <p>这是很复杂的.有很多方法,但是最主流的需要用到重心坐标的概念</p>
-<p>$P &#x3D; \alpha A + \beta B + \gamma C $</p>
+<p>$P = \alpha A + \beta B + \gamma C $</p>
 <p>若P在三角形外,则必有坐标为负</p>
 <p>贴一下我自己的实现</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function">Vec3f <span class="hljs-title">barycentric</span><span class="hljs-params">(Vec2i *pts, Vec2i P)</span> </span>&#123;
@@ -457,8 +456,8 @@
         &#125;
     &#125;
 &#125;</code></pre></div>
-
-<h2 id="3-试着用这种方法填充之前的模型"><a href="#3-试着用这种方法填充之前的模型" class="headerlink" title="3.试着用这种方法填充之前的模型"></a>3.试着用这种方法填充之前的模型</h2><p>还记得在bresenham的画线的章节里我们使用的模型吗?</p>
+<h2 id="3-试着用这种方法填充之前的模型">3.试着用这种方法填充之前的模型</h2>
+<p>还记得在bresenham的画线的章节里我们使用的模型吗?</p>
 <p>现在我们有能力为他上色啦!</p>
 <p>先用随机颜色上色,这样我们可以观察渲染是如何进行的,然后,再根据光照上色,这样我们就完成了一个简单的渲染器!</p>
 <p>先使用随机的颜色吧!</p>
@@ -484,7 +483,6 @@
     frame.<span class="hljs-built_in">flip_vertically</span>(); <span class="hljs-comment">// to place the origin in the bottom left corner of the image </span>
     frame.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;framebuffer.tga&quot;</span>);
     <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</code></pre></div>
-
 <p>我们可以看到, model里面储存的是世界坐标, 是一群被压缩在[-1,1]^2的点. 为了使其铺满屏幕,我们需要进行一定的转化.</p>
 <p>那么, 如何结合光照呢? 在讨论布林冯等模型之前,我们不如先进行简单的线性建模</p>
 <p>先确立光线的方向 <code>Vec3f light_dir(0,0,-1)</code>,此处明显是平行光.</p>
@@ -510,12 +508,13 @@
     frame.<span class="hljs-built_in">flip_vertically</span>(); <span class="hljs-comment">// to place the origin in the bottom left corner of the image </span>
     frame.<span class="hljs-built_in">write_tga_file</span>(<span class="hljs-string">&quot;framebuffer.tga&quot;</span>);
     <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</code></pre></div>
-
-<h1 id="Lesson-3-Hidden-faces-removal-z-buffer"><a href="#Lesson-3-Hidden-faces-removal-z-buffer" class="headerlink" title="Lesson 3: Hidden faces removal (z buffer)"></a>Lesson 3: Hidden faces removal (z buffer)</h1><h2 id="1-zBuffer储存深度"><a href="#1-zBuffer储存深度" class="headerlink" title="1.zBuffer储存深度"></a>1.zBuffer储存深度</h2><p>现在我们已经可以渲染一个面啦!很好!</p>
-<p>但是还有一个问题没解决—-不同面的遮挡关系该如何处理?</p>
+<h1>Lesson 3: Hidden faces removal (z buffer)</h1>
+<h2 id="1-zBuffer储存深度">1.zBuffer储存深度</h2>
+<p>现在我们已经可以渲染一个面啦!很好!</p>
+<p>但是还有一个问题没解决----不同面的遮挡关系该如何处理?</p>
 <p>在原来代码中, 越晚渲染的面在越前面, 这固然有一定的道理, 但是这不是现实生活</p>
-<p>我们要理解光栅化其实是把三维空间里的模型二维化, 然后以一定的比例投影到屏幕上的过程, 那么, 任何一个点一定有他的深度—-也就是z轴的大小.</p>
-<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/6a05ca12f47aff17.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们要理解光栅化其实是把三维空间里的模型二维化, 然后以一定的比例投影到屏幕上的过程, 那么, 任何一个点一定有他的深度----也就是z轴的大小.</p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/6a05ca12f47aff17.png" srcset="/img/loading.gif" lazyload alt=""></p>
 <p>看看这个图, 如果能成功渲染这个画面, 是不是有点三维的感觉了?</p>
 <p>使用Z-buffer数组来储存, 通过重心坐标来计算每点P的z值, 并更新z-buffer</p>
 <p>下面贴一下我的改良后的triangle代码:</p>
@@ -551,7 +550,6 @@
         &#125;
     &#125;
 &#125;</code></pre></div>
-
 <p>干脆把主函数也贴一下, 以免有人不知道该怎么获取深度</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-type">float</span> zBuffer[width * height];<span class="hljs-comment">//创建zbuffer数组</span>
 <span class="hljs-built_in">memset</span>(zBuffer, <span class="hljs-number">-10</span>, <span class="hljs-built_in">sizeof</span>(zBuffer));<span class="hljs-comment">//初始化zbuffer数组</span>
@@ -574,14 +572,13 @@
     <span class="hljs-keyword">if</span>(intensity&gt;<span class="hljs-number">0</span>)<span class="hljs-comment">//别忘了,很重要</span>
         <span class="hljs-built_in">new_triangle</span>(pts, zBuffer, frame, <span class="hljs-built_in">TGAColor</span>(intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, intensity * <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));
 &#125;</code></pre></div>
-
-<h2 id="2-填充纹理吧"><a href="#2-填充纹理吧" class="headerlink" title="2.填充纹理吧"></a>2.填充纹理吧</h2><p>此时, 一个模型大体的轮廓已经初步创建, 那么 ,我们还能做什么呢???</p>
+<h2 id="2-填充纹理吧">2.填充纹理吧</h2>
+<p>此时, 一个模型大体的轮廓已经初步创建, 那么 ,我们还能做什么呢???</p>
 <p>没错! 填充纹理!!</p>
 <p>在obj文件中, 除了存放了模型本身的面和点, 也存放了每个点对应的纹理坐标. 通过这些映射关系, 我们对于每个特定的像素(x,y)都可以在纹理图上映射为(u,v)并获取该点的颜色为该像素上色.</p>
 <div class="code-wrapper"><pre><code class="hljs cpp">vt  <span class="hljs-number">0.532</span> <span class="hljs-number">0.923</span> <span class="hljs-number">0.000</span> <span class="hljs-comment">//存放了第i个纹理图上的点</span>
 f <span class="hljs-number">24</span>/<span class="hljs-number">1</span>/<span class="hljs-number">24</span> <span class="hljs-number">25</span>/<span class="hljs-number">2</span>/<span class="hljs-number">25</span> <span class="hljs-number">26</span>/<span class="hljs-number">3</span>/<span class="hljs-number">26</span> <span class="hljs-comment">//存放了某个面的对应信息</span>
 <span class="hljs-comment">//格式：&quot;f 顶点索引/uv点索引/法线索引&quot;</span></code></pre></div>
-
 <p>想要完成这个作业有两个难点,一是读取纹理信息, 二是对纹理插值</p>
 <p>其实我觉得老师对于这个地方的处理不算是很好, 因为没有告诉你应该怎么去做, 而是想让你凭空去创造obj的读取方法.(不排除这就是老师的本意!</p>
 <p>既然如此,那就硬着头皮上呗!</p>
@@ -623,7 +620,6 @@ std::vector&lt;Vec3f&gt; verts_;
 
 <span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">//__MODEL_H__</span></span>
 </code></pre></div>
-
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span>
 <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span>
 <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span>
@@ -723,7 +719,6 @@ Model::~<span class="hljs-built_in">Model</span>() &#123;
 <span class="hljs-function"></span>&#123;
     <span class="hljs-keyword">return</span> nrms_[faces_nrm[facei * <span class="hljs-number">3</span> + idx]];
 &#125;</code></pre></div>
-
 <p>顺便也贴一下我结合texture之后的triangle函数吧! 主要是实现了对纹理坐标的插值.</p>
 <p>此处的插值方法是直接使用屏幕坐标中的重心坐标对颜色插值, 可能效果会比在纹理坐标中直接插值差一些, 但是因为没给映射函数, 我也不知道怎么在纹理中插值,.</p>
 <div class="code-wrapper"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">new_triangle</span><span class="hljs-params">(Vec3f *pts, Vec2f *texture_pts, <span class="hljs-type">float</span> *zBuffer, TGAImage &amp;image,TGAImage&amp; texture, <span class="hljs-type">float</span> intensity)</span></span>
@@ -764,9 +759,8 @@ Model::~<span class="hljs-built_in">Model</span>() &#123;
         &#125;
     &#125;
 &#125;</code></pre></div>
-
 <p>最后附上我的图! 和老师的图效果稍微差一点,但不是很明显哈哈</p>
-<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/400638c6ba10245b.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s3.bmp.ovh/imgs/2022/05/14/400638c6ba10245b.png" srcset="/img/loading.gif" lazyload alt=""></p>
 
                 
               </div>
@@ -945,6 +939,11 @@ Model::~<span class="hljs-built_in">Model</span>() &#123;
 
 
   
+
+
+  
+  
+
 
 
 
