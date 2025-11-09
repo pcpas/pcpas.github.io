@@ -21,11 +21,11 @@ TinyRenderer是国外一个大佬写的几百行的软件光栅化渲染器，AP
 
 # TinyRenderer 0 : draw a ponit on your screen
 
-{% note success %}
+{% blockquote %}
 
 Since the goal is to minimize external dependencies, I am allowed to only work with [TGA](http://en.wikipedia.org/wiki/Truevision_TGA) files. It’s one of the simplest formats that supports images in RGB/RGBA/black and white formats. So, as a starting point, I’ll obtain a simple way to work with pictures. You should note that the only functionality available at the very beginning (in addition to loading and saving images) is the capability to set the color of one pixel.
 
-{% endnote %}
+{% endblockquote %}
 
 There are no functions for drawing line segments and triangles. I’ll have to do all of this by hand.
 
@@ -72,10 +72,9 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
 
 这种算法固然可以,但是由于我们很难决定t的增量值:
 
-    当t的增量过小,产生大量资源浪费
+当t的增量过小,产生大量资源浪费
 
-    当t的增量过大,线条割裂感严重
-
+当t的增量过大,线条割裂感严重
 因此这是一种低效的算法
 
 进行改良:
@@ -89,7 +88,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     } 
 }
 ```
-
 此时,t的大小自动产生,不需要我们自己设置了!但是产生了新的问题:
 
 ## 2.同时画三条线,各自具备自己的特点:
@@ -99,7 +97,6 @@ line(13, 20, 80, 40, image, white);
 line(20, 13, 40, 80, image, red); 
 line(80, 40, 13, 20, image, red);
 ```
-
 ![](https://s3.bmp.ovh/imgs/2022/05/14/31d795e4522403f6.png)
 
 此时可以看到, 结果和我们预想的明显不同, 那么发生了什么问题呢?
@@ -137,7 +134,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     } 
 }
 ```
-
 可以看到,此时我们解决了以上两种情况,但是,到此为止了吗?
 
 图形学是一个性能敏感的学科!尤其是实时渲染, 非常看重fps,因此,我们尝试着优化一下性能吧?
@@ -153,7 +149,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   1.64      4.23     0.07        2    35.04    35.04  TGAColor::TGAColor(unsigned char, unsigned char, unsigned char, unsigned char) 
   0.94      4.27     0.04                             TGAImage::get(int, int)
 ```
-
 可以看到, 画线段的line函数花费了70%的时间!(果然是我们函数写的太丑了
 
 下面我们来看看看如何优化吧!
@@ -193,7 +188,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     } 
 } 
 ```
-
 区别在哪里?
 
 在最新的函数里,我们将dx,dy提出来做了计算,这样就不用在循环里做反复的计算了!可以想象,应该能省小一半的时间吧!
@@ -207,7 +201,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   2.09      2.35     0.05        2    25.03    25.03  TGAColor::TGAColor(unsigned char, unsigned char, unsigned char, unsigned char) 
   1.25      2.38     0.03                             TGAImage::get(int, int) 
 ```
-
 果不其然!省了一大半的时间!
 
 还能不能继续省呢?
@@ -249,7 +242,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     } 
 } 
 ```
-
 嗯嗯, 摆脱了浮点数,再来看看时间:
 
 ```
@@ -260,7 +252,6 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
  21.62      2.01     0.46 204000000     0.00     0.00  TGAColor::TGAColor(int, int) 
   1.88      2.05     0.04        2    20.02    20.02  TGAColor::TGAColor(unsigned char, unsigned char, unsigned char, unsigned char) 
 ```
-
 又快了不少! 甚至掉下耗时第一名了!真厉害!
 
 ## 6.总结

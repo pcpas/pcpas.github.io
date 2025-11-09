@@ -11,11 +11,7 @@ categories: [技术,CV]
 
 ### 1.1 什么是MediaPipe
 
-{% note primary %}
-
 MediaPipe is a project by Google that offers "open-source, cross-platform, customizable ML solutions for live and streaming media". In other words, MediaPipe provides access to a wide variety of powerful Machine Learning models **built with the hardware limitations of mobile devices in mind**.
-
-{% endnote %}
 
 简而言之，MediaPipe相当于帮我们把轮子造好了，如果你想在你的项目里新添加一个轻度但是高效的CV功能，那么就可以选用MediaPipe。
 

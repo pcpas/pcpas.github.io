@@ -51,11 +51,11 @@ int main(int argc, char** argv) {
 
 提醒:将三角形水平分割.
 
-{% note primary%}
+{% blockquote %}
 
 无论是原作者还是笔者, 都强烈建议您在接着往下看之前先自己尝试实现此功能! 自己实在写不出来或者写出来了再往下看!
 
-{% endnote %}
+{% endblockquote %}
 
 贴一份我自己的代码吧(比较稚嫩)
 

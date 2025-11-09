@@ -5,7 +5,6 @@ title: TinyRenderer 6&7
 date: 2022-08-31 16:16:16
 excerpt: TinyRendererWIki 6&7
 ---
-
 # Lesson 6: Shaders for the software renderer
 
 ## 前言
@@ -42,9 +41,7 @@ model.h
 首先我们要理解一个需要被渲染的模型是怎么构成的：
 
 1. 模型 -----> 无数的三角形面 -----> 每个面由三个顶点组成 ：顶点坐标
-
 2. 模型每个面（或点）的法线
-
 3. 模型需要贴图（纹理），无数个纹理坐标（与顶点坐标一一对应）
 4. 模型是三维的，贴图是二维的，因此才需要一一对应关系进行转换：对应表
 
@@ -101,7 +98,7 @@ Vec3f center(0.f, 0.f, 0.f);
 Vec3f up(0.f, 1.f, 0.f);
 ```
 
-{% note primary%}
+{% blockquote %}
 
 我想先强调一个渲染的最基本的概念：你所做的一切，都是为了得到屏幕上每个像素点的颜色。
 
@@ -125,7 +122,7 @@ ViewPort变换是为了拉伸画面。我们知道，这些变换一直是在[-1
 
 这样，就可以确定模型每个点的屏幕坐标了。屏幕的每个像素点依据附近的模型面（或点）的颜色计算出显示什么颜色，就ok了。
 
-{% endnote %}
+{% endblockquote %}
 
 下面咱们来一起看渲染的过程：
 
@@ -545,8 +542,6 @@ struct Shader : public IShader {
 };
 ```
 
-
-
 # Lesson 7: Shadow mapping
 
 ## 前言
@@ -618,7 +613,7 @@ struct PhongShader : public IShader
     virtual bool fragment(Vec3f bar, TGAColor &color)
     {
         Vec4f sb_p = uniform_Mshadow * embed<4>(varying_tri * bar); // corresponding point in the shadow buffer
-        sb_p = sb_p / sb_p[3];                           
+        sb_p = sb_p / sb_p[3];                         
         float shadow = .3 + .7 * (shadowDepth.get((int)sb_p[0], (int)sb_p[1])[0] < (sb_p[2]+10)); // magic coeff to avoid z-fighting
         //这里这个+10需要注意一下，之后会解释，是为防止z—fighting
         //可以看到，为了模仿软阴影，即使被遮挡住了也不会全黑，而是保留0.3的系数

@@ -1,5 +1,4 @@
 ---
-title: about
-layout: about
+title: 关于
 date: 2025-08-03 11:03:05
 ---

@@ -1,0 +1,12 @@
+open_graph:
+  enable: false
+  twitter_id: # for open_graph meta
+
+article:
+  type: tech
+
+plugins:
+  katex:
+    enable: true
+    inject: |
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css" integrity="sha384-//SZkxyB7axjCAopkAL1E1rve+ZSPKapD89Lo/lLhcsXR+zOYl5z6zJZEFXil+q0" crossorigin="anonymous">

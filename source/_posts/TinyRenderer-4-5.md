@@ -196,7 +196,7 @@ OK, 现在我们已经拥有矩阵了! 那么, 就简单实现一下透视效果
 
 ![](https://s3.bmp.ovh/imgs/2022/05/18/d8a4450b2f3e62d9.png)
 
- lesson4中, 我们不考虑移动摄像机的位置, 就简单的摆在(0,0,3)，因此省去了很多麻烦。
+lesson4中, 我们不考虑移动摄像机的位置, 就简单的摆在(0,0,3)，因此省去了很多麻烦。
 
 具体需要修改的的就是main函数中将模型的世界坐标转换为屏幕像素坐标那一步, 我们应该添加一个透视效果!
 
@@ -382,11 +382,11 @@ Matrix viewport(int x, int y, int w, int h) {
 
 ---
 
-{% note primary%}
+{% blockquote %}
 
 这是部分原文，我认为很好，值得抄录下来
 
-{% endnote %}
+{% endblockquote %}
 
 So, let us sum up. Our models (characters, for example) are created in their own local frame ( **object coordinates** ). They are inserted into a scene expressed in  **world coordinates** . The transformation from one to another is made with matrix  **Model** . Then, we want to express it in the camera frame ( **eye coordinates** ), the transformation is called  **View** . Then, we deform the scene to create a perspective deformation with **Projection** matrix ([lesson 4](https://github.com/ssloy/tinyrenderer/wiki/Lesson-4:-perspective-projection)), this matrix transforms the scene to so-called  **clip coordinates** . Finally, we draw the scene, and the matrix transforming clip coordinates to the **screen coordinates** is called  **Viewport** .
 
