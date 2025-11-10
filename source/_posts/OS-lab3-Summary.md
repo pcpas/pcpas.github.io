@@ -4,6 +4,7 @@ date: 2023-05-01 13:03:39
 excerpt: BUAA_OS_Lab3总结
 tags: [操作系统,内存管理]
 categories: [技术,操作系统]
+topic: os
 ---
 
 # 实验目的

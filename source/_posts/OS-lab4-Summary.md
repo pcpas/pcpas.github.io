@@ -4,6 +4,7 @@ date: 2023-05-08 13:03:39
 excerpt: BUAA_OS_Lab4总结
 tags: [操作系统,内存管理]
 categories: [技术,操作系统]
+topic: os
 ---
 
 本次实验实现了用户态的系统调用, 进程间通信和fork.

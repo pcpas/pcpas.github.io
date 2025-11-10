@@ -4,6 +4,7 @@ date: 2023-03-20 16:16:24
 excerpt: BUAA_OS_Lab1总结
 tags: [操作系统,内存管理]
 categories: [技术,操作系统]
+topic: os
 ---
 
 # 多个C文件的连接和编译

@@ -2,11 +2,9 @@
 title: 3DGS学习笔记
 date: 2024-04-21 22:21:55
 excerpt: 自学3D Gaussian Splatting路上记录的笔记和问题
-categories: [技术,CV]
+categories: [技术,AI]
 tags: [CV,3DGS]
 ---
-# 3DGS Learning Notes
-
 ## 1 概述
 
 3D 高斯泼溅技术（3D Gaussian Splatting，简称3DGS）由 [3D Gaussian Splatting for Real-Time Radiance Field Rendering](https://huggingface.co/papers/2308.04079) 一文首次提出。作为一种光栅化技术，3D 高斯泼溅可用于实时且逼真地渲染从一小组图像中学到的场景。

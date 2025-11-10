@@ -1,0 +1,6 @@
+name: Complier
+title: 从零实现编译器--SysCComplier
+subtitle: 
+description: SysCCompiler 是一个由 Java 编写的 SysC 语言编译器项目，SysC 是一种简化版的 C 语言。项目完整实现了编译的各个阶段，从词法分析、语法分析到中间代码生成与优化。在性能测试中，SysCCompiler 在某复杂测试点上的表现接近 gcc 11 -O1，综合性能排名前 5%。
+icon: /assets/topics/compiler.png
+order_by: date

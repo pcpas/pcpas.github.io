@@ -4,6 +4,7 @@ tags: [图形学,C++,TinyRenderer,软件光栅化渲染器]
 title: TinyRenderer 6&7
 date: 2022-08-31 16:16:16
 excerpt: TinyRendererWIki 6&7
+topic: tr
 ---
 # Lesson 6: Shaders for the software renderer
 

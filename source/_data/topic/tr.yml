@@ -1,0 +1,6 @@
+name: TinyRenderer
+title: 从零实现软光栅渲染器--TinyRenderer
+subtitle: 专栏副标题
+description: TinyRenderer 是一个只有几百行的软光栅化渲染器，API 模拟了 OpenGL，用来帮助我们理解它在后台到底做了什么。我打算亲手复现这段大约 500 行的代码，借此更深入地了解图形学的底层原理。
+icon: /assets/topics/tinyrenderer.png
+order_by: date

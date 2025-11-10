@@ -3,17 +3,20 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: PCPA的世界
-subtitle: ''
+title: pcpa's world
+subtitle: '每个人的独立博客 | Designed by xaoxuu'
+avatar: /assets/avatar.png
 description: ''
 keywords:
 author: pcpa
-language: zh-CN 
+language:
+  - en
+  - zh-CN
 timezone: ''
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://example.com
+url: https://pcpas.github.io/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -29,6 +32,7 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
+  - assets/*
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -92,12 +96,19 @@ pagination_dir: page
 include:
 exclude:
 ignore:
+  - .DS_Store
+  - /**/.DS_Store
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: stellar
-avatar: /img/avatar.jpg
+
+# Deployment
+## Docs: https://hexo.io/docs/one-command-deployment
+deploy:
+  type: ''
+
 
 markdown_it_plus:
     highlight: true
