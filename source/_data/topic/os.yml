@@ -1,6 +1,6 @@
 name: OS_lab
 title: 深入系统内核 BUAA_OS_Labs
 subtitle: 
-description: 课程笔记以及相关实验代码分析
+description: 课程笔记以及相关实验代码分析。
 icon: /assets/topics/OS.png
 order_by: date

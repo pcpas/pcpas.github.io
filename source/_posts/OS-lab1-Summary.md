@@ -9,7 +9,7 @@ topic: os
 
 # 多个C文件的连接和编译
 ## 基本流程
-![](https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted image 20230319200455.png)
+![](https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319200455.png)
  多个C语言文件编译成为一个可执行文件,首先通过`gcc -c <filename>`将.c文件编译为.o二进制文件, 再通过链接的方式将多个.o文件链接在一起(此时最后每条指令的地址也因此确定), 生产最后的可执行文件.
 
 ##  ELF文件 - 深入探究编译链接
@@ -20,7 +20,7 @@ topic: os
 **.o 文件就是 ELF 所包含的三种文件类型中的一种**，称为可重 定位 (relocatable) 文件，其它两种文件类型分别是可执行 (executable) 文件和共享对象 (shared object) 文件，这两种文件都需要链接器对可重定位文件进行处理才能生成。
 
 ELF文件结构:
-![](https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted image 20230319201114.png)
+![](https://zzq-typora-picgo.oss-cn-beijing.aliyuncs.com/Pasted%20image%2020230319201114.png)
 段头表（或程序头表，program header table），主要包含程序中各个段（segment）的信息， **段的信息需要在运行时刻使用**。
 节头表（section header table），主要包含程序中各个节（section）的信息，**节的信息需要 在程序编译和链接的时候使用**。(因此在这里我们主要关心节头表)
 段头表和节头表指向了同样的地方，这意味着两者只是程序数据的两种视图:

@@ -10,5 +10,5 @@ indent: true
 ---
 {% navbar active:/notes/ [技术](/explore/) [想法](/thoughts/) %}
 
-{% banner 博客进阶：自动化部署 本文讲了如何利用脚本和 GitHub Actions 简化博客搭建和部署流程，提高效率。 bg:https://res.xaox.cc/gh/cdn-x/xaoxuu@main/posts/20250706160404696.webp link:/blog/20221126/ %}
+{% banner "Fly Me To The MOON" 大半夜睡不着，索性念叨念叨最近看完憋了好久的赛博朋克边缘行者。 bg:/assets/covers/david_lucy.webp link:/2022/10/02/Fly-Me-To-The-MOON/ %}
 {% endbanner %}

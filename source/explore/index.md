@@ -10,5 +10,5 @@ indent: true
 ---
 {% navbar active:/notes/ [技术](/explore/) [想法](/thoughts/) %}
 
-{% banner 博客进阶：自动化部署 本文讲了如何利用脚本和 GitHub Actions 简化博客搭建和部署流程，提高效率。 bg:https://res.xaox.cc/gh/cdn-x/xaoxuu@main/posts/20250706160404696.webp link:/blog/20221126/ %}
+{% banner 3DGS原理分析 3D 高斯泼溅技术作为一种光栅化技术，3D 高斯泼溅可用于实时且逼真地渲染从一小组图像中学到的场景。 bg:/assets/covers/3DGS.png link:/2024/04/21/3DGS学习笔记/ %}
 {% endbanner %}
