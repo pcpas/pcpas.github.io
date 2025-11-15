@@ -2,8 +2,8 @@
 title: Java语法之注解
 date: 2022-09-16 15:04:07
 excerpt: Java语法之注解
-tags: [JAVA,面向对象,注解]
-categories: [技术,JAVA]
+categories: [技术, Java]
+tags: [注解, 面向对象]
 ---
 
 # 什么是注解

@@ -2,8 +2,8 @@
 title: BUAA2022-CacheLab
 date: 2022-11-16 18:11:24
 excerpt: BUAA计组Lab5-cache的课下实验部分优化
-tags: [计算机组成原理,Cache,性能优化]
-categories: [技术,计算机组成原理]
+categories: [技术, 计算机组成原理]
+tags: [Cache, 性能优化]
 ---
 
 # CacheLab（附Excellent优化思路）

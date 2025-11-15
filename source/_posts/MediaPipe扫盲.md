@@ -2,8 +2,8 @@
 title: MediaPipe扫盲
 date: 2022-11-09 18:50:47
 excerpt: 快速入门MediaPipe
-tags: [CV]
-categories: [技术,CV]
+categories: [技术, 计算机视觉]
+tags: [MediaPipe, 计算机视觉]
 ---
 # MediaPipe
 

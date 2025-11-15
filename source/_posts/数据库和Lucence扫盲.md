@@ -2,8 +2,8 @@
 title: JAVA的数据库和Lucene扫盲
 date: 2022-11-06 18:52:34
 excerpt: 快速入门数据库和Lucene
-tags: [JAVA,数据库,MySql,Lucence]
-categories: [技术,数据库]
+categories: [技术, 数据库]
+tags: [MySQL, Lucence, Java]
 ---
 
 # 数据库基础知识

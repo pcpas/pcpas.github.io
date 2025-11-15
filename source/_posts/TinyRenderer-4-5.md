@@ -1,6 +1,6 @@
 ---
-categories: [技术,图形学,TinyRenderer]
-tags: [图形学,C++,TinyRenderer,软件光栅化渲染器]
+categories: [技术, 图形学]
+tags: [TinyRenderer, C++, 软件光栅化渲染器]
 title: TinyRenderer 4&5
 date: 2022-05-16 10:04:43
 excerpt: TinyRendererWIki 4&5

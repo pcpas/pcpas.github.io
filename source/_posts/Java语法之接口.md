@@ -2,8 +2,8 @@
 title: Java语法之接口
 date: 2022-09-16 15:39:35
 excerpt: Java语法之接口
-tags: [JAVA,面向对象,接口]
-categories: [技术,JAVA]
+categories: [技术, Java]
+tags: [接口, 面向对象]
 ---
 
 # 接口是什么

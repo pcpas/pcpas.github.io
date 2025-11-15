@@ -1,8 +1,8 @@
 ---
 title: Fly Me To The MOON
 date: 2022-10-2 03:58:12
-tags: [想法]
 categories: [生活随记]
+tags: [想法]
 cover: /assets/covers/david_lucy.webp
 ---
 

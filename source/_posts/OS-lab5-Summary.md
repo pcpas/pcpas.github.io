@@ -2,8 +2,8 @@
 title: OS_lab5_文件系统
 date: 2023-05-22 13:03:39
 excerpt: BUAA_OS_Lab5总结
-tags: [操作系统,内存管理]
-categories: [技术,操作系统]
+categories: [技术, 操作系统]
+tags: [内存管理]
 topic: os
 ---
 

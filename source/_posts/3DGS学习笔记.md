@@ -2,8 +2,8 @@
 title: 3DGS学习笔记
 date: 2024-04-21 22:21:55
 excerpt: 自学3D Gaussian Splatting路上记录的笔记和问题
-categories: [技术,AI]
-tags: [CV,3DGS]
+categories: [技术, 计算机视觉]
+tags: [3DGS, 3D重建]
 ---
 ## 1 概述
 

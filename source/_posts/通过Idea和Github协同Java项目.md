@@ -2,8 +2,8 @@
 title: 通过Idea和Github协同Java项目
 date: 2022-11-06 18:52:10
 excerpt: 快速理解Git、Github以及如何配合Idea进行协同合作
-tags: [JAVA,协同]
-categories: [技术,JAVA]
+categories: [技术, Java]
+tags: [Git, GitHub, 协同开发]
 ---
 
 # 通过Idea和Github协同Java项目

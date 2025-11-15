@@ -2,8 +2,8 @@
 title: OS_lab1_内核启动
 date: 2023-03-20 16:16:24
 excerpt: BUAA_OS_Lab1总结
-tags: [操作系统,内存管理]
-categories: [技术,操作系统]
+categories: [技术, 操作系统]
+tags: [内存管理]
 topic: os
 ---
 

@@ -2,8 +2,8 @@
 title: OS_lab2_内存管理
 date: 2023-04-04 16:16:20
 excerpt: BUAA_OS_Lab2总结
-tags: [操作系统,内存管理]
-categories: [技术,操作系统]
+categories: [技术, 操作系统]
+tags: [内存管理]
 topic: os
 ---
 

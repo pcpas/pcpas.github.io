@@ -2,8 +2,8 @@
 title: DIffusion Model笔记
 date: 2024-05-30 22:21:55
 excerpt: 记录一些Diffusion Model相关的知识点
-categories: [技术,CV]
-tags: [CV, Diffusion Model]
+categories: [技术, 计算机视觉]
+tags: [Diffusion Model, 生成模型]
 ---
 # DIffusion Model笔记
 

@@ -2,8 +2,8 @@
 title: TinyRenderer 2&3
 excerpt: TinyRendererWIki 2&3
 date: 2022-05-14 15:59:04
-categories: [技术,图形学,TinyRenderer]
-tags: [图形学,C++,TinyRenderer,软件光栅化渲染器]
+categories: [技术, 图形学]
+tags: [TinyRenderer, C++, 软件光栅化渲染器]
 topic: tr
 ---
 # Lesson 2: Triangle rasterization and back face culling

@@ -2,8 +2,8 @@
 title: Java深拷贝的实现方式
 date: 2022-09-16 14:52:44
 excerpt: 总结了常见的三种java深拷贝的方法
-tags: [JAVA,面向对象,深拷贝]
-categories: [技术,JAVA]
+categories: [技术, Java]
+tags: [深拷贝, 面向对象]
 ---
 
 # 前言
