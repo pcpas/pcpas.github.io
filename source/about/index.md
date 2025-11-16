@@ -3,7 +3,7 @@ robots: 'index,nofollow'
 menu_id: social
 title: 关于
 h1: ''
-sidebar: [sociallist, welcome, recent]
+sidebar: [recent]
 giscus:
   data-mapping: number
   data-term: 22

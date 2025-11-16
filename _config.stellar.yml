@@ -36,9 +36,10 @@ menubar:
 
 site_tree:
   home:
-    sidebar: starter, welcome, recent
+    leftbar: recent
+    rightbar: my_welcome
   index_blog:
-    sidebar: starter, welcome, recent
+    sidebar: starter, welcome, related_pages
   index_topic:
     menu_id: topic
   topic:
