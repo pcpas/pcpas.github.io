@@ -37,7 +37,7 @@ $$
 \Sigma=(Q\Lambda^{\frac{1}{2}})((\Lambda^{\frac{1}{2}})^TQ^T)
 $$
 
-这里的$\Lambda^{\frac{1}{2}} $和$Q$有自己的物理意义，可以理解为高斯椭球的Scaling和Rotating，因此有：
+这里的 $\Lambda^{\frac{1}{2}}$ 和 $Q$ 有自己的物理意义，可以理解为高斯椭球的Scaling和Rotating，因此有：
 
 $$
 \Sigma=RSS^TR^T
