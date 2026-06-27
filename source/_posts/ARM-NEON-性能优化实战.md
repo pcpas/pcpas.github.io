@@ -32,7 +32,7 @@ tags: [性能优化]
 
 **核心代码实现（Intrinsics 示意）：**
 
-```
+```cpp
 // 假设输入为 UTF-16 字符串 (uint16_t)
 // 每次处理 8 个字符 (128位)
 static int neon_strncmp(const uint16_t *a, const uint16_t *b, size_t len) {
@@ -87,7 +87,7 @@ static int neon_strncmp(const uint16_t *a, const uint16_t *b, size_t len) {
 
 **代码方案 A：使用 `st4` (一次写入 64 字节)**
 
-```
+```cpp
 // 理论上吞吐量最大，但消耗 4 个向量寄存器
 uint32x4_t val = vdupq_n_u32(value);
 uint32x4x4_t val_x4 = { val, val, val, val };
@@ -98,7 +98,7 @@ dest += 16;
 
 **代码方案 B：使用 `st2` (一次写入 32 字节) + 循环展开**
 
-```
+```cpp
 // 占用寄存器较少，更有利于流水线排布
 uint32x4_t val = vdupq_n_u32(value);
 uint32x4x2_t val_x2 = { val, val };
@@ -133,7 +133,7 @@ dest += 16;
 
 以下是一个经典的 `BYTE_MUL` 实现，它在一个 64 位寄存器中同时处理 RGB 三个通道：
 
-```
+```cpp
 static inline uint32_t BYTE_MUL(uint32_t x, uint32_t a) {
     // 1. 通道分离：将 32位 ARGB 扩展到 64位，制造“空隙”防止乘法溢出
     uint64_t t = (((uint64_t(x)) | ((uint64_t(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
@@ -163,7 +163,7 @@ $$ \beta = \frac{R''}{R'} =\frac{ \frac{R\alpha}{255}}{\frac{R\alpha}{256}} = 1 
 
 **核心代码实现 (NEON)：**
 
-```
+```cpp
 // 辅助函数：快速计算 (x * alpha) / 255
 static inline uint16x8_t fast_div_255(uint16x8_t x, uint16x8_t alpha) {
     // 1. 乘法: t = x * alpha
@@ -211,7 +211,7 @@ ARM NEON 的 `ld4` 和 `st4` 指令简直是为此类场景量身定制的。它
 
 **代码实现：**
 
-```
+```cpp
 // src: R G B A R G B A ...
 // dst: B G R A B G R A ... (交换 R 和 B)
 
